@@ -434,16 +434,6 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
 
       <ComparisonTable />
 
-      <section className="card compact" id="readiness">
-        <h2>Trạng thái trước khi public</h2>
-        <ul className="checklist">
-          <li>✅ Tên repo chưa thấy trùng public trên GitHub theo exact search.</li>
-          <li>✅ Có disclaimer độc lập, tách license code/content.</li>
-          <li>⚠️ Cần bổ sung nguồn chính thức cho từng claim trước khi public.</li>
-          <li>⚠️ Cần secret scan và kiểm tra GitHub Actions trước khi đổi visibility.</li>
-          <li>⚠️ Cần kiểm tra nhãn hiệu nếu muốn dùng tên này như brand dài hạn.</li>
-        </ul>
-      </section>
     </main>
   );
 }
