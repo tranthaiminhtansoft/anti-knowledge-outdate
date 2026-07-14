@@ -1,0 +1,21 @@
+name: Câu hỏi kiến thức
+description: Đề xuất một câu hỏi/chủ đề để giải thích bằng tiếng Việt dễ hiểu
+labels: [question, content]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Câu hỏi
+      description: Bạn muốn hiểu điều gì?
+      placeholder: Ví dụ: Agent khác model ở điểm nào?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Ngữ cảnh
+      description: Bạn đang dùng sản phẩm/công cụ nào, vướng ở đâu?
+  - type: input
+    id: sources
+    attributes:
+      label: Link nguồn nếu có
