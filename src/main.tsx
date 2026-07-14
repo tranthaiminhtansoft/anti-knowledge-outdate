@@ -46,6 +46,40 @@ type Topic = {
   bullets: string[];
 };
 
+type ModelType = {
+  name: string;
+  shortName: string;
+  description: string;
+  useCases: string[];
+};
+
+const modelTypes: ModelType[] = [
+  {
+    name: 'Reasoning model',
+    shortName: 'Reasoning',
+    description: 'Tối ưu cho bài toán nhiều bước: lập kế hoạch, debug, toán/logic, phân tích yêu cầu. Thường chậm hơn và tốn hơn vì dùng thêm token/tài nguyên cho quá trình suy luận.',
+    useCases: ['Debug phức tạp', 'Thiết kế kiến trúc', 'Phân rã task nhiều bước'],
+  },
+  {
+    name: 'Non-reasoning / chat model',
+    shortName: 'Chat / general',
+    description: 'Tối ưu phản hồi nhanh cho tác vụ trực tiếp: hỏi đáp, viết nội dung, tóm tắt, phân loại, giải thích đơn giản. Không có nghĩa là “không suy nghĩ”, chỉ là ít tập trung vào bài nhiều bước.',
+    useCases: ['Tóm tắt', 'Viết/biên tập', 'Hỏi đáp rõ ngữ cảnh'],
+  },
+  {
+    name: 'Embedding model',
+    shortName: 'Embedding',
+    description: 'Biến văn bản/hình ảnh thành vector để tìm kiếm ngữ nghĩa, RAG, gợi ý nội dung tương tự. Nó thường không dùng để chat trực tiếp.',
+    useCases: ['Semantic search', 'RAG', 'Dedup/gợi ý tài liệu'],
+  },
+  {
+    name: 'Multimodal / tool-capable model',
+    shortName: 'Multimodal / tool',
+    description: 'Có thể xử lý thêm ảnh/âm thanh/file hoặc gọi tool qua runtime. Khả năng này thường đến từ cả model lẫn hệ thống bao quanh, không chỉ từ model đơn lẻ.',
+    useCases: ['Đọc ảnh/screenshot', 'Phân tích file', 'Agent gọi tool'],
+  },
+];
+
 const topics: Topic[] = [
   {
     id: 'ai',
@@ -215,6 +249,37 @@ function MermaidDiagram({ chart, id }: { chart: string; id: string }) {
   return <div className="diagram" ref={ref} aria-label="Sơ đồ minh họa" />;
 }
 
+function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHome: () => void; backLabel?: string }) {
+  return (
+    <div className="pageActions">
+      {onBack && <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> {backLabel ?? 'Quay lại'}</button>}
+      <button className="homeButton" onClick={onHome} type="button">Trang chính</button>
+    </div>
+  );
+}
+
+function ModelTypesOverview() {
+  return (
+    <section className="card compact">
+      <div className="sectionIntro">
+        <span className="badge">Phân loại model</span>
+        <h2>Có mấy loại model thường gặp?</h2>
+        <p>Cách chia dưới đây là để dễ hiểu khi dùng sản phẩm AI. Thực tế một model có thể thuộc nhiều nhóm cùng lúc.</p>
+      </div>
+      <div className="modelTypeGrid">
+        {modelTypes.map((modelType, index) => (
+          <div className="modelTypeCard" key={modelType.name}>
+            <span className="topicStatus">Loại {index + 1}: {modelType.shortName}</span>
+            <h3>{modelType.name}</h3>
+            <p>{modelType.description}</p>
+            <div className="pillRow">{modelType.useCases.map((item) => <span key={item}>{item}</span>)}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function TopicCard({ topic, onOpen }: { topic: Topic; onOpen: () => void }) {
   const isAvailable = topic.status === 'available';
   return (
@@ -244,10 +309,10 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
   );
 }
 
-function UpdatingPage({ topic, onBack }: { topic: Topic; onBack: () => void }) {
+function UpdatingPage({ topic, onBack, onHome }: { topic: Topic; onBack: () => void; onHome: () => void }) {
   return (
     <main className="pageShell">
-      <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> Quay lại</button>
+      <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại" />
       <section className="card emptyPage">
         <div className="placeholderIcon">{topic.icon}</div>
         <span className="badge">{topic.title}</span>
@@ -259,15 +324,16 @@ function UpdatingPage({ topic, onBack }: { topic: Topic; onBack: () => void }) {
   );
 }
 
-function TopicPage({ topic, onBack, onOpenArticle }: { topic: Topic; onBack: () => void; onOpenArticle: (articleId: string) => void }) {
+function TopicPage({ topic, onBack, onHome, onOpenArticle }: { topic: Topic; onBack: () => void; onHome: () => void; onOpenArticle: (articleId: string) => void }) {
   return (
     <main className="pageShell">
-      <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> Quay lại trang chính</button>
+      <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại trang chính" />
       <section className="pageHeader">
         <span className="badge">{topic.title}</span>
         <h1>Các câu hỏi AI đầu tiên</h1>
         <p className="lead">Chọn từng bài để mở nội dung chi tiết. Trang này không show toàn bộ bài để tránh bị quá tải khi đọc.</p>
       </section>
+      <ModelTypesOverview />
       <div className="articleList">
         {articles.map((article, index) => <ArticleListItem article={article} index={index} key={article.id} onOpen={() => onOpenArticle(article.id)} />)}
       </div>
@@ -275,10 +341,10 @@ function TopicPage({ topic, onBack, onOpenArticle }: { topic: Topic; onBack: () 
   );
 }
 
-function ArticlePage({ article, onBack }: { article: Article; onBack: () => void }) {
+function ArticlePage({ article, onBack, onHome }: { article: Article; onBack: () => void; onHome: () => void }) {
   return (
     <main className="pageShell">
-      <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> Quay lại danh sách AI</button>
+      <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại danh sách AI" />
       <article className="card articleCard detailArticle">
         <div className="cardHeader">
           <span className="badge">AI</span>
@@ -397,13 +463,13 @@ function App() {
 
   if (view.type === 'topic') {
     const topic = topics.find((item) => item.id === view.topicId) ?? topics[0];
-    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={() => setView({ type: 'home' })} />;
-    return <TopicPage topic={topic} onBack={() => setView({ type: 'home' })} onOpenArticle={openArticle} />;
+    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={() => setView({ type: 'home' })} onHome={() => setView({ type: 'home' })} />;
+    return <TopicPage topic={topic} onBack={() => setView({ type: 'home' })} onHome={() => setView({ type: 'home' })} onOpenArticle={openArticle} />;
   }
 
   if (view.type === 'article') {
     const article = articles.find((item) => item.id === view.articleId) ?? articles[0];
-    return <ArticlePage article={article} onBack={() => setView({ type: 'topic', topicId: 'ai' })} />;
+    return <ArticlePage article={article} onBack={() => setView({ type: 'topic', topicId: 'ai' })} onHome={() => setView({ type: 'home' })} />;
   }
 
   return <HomePage onOpenTopic={openTopic} />;
