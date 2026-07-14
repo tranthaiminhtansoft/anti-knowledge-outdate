@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
+  ArrowLeft,
   BookOpen,
   Bot,
   BrainCircuit,
@@ -19,6 +20,7 @@ mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' 
 
 type ArticleStatus = 'draft' | 'review-needed' | 'ready';
 type TopicStatus = 'available' | 'updating';
+type View = { type: 'home' } | { type: 'topic'; topicId: string } | { type: 'article'; articleId: string };
 
 type Article = {
   id: string;
@@ -197,6 +199,10 @@ Hermes --> Verify[Verify: chạy test/build/đọc output thật]`,
   },
 ];
 
+function scrollTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function MermaidDiagram({ chart, id }: { chart: string; id: string }) {
   const ref = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
@@ -209,61 +215,95 @@ function MermaidDiagram({ chart, id }: { chart: string; id: string }) {
   return <div className="diagram" ref={ref} aria-label="Sơ đồ minh họa" />;
 }
 
-function TopicCard({ topic }: { topic: Topic }) {
+function TopicCard({ topic, onOpen }: { topic: Topic; onOpen: () => void }) {
   const isAvailable = topic.status === 'available';
   return (
-    <a className={`topicCard ${topic.status}`} href={isAvailable ? `#${topic.id}` : `#${topic.id}-updating`}>
+    <button className={`topicCard ${topic.status}`} onClick={onOpen} type="button">
       <div className="topicIcon">{topic.icon}</div>
       <div className="topicMeta">
         <span className="topicStatus">{isAvailable ? `${topic.articleCount} bài đang có` : 'Đang cập nhật'}</span>
         <h3>{topic.title}</h3>
         <p>{topic.description}</p>
-        <ul>{topic.bullets.map((item) => <li key={item}>{item}</li>)}</ul>
+        <span className="openHint">{isAvailable ? 'Mở section' : 'Xem trạng thái'}</span>
       </div>
-    </a>
+    </button>
   );
 }
 
-function UpdatingSection({ topic }: { topic: Topic }) {
+function ArticleListItem({ article, index, onOpen }: { article: Article; index: number; onOpen: () => void }) {
   return (
-    <section className="card placeholder" id={`${topic.id}-updating`}>
-      <div className="placeholderIcon">{topic.icon}</div>
+    <button className="articleListItem" onClick={onOpen} type="button">
       <div>
-        <span className="badge">{topic.title}</span>
-        <h3>Đang cập nhật nội dung</h3>
-        <p className="summary">Section này đã được giữ chỗ để sau này thêm bài/sơ đồ/mô phỏng. Khi Tân đưa câu hỏi về {topic.title}, nội dung sẽ được bổ sung vào đây.</p>
-        <div className="pillRow">{topic.bullets.map((item) => <span key={item}>{item}</span>)}</div>
+        <span className="badge">AI · Bài {index + 1}</span>
+        <h3>{article.title}</h3>
+        <p className="question">{article.question}</p>
+        <p>{article.summary}</p>
       </div>
-    </section>
+      <span className={`status ${article.status}`}>{article.status}</span>
+    </button>
   );
 }
 
-function ArticleCard({ article, index }: { article: Article; index: number }) {
+function UpdatingPage({ topic, onBack }: { topic: Topic; onBack: () => void }) {
   return (
-    <article className="card articleCard" id={article.id}>
-      <div className="cardHeader">
-        <span className="badge">AI · Bài {index + 1}</span>
-        <span className={`status ${article.status}`}>{article.status}</span>
+    <main className="pageShell">
+      <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> Quay lại</button>
+      <section className="card emptyPage">
+        <div className="placeholderIcon">{topic.icon}</div>
+        <span className="badge">{topic.title}</span>
+        <h1>Đang cập nhật nội dung</h1>
+        <p className="lead">Section này đã được giữ chỗ. Khi Tân đưa câu hỏi về {topic.title}, mình sẽ bổ sung bài giải thích, sơ đồ và mô phỏng vào đây.</p>
+        <div className="pillRow">{topic.bullets.map((item) => <span key={item}>{item}</span>)}</div>
+      </section>
+    </main>
+  );
+}
+
+function TopicPage({ topic, onBack, onOpenArticle }: { topic: Topic; onBack: () => void; onOpenArticle: (articleId: string) => void }) {
+  return (
+    <main className="pageShell">
+      <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> Quay lại trang chính</button>
+      <section className="pageHeader">
+        <span className="badge">{topic.title}</span>
+        <h1>Các câu hỏi AI đầu tiên</h1>
+        <p className="lead">Chọn từng bài để mở nội dung chi tiết. Trang này không show toàn bộ bài để tránh bị quá tải khi đọc.</p>
+      </section>
+      <div className="articleList">
+        {articles.map((article, index) => <ArticleListItem article={article} index={index} key={article.id} onOpen={() => onOpenArticle(article.id)} />)}
       </div>
-      <p className="question">Câu hỏi: {article.question}</p>
-      <h3>{article.title}</h3>
-      <p className="summary">{article.summary}</p>
-      <MermaidDiagram chart={article.diagram} id={article.id} />
-      <div className="grid2">
-        <section>
-          <h4>Ý chính</h4>
-          <ul>{article.points.map((p) => <li key={p}>{p}</li>)}</ul>
-        </section>
-        <section>
-          <h4>Hiểu lầm thường gặp</h4>
-          <ul>{article.misconceptions.map((p) => <li key={p}>{p}</li>)}</ul>
-        </section>
-      </div>
-      <footer className="articleFooter">
-        <span>Last verified: {article.lastVerified}</span>
-        <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
-      </footer>
-    </article>
+    </main>
+  );
+}
+
+function ArticlePage({ article, onBack }: { article: Article; onBack: () => void }) {
+  return (
+    <main className="pageShell">
+      <button className="backButton" onClick={onBack} type="button"><ArrowLeft size={18} /> Quay lại danh sách AI</button>
+      <article className="card articleCard detailArticle">
+        <div className="cardHeader">
+          <span className="badge">AI</span>
+          <span className={`status ${article.status}`}>{article.status}</span>
+        </div>
+        <p className="question">Câu hỏi: {article.question}</p>
+        <h1>{article.title}</h1>
+        <p className="summary">{article.summary}</p>
+        <MermaidDiagram chart={article.diagram} id={article.id} />
+        <div className="grid2">
+          <section>
+            <h4>Ý chính</h4>
+            <ul>{article.points.map((p) => <li key={p}>{p}</li>)}</ul>
+          </section>
+          <section>
+            <h4>Hiểu lầm thường gặp</h4>
+            <ul>{article.misconceptions.map((p) => <li key={p}>{p}</li>)}</ul>
+          </section>
+        </div>
+        <footer className="articleFooter">
+          <span>Last verified: {article.lastVerified}</span>
+          <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
+        </footer>
+      </article>
+    </main>
   );
 }
 
@@ -291,26 +331,21 @@ function ComparisonTable() {
   );
 }
 
-function App() {
-  const availableTopics = topics.filter((topic) => topic.status === 'available');
-  const updatingTopics = topics.filter((topic) => topic.status === 'updating');
-
+function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
   return (
     <main>
-      <section className="hero">
+      <section className="hero compactHero">
         <div>
           <p className="eyebrow"><Sparkles size={16}/> Anti Knowledge Outdate</p>
-          <h1>Bấm vào từng mảng để hiểu kiến thức công nghệ mà không bị lỗi thời.</h1>
-          <p className="lead">Trang này chia kiến thức theo section: AI, Kubernetes, Docker, DevOps. Section nào chưa có bài sẽ hiển thị “đang cập nhật”, để repo có khung mở rộng rõ ràng ngay từ đầu.</p>
+          <h1>Kho kiến thức công nghệ bằng tiếng Việt, có sơ đồ và ví dụ dễ hiểu.</h1>
+          <p className="lead">Chọn một mảng bên dưới để mở nội dung. Trang chính chỉ giữ vai trò bản đồ kiến thức, không đổ hết bài viết ra một lần.</p>
           <div className="heroActions">
-            <a href="#topics">Xem các section</a>
-            <a href="#ai" className="secondary">Đọc AI căn bản</a>
-            <a href="#readiness" className="secondary">Checklist trước public</a>
+            <button onClick={() => onOpenTopic('ai')} type="button">Mở AI căn bản</button>
           </div>
         </div>
         <div className="panel">
           <div className="metric"><BookOpen/> 4 bài AI đầu tiên</div>
-          <div className="metric"><Layers/> Section K8s/Docker/DevOps đã giữ chỗ</div>
+          <div className="metric"><Layers/> K8s/Docker/DevOps đang cập nhật</div>
           <div className="metric"><GitBranch/> GitHub Pages ready khi public</div>
           <div className="metric"><Bot/> Cập nhật qua Issue → PR → Review</div>
         </div>
@@ -322,34 +357,16 @@ function App() {
         <div><ShieldCheck/><h2>Có ngày kiểm chứng</h2><p>Kiến thức AI/DevOps đổi nhanh, mỗi bài cần nguồn và thời điểm review.</p></div>
       </section>
 
-      <section id="topics" className="topicSection">
+      <section className="topicSection">
         <div className="sectionIntro">
           <span className="badge">Knowledge map</span>
           <h2>Chọn mảng kiến thức</h2>
           <p>AI đang có nội dung đầu tiên. Kubernetes, Docker và DevOps được để sẵn khung “đang cập nhật”.</p>
         </div>
-        <div className="topicGrid">{topics.map((topic) => <TopicCard key={topic.id} topic={topic} />)}</div>
+        <div className="topicGrid">{topics.map((topic) => <TopicCard key={topic.id} topic={topic} onOpen={() => onOpenTopic(topic.id)} />)}</div>
       </section>
 
       <ComparisonTable />
-
-      {availableTopics.map((topic) => (
-        <section id={topic.id} className="articles" key={topic.id}>
-          <div className="sectionIntro split">
-            <div>
-              <span className="badge">{topic.title}</span>
-              <h2>Các câu hỏi AI đầu tiên</h2>
-              <p>Ưu tiên trả lời các nhầm lẫn nền tảng: AI là gì, model có suy nghĩ không, reasoning khác gì, Hermes nằm ở đâu.</p>
-            </div>
-            <div className="sectionStat">{articles.length}<span>bài nháp</span></div>
-          </div>
-          {articles.map((article, index) => <ArticleCard key={article.id} article={article} index={index} />)}
-        </section>
-      ))}
-
-      <section className="updatingGrid">
-        {updatingTopics.map((topic) => <UpdatingSection key={topic.id} topic={topic} />)}
-      </section>
 
       <section className="card compact" id="readiness">
         <h2>Trạng thái trước khi public</h2>
@@ -363,6 +380,33 @@ function App() {
       </section>
     </main>
   );
+}
+
+function App() {
+  const [view, setView] = React.useState<View>({ type: 'home' });
+
+  const openTopic = (topicId: string) => {
+    setView({ type: 'topic', topicId });
+    scrollTop();
+  };
+
+  const openArticle = (articleId: string) => {
+    setView({ type: 'article', articleId });
+    scrollTop();
+  };
+
+  if (view.type === 'topic') {
+    const topic = topics.find((item) => item.id === view.topicId) ?? topics[0];
+    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={() => setView({ type: 'home' })} />;
+    return <TopicPage topic={topic} onBack={() => setView({ type: 'home' })} onOpenArticle={openArticle} />;
+  }
+
+  if (view.type === 'article') {
+    const article = articles.find((item) => item.id === view.articleId) ?? articles[0];
+    return <ArticlePage article={article} onBack={() => setView({ type: 'topic', topicId: 'ai' })} />;
+  }
+
+  return <HomePage onOpenTopic={openTopic} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
