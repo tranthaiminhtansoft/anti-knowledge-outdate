@@ -30,13 +30,15 @@ jobs:
       - name: Build
         run: npm run build
       - name: Setup Pages
+        if: github.event.repository.private == false
         uses: actions/configure-pages@v5
       - name: Upload artifact
+        if: github.event.repository.private == false
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event.repository.private == false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
