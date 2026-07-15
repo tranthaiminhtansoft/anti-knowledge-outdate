@@ -129,11 +129,11 @@ const articles: Article[] = [
     lastVerified: '2026-07-14',
     status: 'draft',
     diagram: `flowchart LR
-AI[AI: lĩnh vực rộng] --> Model[Model: học từ dữ liệu, sinh dự đoán]
-Model --> Assistant[Assistant: UX trò chuyện + hướng dẫn]
-Assistant --> Agent[Agent: mục tiêu + công cụ + vòng lặp kiểm chứng]
-Agent --> Tools[Tools: terminal, browser, GitHub, Sheets]
-Agent --> Memory[Memory/Context: nhớ quy ước, trạng thái]`,
+AI["AI: lĩnh vực rộng"] --> Model["Model: học từ dữ liệu, sinh dự đoán"]
+Model --> Assistant["Assistant: UX trò chuyện + hướng dẫn"]
+Assistant --> Agent["Agent: mục tiêu + công cụ + vòng lặp kiểm chứng"]
+Agent --> Tools["Tools: terminal, browser, GitHub, Sheets"]
+Agent --> Memory["Memory và Context: nhớ quy ước, trạng thái"]`,
     points: [
       'Model không tự “đi làm việc” nếu không có hệ thống bao quanh.',
       'Assistant giúp con người hỏi/đáp dễ hơn nhưng thường vẫn cần người điều khiển nhiều bước.',
@@ -155,14 +155,14 @@ Agent --> Memory[Memory/Context: nhớ quy ước, trạng thái]`,
     lastVerified: '2026-07-14',
     status: 'draft',
     diagram: `flowchart TD
-Input[Câu hỏi của người dùng] --> Tokens[Token hóa + context]
-Tokens --> Network[Mạng neural tính xác suất token tiếp theo]
-Network --> Decode[Decoding: chọn token phù hợp]
-Decode --> Output[Câu trả lời]
-Output --> Check{Có cần kiểm chứng?}
-Check -- Có --> Tools[Tool/test/source/agent loop]
+Input["Câu hỏi của người dùng"] --> Tokens["Token hóa + context"]
+Tokens --> Network["Mạng neural tính xác suất token tiếp theo"]
+Network --> Decode["Decoding: chọn token phù hợp"]
+Decode --> Output["Câu trả lời"]
+Output --> Check{"Có cần kiểm chứng?"}
+Check -- "Có" --> Tools["Tool, source, test, agent loop"]
 Tools --> Input
-Check -- Không --> User[Trả lời người dùng]`,
+Check -- "Không" --> User["Trả lời người dùng"]`,
     points: [
       'Ở mức kỹ thuật, model không có ý thức, mục tiêu cá nhân hay trải nghiệm chủ quan; nó tính toán xác suất dựa trên trọng số đã học và context hiện tại.',
       '“Reasoning model” thường là model được huấn luyện/post-train và vận hành để làm tốt bài nhiều bước hơn; runtime có thể cho nó thêm token, thêm vòng tự kiểm tra hoặc chiến lược giải quyết bài toán.',
@@ -186,11 +186,11 @@ Check -- Không --> User[Trả lời người dùng]`,
     lastVerified: '2026-07-14',
     status: 'draft',
     diagram: `flowchart TD
-Task[Câu hỏi / nhiệm vụ] --> Simple{Cần nhiều bước?}
-Simple -- Không --> Fast[Non-reasoning: nhanh, rẻ hơn, hợp tóm tắt/viết/câu hỏi rõ]
-Simple -- Có --> Reason[Reasoning: chậm hơn, tốn hơn, hợp lập kế hoạch/debug/toán/logic]
-Reason --> Verify[Kiểm chứng bằng tool/test/source]
-Fast --> Human[Người dùng kiểm tra nhanh]`,
+Task["Câu hỏi hoặc nhiệm vụ"] --> Simple{"Cần nhiều bước?"}
+Simple -- "Không" --> Fast["Non-reasoning: nhanh, rẻ hơn, hợp tóm tắt, viết, hỏi đáp rõ"]
+Simple -- "Có" --> Reason["Reasoning: chậm hơn, tốn hơn, hợp lập kế hoạch, debug, logic"]
+Reason --> Verify["Kiểm chứng bằng tool, test, source"]
+Fast --> Human["Người dùng kiểm tra nhanh"]`,
     points: [
       'Reasoning không đồng nghĩa luôn đúng; nó chỉ phù hợp hơn cho bài toán cần phân rã và kiểm tra.',
       'Non-reasoning vẫn rất hữu ích cho viết, tóm tắt, phân loại, giải thích đơn giản.',
@@ -212,13 +212,13 @@ Fast --> Human[Người dùng kiểm tra nhanh]`,
     lastVerified: '2026-07-14',
     status: 'review-needed',
     diagram: `flowchart LR
-User[Minh Tân] --> ChatGPT[ChatGPT: hỏi đáp / phân tích]
-User --> Copilot[GitHub Copilot: hỗ trợ code trong IDE/GitHub]
-User --> Hermes[Hermes: agent runtime]
-Hermes --> Profiles[Profiles: manager/specialist]
-Hermes --> Tools[Tools: terminal, browser, GitHub, Sheets, cron]
-Hermes --> Skills[Skills: quy trình tái dùng]
-Hermes --> Verify[Verify: chạy test/build/đọc output thật]`,
+User["Minh Tân"] --> ChatGPT["ChatGPT: hỏi đáp, phân tích"]
+User --> Copilot["GitHub Copilot: hỗ trợ code trong IDE và GitHub"]
+User --> Hermes["Hermes: agent runtime"]
+Hermes --> Profiles["Profiles: manager và specialist"]
+Hermes --> Tools["Tools: terminal, browser, GitHub, Sheets, cron"]
+Hermes --> Skills["Skills: quy trình tái dùng"]
+Hermes --> Verify["Verify: chạy test, build, đọc output thật"]`,
     points: [
       'Các nền tảng có phần giao nhau: đều có thể chat, viết code, phân tích nội dung.',
       'Copilot thường gần editor/repo hơn; ChatGPT thường là app hội thoại tổng quát.',
@@ -257,6 +257,9 @@ function MermaidDiagram({ chart, id }: { chart: string; id: string }) {
     let cancelled = false;
     mermaid.render(`diagram-${id}`, chart).then(({ svg }) => {
       if (!cancelled && ref.current) ref.current.innerHTML = svg;
+    }).catch((error: unknown) => {
+      console.error('Mermaid render failed', id, error);
+      if (!cancelled && ref.current) ref.current.textContent = 'Sơ đồ đang được chỉnh lại để hiển thị đúng.';
     });
     return () => { cancelled = true; };
   }, [chart, id]);
@@ -308,23 +311,47 @@ function WeatherPipelineFlow() {
         steps={["Đọc câu hỏi", "Trả lời theo context", "Thiếu live data → hỏi địa điểm/cho phép tra cứu"]}
       />
       <div className="flowLane reasoning">
-        <div className="laneHeader"><span className="pulseDot" />Reasoning: pipeline nhiều bước + vòng kiểm chứng</div>
-        <div className="pipeline reasoningPipeline">
-          <div className="flowNode">Nhận dạng thiếu địa điểm</div>
+        <div className="laneHeader"><span className="pulseDot" />Reasoning model: một flow có nhánh đúng/sai</div>
+        <div className="reasoningFlow">
+          <div className="flowNode startNode">Nhận input</div>
           <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode">Hỏi thêm địa điểm</div>
+          <div className="flowNode decisionNode">Đủ địa điểm?</div>
+          <div className="conditionBranch failBranch">
+            <span>Không</span>
+            <div className="flowNode warnNode">Hỏi lại: bạn muốn xem thời tiết ở đâu?</div>
+            <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
+            <small>Quay lại nhận input có địa điểm</small>
+          </div>
+          <div className="conditionBranch passBranch">
+            <span>Có</span>
+            <div className="flowNode">Cần dữ liệu realtime</div>
+          </div>
           <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode">Gọi weather API/web</div>
+          <div className="flowNode decisionNode">Có tool / nguồn live?</div>
+          <div className="conditionBranch failBranch">
+            <span>Không</span>
+            <div className="flowNode warnNode">Xin quyền tra cứu hoặc yêu cầu nguồn dữ liệu</div>
+            <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
+            <small>Quay lại sau khi có nguồn</small>
+          </div>
+          <div className="conditionBranch passBranch">
+            <span>Có</span>
+            <div className="flowNode">Gọi weather API / web</div>
+          </div>
           <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode checkNode">Kiểm tra kết quả</div>
-          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
+          <div className="flowNode decisionNode">Tool trả kết quả?</div>
+          <div className="conditionBranch failBranch">
+            <span>Fail</span>
+            <div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div>
+            <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
+            <small>Quay lại bước gọi tool</small>
+          </div>
+          <div className="conditionBranch passBranch">
+            <span>Đúng</span>
+            <div className="flowNode checkNode">Kiểm tra kết quả</div>
+          </div>
+          <div className="flowEdge finalEdge" aria-hidden="true"><span /><span /><span /></div>
           <div className="flowNode outputNode">Tóm tắt đầu ra</div>
-        </div>
-        <div className="loopBack" aria-label="Vòng lặp khi thiếu dữ kiện hoặc tool lỗi">
-          <div className="loopNode warnNode">Thiếu địa điểm / tool lỗi</div>
-          <div className="loopRail" aria-hidden="true"><span /><span /><span /><span /></div>
-          <div className="loopNode">Quay lại hỏi thêm hoặc thử nguồn khác</div>
-          <div className="loopArrow" aria-hidden="true">↺</div>
         </div>
       </div>
       <div className="flowOutput"><span>Output cuối</span> “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
