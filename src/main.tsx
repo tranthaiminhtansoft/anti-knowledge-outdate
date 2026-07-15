@@ -237,6 +237,20 @@ function scrollTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function viewFromHash(): View {
+  const hash = window.location.hash.replace(/^#\/?/, '');
+  const [kind, id] = hash.split('/');
+  if (kind === 'topic' && id) return { type: 'topic', topicId: id };
+  if (kind === 'article' && id) return { type: 'article', articleId: id };
+  return { type: 'home' };
+}
+
+function hashForView(view: View) {
+  if (view.type === 'topic') return `#/topic/${view.topicId}`;
+  if (view.type === 'article') return `#/article/${view.articleId}`;
+  return '#/';
+}
+
 function MermaidDiagram({ chart, id }: { chart: string; id: string }) {
   const ref = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
@@ -291,6 +305,27 @@ function ModelTypesOverview() {
             <p><strong>Điểm chính:</strong> xử lý có kế hoạch hơn, nhưng vẫn không tự biết thời tiết nếu không có dữ liệu/tool.</p>
           </div>
         </div>
+        <MermaidDiagram
+          id="weather-model-flow"
+          chart={`flowchart TD
+Input[Input: Thời tiết hôm nay thế nào?] --> HasLocation{Có địa điểm chưa?}
+HasLocation -- Không --> AskLocation[Hỏi lại: bạn muốn xem thời tiết ở đâu?]
+HasLocation -- Có --> NeedLive{Cần dữ liệu thời gian thực?}
+NeedLive -- Có --> HasTool{Có weather tool/live web?}
+HasTool -- Không --> NoData[Trả lời: không có dữ liệu live, cần cho phép tra cứu]
+HasTool -- Có --> Fetch[Tra cứu nguồn thời tiết]
+Fetch --> Summarize[Tóm tắt: nhiệt độ, mưa/nắng, lời khuyên]
+NeedLive -- Không --> General[Trả lời kiến thức chung]
+subgraph NonReasoning[Non-reasoning]
+Input --> Direct[Phản hồi nhanh theo context]
+Direct --> AskLocation
+Direct --> NoData
+end
+subgraph Reasoning[Reasoning]
+Input --> Plan[Phân rã: thiếu gì, cần nguồn nào]
+Plan --> HasLocation
+end`}
+        />
       </div>
     </section>
   );
@@ -455,27 +490,40 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
 }
 
 function App() {
-  const [view, setView] = React.useState<View>({ type: 'home' });
+  const [view, setView] = React.useState<View>(() => viewFromHash());
 
-  const openTopic = (topicId: string) => {
-    setView({ type: 'topic', topicId });
-    scrollTop();
+  React.useEffect(() => {
+    const syncFromHash = () => {
+      setView(viewFromHash());
+      scrollTop();
+    };
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  const navigate = (nextView: View) => {
+    const nextHash = hashForView(nextView);
+    if (window.location.hash === nextHash) {
+      setView(nextView);
+      scrollTop();
+      return;
+    }
+    window.location.hash = nextHash;
   };
 
-  const openArticle = (articleId: string) => {
-    setView({ type: 'article', articleId });
-    scrollTop();
-  };
+  const openTopic = (topicId: string) => navigate({ type: 'topic', topicId });
+  const openArticle = (articleId: string) => navigate({ type: 'article', articleId });
+  const openHome = () => navigate({ type: 'home' });
 
   if (view.type === 'topic') {
     const topic = topics.find((item) => item.id === view.topicId) ?? topics[0];
-    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={() => setView({ type: 'home' })} onHome={() => setView({ type: 'home' })} />;
-    return <TopicPage topic={topic} onBack={() => setView({ type: 'home' })} onHome={() => setView({ type: 'home' })} onOpenArticle={openArticle} />;
+    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={openHome} onHome={openHome} />;
+    return <TopicPage topic={topic} onBack={openHome} onHome={openHome} onOpenArticle={openArticle} />;
   }
 
   if (view.type === 'article') {
     const article = articles.find((item) => item.id === view.articleId) ?? articles[0];
-    return <ArticlePage article={article} onBack={() => setView({ type: 'topic', topicId: 'ai' })} onHome={() => setView({ type: 'home' })} />;
+    return <ArticlePage article={article} onBack={() => openTopic('ai')} onHome={openHome} />;
   }
 
   return <HomePage onOpenTopic={openTopic} />;
