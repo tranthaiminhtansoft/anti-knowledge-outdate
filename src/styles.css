@@ -76,6 +76,31 @@ th { color: #8cc7ff; }
 .exampleGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }
 .exampleGrid > div { padding: 16px; border-radius: 18px; border: 1px solid #223958; background: #07101d; }
 .exampleGrid p { color: #c3d0e5; line-height: 1.7; }
+.animatedFlow { margin-top: 18px; padding: 18px; border-radius: 22px; background: radial-gradient(circle at 10% 0%, #38bdf833, transparent 26%), #07101d; border: 1px solid #1d3554; overflow: hidden; }
+.flowInput, .flowOutput { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: #0b1728; border: 1px solid #31517c; }
+.tokenStream { flex: 1; min-width: 180px; height: 18px; position: relative; overflow: hidden; }
+.tokenStream span { position: absolute; width: 10px; height: 10px; border-radius: 999px; background: #67e8f9; top: 4px; left: -20px; box-shadow: 0 0 18px #67e8f9; animation: tokenRun 2.4s linear infinite; }
+.tokenStream span:nth-child(2) { animation-delay: .28s; } .tokenStream span:nth-child(3) { animation-delay: .56s; } .tokenStream span:nth-child(4) { animation-delay: .84s; } .tokenStream span:nth-child(5) { animation-delay: 1.12s; }
+.flowLane { margin-top: 16px; padding: 16px; border-radius: 20px; background: #091426; border: 1px solid #223958; }
+.flowLane.reasoning { border-color: #31517c; background: linear-gradient(180deg, #0b1728, #091426); }
+.laneHeader { display: flex; align-items: center; gap: 10px; font-weight: 900; color: #d9e8ff; margin-bottom: 14px; }
+.pulseDot { width: 10px; height: 10px; border-radius: 999px; background: #67e8f9; box-shadow: 0 0 0 0 #67e8f988; animation: pulse 1.6s ease-out infinite; }
+.pipeline { display: grid; grid-template-columns: repeat(9, minmax(70px, 1fr)); gap: 10px; align-items: center; }
+.flowNode { min-height: 72px; display: grid; place-items: center; text-align: center; padding: 12px; border-radius: 16px; color: #d9e8ff; background: #0f2138; border: 1px solid #31517c; animation: nodeGlow 4s ease-in-out infinite; }
+.flowLane.fast .flowNode { animation-duration: 2.8s; }
+.flowEdge { height: 4px; border-radius: 999px; background: #1f3656; position: relative; overflow: hidden; }
+.flowEdge span { position: absolute; top: -3px; left: -12px; width: 10px; height: 10px; border-radius: 999px; background: #60a5fa; box-shadow: 0 0 16px #60a5fa; animation: dotAcross 1.8s linear infinite; }
+.flowLane.reasoning .flowEdge span { background: #67e8f9; box-shadow: 0 0 16px #67e8f9; }
+.cycleHint { position: relative; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; margin: 14px auto; padding: 12px; max-width: 760px; border-radius: 18px; border: 1px dashed #31517c; color: #c3d0e5; background: #091426aa; }
+.cycleOrb { width: 28px; height: 28px; border-radius: 999px; border: 3px solid #60a5fa; border-top-color: transparent; animation: spin 1.2s linear infinite; }
+.flowOutput { margin-top: 14px; border-color: #22c55e66; background: #062015; color: #d8ffe7; }
+.flowOutput span { font-weight: 900; color: #86efac; }
+@keyframes tokenRun { to { transform: translateX(1100%); } }
+@keyframes dotAcross { to { left: calc(100% + 12px); } }
+@keyframes dotDown { to { top: calc(100% + 12px); } }
+@keyframes pulse { 70% { box-shadow: 0 0 0 12px #67e8f900; } 100% { box-shadow: 0 0 0 0 #67e8f900; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes nodeGlow { 0%, 100% { border-color: #31517c; box-shadow: none; } 45% { border-color: #67e8f9; box-shadow: 0 0 24px #67e8f922; } }
 .articleListItem { width: 100%; padding: 22px; text-align: left; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; transition: transform .18s ease, border-color .18s ease; }
 .articleListItem p { color: #b8c4d9; line-height: 1.6; margin-bottom: 0; }
 .detailArticle h1 { font-size: clamp(2rem, 4vw, 3.6rem); }
@@ -87,6 +112,9 @@ th { color: #8cc7ff; }
 @media (max-width: 1080px) { .topicGrid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 820px) {
   .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .exampleGrid { grid-template-columns: 1fr; }
+  .pipeline { grid-template-columns: 1fr; }
+  .flowEdge { height: 28px; width: 4px; justify-self: center; }
+  .flowEdge span { top: -12px; left: -3px; animation-name: dotDown; }
   .topicGrid { grid-template-columns: 1fr; }
   main, .pageShell { padding-top: 24px; }
 }

@@ -272,6 +272,55 @@ function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHom
   );
 }
 
+function FlowLane({ title, tone, steps }: { title: string; tone: 'fast' | 'reasoning'; steps: string[] }) {
+  return (
+    <div className={`flowLane ${tone}`}>
+      <div className="laneHeader"><span className="pulseDot" />{title}</div>
+      <div className="pipeline">
+        {steps.map((step, index) => (
+          <React.Fragment key={step}>
+            <div className="flowNode" style={{ animationDelay: `${index * 0.55}s` }}>{step}</div>
+            {index < steps.length - 1 && (
+              <div className="flowEdge" aria-hidden="true">
+                <span style={{ animationDelay: `${index * 0.55}s` }} />
+                <span style={{ animationDelay: `${index * 0.55 + 0.22}s` }} />
+                <span style={{ animationDelay: `${index * 0.55 + 0.44}s` }} />
+              </div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WeatherPipelineFlow() {
+  return (
+    <div className="animatedFlow" aria-label="Pipeline xử lý câu hỏi thời tiết">
+      <div className="flowInput">
+        <span className="badge">Input</span>
+        <strong>“Thời tiết hôm nay thế nào?”</strong>
+        <div className="tokenStream" aria-hidden="true"><span /><span /><span /><span /><span /></div>
+      </div>
+      <FlowLane
+        title="Non-reasoning: đi đường ngắn"
+        tone="fast"
+        steps={["Đọc câu hỏi", "Trả lời theo context", "Thiếu live data → hỏi địa điểm/cho phép tra cứu"]}
+      />
+      <FlowLane
+        title="Reasoning: pipeline nhiều bước + vòng kiểm chứng"
+        tone="reasoning"
+        steps={["Nhận dạng thiếu địa điểm", "Xác định cần dữ liệu realtime", "Nếu có tool → gọi weather API/web", "Kiểm tra kết quả", "Tóm tắt đầu ra"]}
+      />
+      <div className="cycleHint">
+        <span className="cycleOrb" />
+        <p><strong>Cycle:</strong> nếu thiếu địa điểm hoặc tool trả lỗi, agent/reasoning loop quay lại bước hỏi thêm dữ kiện hoặc thử nguồn khác, rồi mới ra kết quả cuối.</p>
+      </div>
+      <div className="flowOutput"><span>Output</span> “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
+    </div>
+  );
+}
+
 function ModelTypesOverview() {
   return (
     <section className="card compact">
@@ -305,27 +354,7 @@ function ModelTypesOverview() {
             <p><strong>Điểm chính:</strong> xử lý có kế hoạch hơn, nhưng vẫn không tự biết thời tiết nếu không có dữ liệu/tool.</p>
           </div>
         </div>
-        <MermaidDiagram
-          id="weather-model-flow"
-          chart={`flowchart TD
-Input[Input: Thời tiết hôm nay thế nào?] --> HasLocation{Có địa điểm chưa?}
-HasLocation -- Không --> AskLocation[Hỏi lại: bạn muốn xem thời tiết ở đâu?]
-HasLocation -- Có --> NeedLive{Cần dữ liệu thời gian thực?}
-NeedLive -- Có --> HasTool{Có weather tool/live web?}
-HasTool -- Không --> NoData[Trả lời: không có dữ liệu live, cần cho phép tra cứu]
-HasTool -- Có --> Fetch[Tra cứu nguồn thời tiết]
-Fetch --> Summarize[Tóm tắt: nhiệt độ, mưa/nắng, lời khuyên]
-NeedLive -- Không --> General[Trả lời kiến thức chung]
-subgraph NonReasoning[Non-reasoning]
-Input --> Direct[Phản hồi nhanh theo context]
-Direct --> AskLocation
-Direct --> NoData
-end
-subgraph Reasoning[Reasoning]
-Input --> Plan[Phân rã: thiếu gì, cần nguồn nào]
-Plan --> HasLocation
-end`}
-        />
+        <WeatherPipelineFlow />
       </div>
     </section>
   );
