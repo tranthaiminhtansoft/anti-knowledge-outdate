@@ -276,6 +276,22 @@ function ModelTypesOverview() {
           </div>
         ))}
       </div>
+      <div className="exampleBox">
+        <span className="badge">Ví dụ cùng một input</span>
+        <h3>Input: “Thời tiết hôm nay thế nào?”</h3>
+        <div className="exampleGrid">
+          <div>
+            <h4>Non-reasoning / chat model</h4>
+            <p>Thường trả lời trực tiếp theo thông tin đang có trong context. Nếu không được nối tool thời tiết/live web, câu trả lời đúng nên là: “Mình không có dữ liệu thời tiết thời gian thực; hãy cho mình địa điểm hoặc cho phép tra cứu.”</p>
+            <p><strong>Điểm chính:</strong> nhanh, ít bước, phù hợp nếu chỉ cần phản hồi đơn giản.</p>
+          </div>
+          <div>
+            <h4>Reasoning model</h4>
+            <p>Sẽ nhận ra câu hỏi thiếu địa điểm và cần dữ liệu thời gian thực. Nó có thể tự phân rã: cần biết vị trí → cần nguồn live weather → nếu có tool thì gọi tool → tóm tắt kết quả và cảnh báo độ tin cậy.</p>
+            <p><strong>Điểm chính:</strong> xử lý có kế hoạch hơn, nhưng vẫn không tự biết thời tiết nếu không có dữ liệu/tool.</p>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
