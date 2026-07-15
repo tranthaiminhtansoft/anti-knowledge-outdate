@@ -307,16 +307,27 @@ function WeatherPipelineFlow() {
         tone="fast"
         steps={["Đọc câu hỏi", "Trả lời theo context", "Thiếu live data → hỏi địa điểm/cho phép tra cứu"]}
       />
-      <FlowLane
-        title="Reasoning: pipeline nhiều bước + vòng kiểm chứng"
-        tone="reasoning"
-        steps={["Nhận dạng thiếu địa điểm", "Xác định cần dữ liệu realtime", "Nếu có tool → gọi weather API/web", "Kiểm tra kết quả", "Tóm tắt đầu ra"]}
-      />
-      <div className="cycleHint">
-        <span className="cycleOrb" />
-        <p><strong>Cycle:</strong> nếu thiếu địa điểm hoặc tool trả lỗi, agent/reasoning loop quay lại bước hỏi thêm dữ kiện hoặc thử nguồn khác, rồi mới ra kết quả cuối.</p>
+      <div className="flowLane reasoning">
+        <div className="laneHeader"><span className="pulseDot" />Reasoning: pipeline nhiều bước + vòng kiểm chứng</div>
+        <div className="pipeline reasoningPipeline">
+          <div className="flowNode">Nhận dạng thiếu địa điểm</div>
+          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
+          <div className="flowNode">Hỏi thêm địa điểm</div>
+          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
+          <div className="flowNode">Gọi weather API/web</div>
+          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
+          <div className="flowNode checkNode">Kiểm tra kết quả</div>
+          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
+          <div className="flowNode outputNode">Tóm tắt đầu ra</div>
+        </div>
+        <div className="loopBack" aria-label="Vòng lặp khi thiếu dữ kiện hoặc tool lỗi">
+          <div className="loopNode warnNode">Thiếu địa điểm / tool lỗi</div>
+          <div className="loopRail" aria-hidden="true"><span /><span /><span /><span /></div>
+          <div className="loopNode">Quay lại hỏi thêm hoặc thử nguồn khác</div>
+          <div className="loopArrow" aria-hidden="true">↺</div>
+        </div>
       </div>
-      <div className="flowOutput"><span>Output</span> “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
+      <div className="flowOutput"><span>Output cuối</span> “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
     </div>
   );
 }
