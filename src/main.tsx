@@ -81,9 +81,9 @@ const topics: Topic[] = [
     title: 'AI căn bản',
     description: 'Model, agent, reasoning, Copilot, ChatGPT, Hermes — giải thích bằng tiếng Việt thực dụng.',
     status: 'available',
-    articleCount: 5,
+    articleCount: 4,
     icon: <BrainCircuit />,
-    bullets: ['AI vs model vs agent', 'Model có “suy nghĩ” không?', 'Reasoning vs non-reasoning', 'Hermes vs Copilot vs ChatGPT', 'Master Hermes Agent'],
+    bullets: ['AI vs model vs agent', 'Model có “suy nghĩ” không?', 'Hermes vs Copilot vs ChatGPT', 'Master Hermes Agent'],
   },
   {
     id: 'k8s',
@@ -97,11 +97,11 @@ const topics: Topic[] = [
   {
     id: 'docker',
     title: 'Docker',
-    description: 'Image, container, layer, volume, network, compose và best practices build image.',
-    status: 'updating',
-    articleCount: 0,
+    description: 'Docker từ nền tảng tới thực chiến: image layer, multi-stage build, cache, volume, network và compose.',
+    status: 'available',
+    articleCount: 6,
     icon: <Container />,
-    bullets: ['Image vs container', 'Dockerfile layers', 'Volume/network/compose'],
+    bullets: ['Build trong vs ngoài Docker', 'Multi-stage build', 'Build cache', 'Volume', 'Compose', 'Network'],
   },
   {
     id: 'devops',
@@ -171,32 +171,6 @@ Check -- "Không" --> User["Trả lời người dùng"]`,
       '“Model nói tự tin thì chắc đúng” — sai; model có thể hallucinate nếu thiếu dữ kiện hoặc không kiểm chứng.',
     ],
     nextQuestions: ['Token là gì?', 'Tại sao model hallucinate?', 'Tool use giúp giảm sai như thế nào?'],
-  },
-  {
-    id: 'reasoning-vs-non-reasoning',
-    topic: 'AI',
-    title: 'Reasoning model và non-reasoning model khác nhau ra sao?',
-    question: 'Khi nào cần model reasoning, khi nào dùng model thường?',
-    summary: 'Reasoning model thường dành thêm thời gian/tài nguyên để giải bài toán nhiều bước; non-reasoning model tối ưu phản hồi nhanh cho tác vụ trực tiếp.',
-    lastVerified: '2026-07-14',
-    status: 'draft',
-    diagram: `flowchart TD
-Task["Câu hỏi hoặc nhiệm vụ"] --> Simple{"Cần nhiều bước?"}
-Simple -- "Không" --> Fast["Non-reasoning: nhanh, rẻ hơn, hợp tóm tắt, viết, hỏi đáp rõ"]
-Simple -- "Có" --> Reason["Reasoning: chậm hơn, tốn hơn, hợp lập kế hoạch, debug, logic"]
-Reason --> Verify["Kiểm chứng bằng tool, test, source"]
-Fast --> Human["Người dùng kiểm tra nhanh"]`,
-    points: [
-      'Reasoning không đồng nghĩa luôn đúng; nó chỉ phù hợp hơn cho bài toán cần phân rã và kiểm tra.',
-      'Non-reasoning vẫn rất hữu ích cho viết, tóm tắt, phân loại, giải thích đơn giản.',
-      'Chi phí và độ trễ là trade-off quan trọng khi chọn model.',
-      'Không nên yêu cầu hoặc công khai chain-of-thought nội bộ; nên yêu cầu kết luận, bằng chứng và bước kiểm chứng.',
-    ],
-    misconceptions: [
-      '“Reasoning model luôn tốt hơn” — sai vì có thể chậm/tốn cho tác vụ đơn giản.',
-      '“Không reasoning là không suy nghĩ” — sai; đó chỉ là cách sản phẩm/model được tối ưu.',
-    ],
-    nextQuestions: ['Nhiệm vụ DevOps nào nên dùng reasoning?', 'Làm sao đo chất lượng thay vì nghe quảng cáo model?'],
   },
   {
     id: 'hermes-vs-copilot-chatgpt',
@@ -307,6 +281,182 @@ Adapter --> Use3["Ví dụ: đổi log custom thành Prometheus metrics"]`,
       '“Container trong cùng Pod gọi nhau qua Service” — thường không cần; chúng dùng chung network namespace nên có thể gọi nhau qua localhost.',
     ],
     nextQuestions: ['Sidecar khác init container thế nào?', 'Khi nào nên tách sang Pod riêng?', 'Service mesh proxy có phải sidecar không?'],
+  },
+  {
+    id: 'docker-build-trong-vs-ngoai',
+    topic: 'Docker',
+    title: 'Build trong Docker hay build ngoài rồi copy artifact?',
+    question: 'Nên compile app ngay trong Dockerfile, hay build ở CI/host rồi Docker chỉ copy artifact vào đúng path?',
+    summary: 'Có hai cách đóng gói phổ biến: build trong Docker để môi trường build tái lập và image tự chứa quy trình build; hoặc build ngoài Docker rồi Dockerfile chỉ copy artifact đã kiểm chứng vào runtime image. Không có đáp án tuyệt đối: chọn theo độ phức tạp dependency, tốc độ CI, yêu cầu reproducibility và mức kiểm soát artifact.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart TD
+Source["Source code"] --> Choice{"Build ở đâu?"}
+Choice -- "Trong Docker" --> DockerBuild["Dockerfile builder stage: install deps, compile, test"]
+DockerBuild --> CopyA["COPY artifact sang runtime stage"]
+Choice -- "Ngoài Docker" --> CI["CI hoặc host: install deps, compile, test"]
+CI --> Artifact["Artifact đã build: dist, binary, jar"]
+Artifact --> CopyB["Dockerfile runtime: COPY artifact vào đúng path"]
+CopyA --> Image["Runtime image"]
+CopyB --> Image`,
+    points: [
+      'Build trong Docker: Dockerfile chứa luôn môi trường build, dependency và bước compile. Rất hợp khi muốn build tái lập giữa laptop/CI hoặc dùng multi-stage để stage cuối sạch.',
+      'Lợi điểm build trong Docker: ít lệ thuộc máy host, dễ reproduce, dễ pin toolchain bằng base image, phù hợp app cần native dependency hoặc nhiều bước build phức tạp.',
+      'Khuyết điểm build trong Docker: build context lớn có thể chậm, cache cần thiết kế kỹ, debug build trong container đôi khi khó hơn, CI có thể tốn tài nguyên hơn.',
+      'Build ngoài Docker: CI/host build artifact trước, chạy test trước, sau đó Dockerfile runtime chỉ COPY artifact vào đúng path như /app/dist, /usr/share/nginx/html hoặc /app/app.jar.',
+      'Lợi điểm build ngoài Docker: Dockerfile rất mỏng, image build nhanh, pipeline tách rõ test/build/package, artifact có thể được ký/lưu/reuse trước khi đóng image.',
+      'Khuyết điểm build ngoài Docker: dễ lệ thuộc môi trường CI/host, cần đảm bảo artifact tương thích runtime image, có nguy cơ copy nhầm artifact cũ nếu pipeline không clean.',
+      'Rule thực dụng: app cần reproducible build hoặc native deps phức tạp → ưu tiên build trong Docker multi-stage; frontend/static hoặc Java/Go đã có artifact chuẩn từ CI → có thể build ngoài rồi copy artifact.',
+    ],
+    misconceptions: [
+      '“Dockerfile luôn phải build source từ đầu” — không đúng. Dockerfile có thể chỉ đóng gói artifact đã build sẵn nếu pipeline kiểm soát tốt.',
+      '“Build ngoài Docker luôn nhanh và tốt hơn” — không hẳn; nếu môi trường CI khác runtime hoặc thiếu pin toolchain, lỗi khó tái hiện sẽ tăng.',
+      '“Copy artifact vào image là kém chuyên nghiệp” — sai. Đây là pattern bình thường khi artifact đã được build/test/ký ở bước CI trước đó.',
+      '“Build trong Docker thì không cần CI test riêng” — sai. Vẫn cần test, scan, verify; chỉ khác nơi chạy bước build.',
+    ],
+    nextQuestions: ['Khi nào dùng multi-stage?', 'Artifact path nên đặt ở đâu?', 'BuildKit cache giúp gì cho CI?'],
+  },
+  {
+    id: 'docker-multistage-build',
+    topic: 'Docker',
+    title: 'Docker multi-stage build là gì?',
+    question: 'Làm sao build image nhỏ, sạch, không mang tool build vào production?',
+    summary: 'Multi-stage build tách quá trình build và runtime thành nhiều stage. Stage đầu có compiler/dependency để build artifact; stage cuối chỉ copy thứ cần chạy. Kết quả là image production nhỏ hơn, ít attack surface hơn và dễ cache hơn.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart LR
+Source["Source code"] --> Builder["Builder stage: cài deps, compile, test"]
+Builder --> Artifact["Artifact: dist, binary, jar"]
+Artifact --> Runtime["Runtime stage: image mỏng chỉ để chạy"]
+Runtime --> Image["Production image nhỏ hơn"]`,
+    points: [
+      'Ví dụ Node: stage builder chạy npm install/build; stage runtime chỉ copy dist/package cần chạy.',
+      'Ví dụ Go: builder có Go compiler; runtime có binary tĩnh, thậm chí dùng distroless/scratch khi phù hợp.',
+      'Lợi ích: image nhỏ, ít CVE hơn, không lộ source/build cache/dev dependency vào runtime.',
+      'Pattern quan trọng: đặt lệnh copy lockfile và cài dependency trước copy source để tận dụng cache.',
+      'Không phải cứ multi-stage là an toàn tuyệt đối; vẫn cần pin base image, scan image và chạy non-root nếu có thể.',
+    ],
+    misconceptions: [
+      '“Multi-stage chỉ để giảm size” — thiếu. Nó còn tách trách nhiệm build/runtime và giảm attack surface.',
+      '“Stage trước tự động biến mất hoàn toàn” — artifact chỉ sang stage cuối nếu bạn COPY; nhưng cache build vẫn có thể tồn tại ở builder/cache layer trên máy build.',
+      '“Một Dockerfile nhiều stage là phức tạp hơn nên không cần” — với app production, nó thường sạch và dễ maintain hơn.',
+    ],
+    nextQuestions: ['Docker layer cache hoạt động thế nào?', 'Distroless image là gì?', 'COPY --from dùng ra sao?'],
+  },
+  {
+    id: 'docker-build-cache',
+    topic: 'Docker',
+    title: 'Docker build cache hoạt động thế nào?',
+    question: 'Tại sao đổi một dòng code đôi khi làm Docker build lại rất lâu?',
+    summary: 'Docker build cache dựa trên từng instruction/layer. Nếu layer trước thay đổi thì các layer sau thường phải build lại. Muốn build nhanh phải sắp xếp Dockerfile từ thứ ít đổi đến thứ hay đổi, dùng .dockerignore và tận dụng BuildKit cache mount khi cần.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart TD
+Base["FROM base image"] --> Deps["COPY lockfile + install deps"]
+Deps --> Source["COPY source code"]
+Source --> Build["RUN build"]
+Build --> Cache{"Layer trước có đổi không?"}
+Cache -- "Không" --> Reuse["Reuse cache"]
+Cache -- "Có" --> Rebuild["Build lại layer sau"]`,
+    points: [
+      'Docker cache theo từng instruction. COPY package-lock.json rồi npm install trước COPY src giúp dependency layer không rebuild khi chỉ đổi code.',
+      '.dockerignore rất quan trọng: đừng gửi node_modules, .git, dist, log, secret file vào build context.',
+      'BuildKit hỗ trợ cache mount như --mount=type=cache,target=/root/.npm để tăng tốc tải package mà không nhét cache vào final image.',
+      'Cache tốt không chỉ nhanh hơn; nó còn làm CI ổn định hơn nếu lockfile/base image được kiểm soát.',
+      'Khi cần clean build để debug, dùng --no-cache; nhưng không nên mặc định dùng --no-cache trong CI nếu không có lý do.',
+    ],
+    misconceptions: [
+      '“Docker cache là cache của app runtime” — sai. Đây là cache khi build image, khác với volume/cache runtime.',
+      '“Chỉ cần đổi thứ tự lệnh tùy ý” — sai. Thứ ít đổi nên lên trước, thứ hay đổi nên xuống sau.',
+      '“COPY . . luôn tiện nhất” — tiện nhưng dễ phá cache và đưa file thừa vào image.',
+    ],
+    nextQuestions: ['BuildKit cache mount là gì?', '.dockerignore nên có gì?', 'Layer image là gì?'],
+  },
+  {
+    id: 'docker-volume',
+    topic: 'Docker',
+    title: 'Docker volume dùng để làm gì?',
+    question: 'Data trong container có mất không, volume khác bind mount thế nào?',
+    summary: 'Container nên được xem là tạm thời; volume là nơi lưu dữ liệu bền vững hoặc chia sẻ dữ liệu giữa container. Named volume do Docker quản lý; bind mount trỏ trực tiếp vào thư mục host, tiện cho dev nhưng cần cẩn thận quyền và path.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart LR
+Container["Container: có thể bị xóa và tạo lại"] --> Volume["Named volume: Docker quản lý dữ liệu"]
+Host["Host folder"] --> Bind["Bind mount: map thư mục host"]
+Volume --> Data["Data sống ngoài lifecycle container"]
+Bind --> Dev["Dev workflow: sửa file trên host, container thấy ngay"]`,
+    points: [
+      'Nếu ghi dữ liệu quan trọng vào filesystem bên trong container mà không mount volume, khi xóa container dữ liệu có thể mất.',
+      'Named volume phù hợp cho data service local như database dev, cache, uploaded files trong môi trường học/lab.',
+      'Bind mount phù hợp cho development: mount source code từ host vào container để hot reload.',
+      'Volume không thay thế backup. Database production vẫn cần backup/snapshot/restore plan rõ ràng.',
+      'Cần chú ý quyền file, UID/GID và path khác nhau giữa macOS/Linux/CI.',
+    ],
+    misconceptions: [
+      '“Image lưu luôn data runtime” — sai. Image là template; data runtime nên nằm ở volume/object storage/database phù hợp.',
+      '“Volume là backup” — sai. Volume giúp persist, nhưng không tự tạo backup an toàn.',
+      '“Bind mount và named volume giống nhau hoàn toàn” — không. Bind phụ thuộc path host, named volume do Docker quản lý.',
+    ],
+    nextQuestions: ['Named volume vs bind mount?', 'Docker volume backup thế nào?', 'Vì sao container nên stateless?'],
+  },
+  {
+    id: 'docker-compose',
+    topic: 'Docker',
+    title: 'Docker Compose giải quyết vấn đề gì?',
+    question: 'Khi nào nên dùng compose thay vì gõ docker run dài ngoằng?',
+    summary: 'Docker Compose mô tả nhiều container của một app bằng file YAML: service, image/build, port, env, volume, network, dependency. Nó rất hợp local dev, demo, lab và môi trường nhỏ; production lớn thường chuyển sang orchestrator như Kubernetes/ECS/Nomad tùy nhu cầu.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart TD
+Compose["compose.yaml"] --> Web["service web"]
+Compose --> API["service api"]
+Compose --> DB["service database"]
+Compose --> Network["default network"]
+Compose --> Volumes["named volumes"]
+Web --> API
+API --> DB`,
+    points: [
+      'Compose gom cấu hình docker run thành file: ports, environment, volumes, networks, healthcheck, build context.',
+      'Các service trong cùng Compose project thường tự thấy nhau bằng DNS theo tên service, ví dụ api gọi db:5432.',
+      'Dùng compose up để chạy stack, compose down để dừng/xóa network container; volume chỉ xóa nếu thêm -v.',
+      'depends_on chỉ kiểm soát thứ tự start cơ bản; muốn đợi service sẵn sàng nên dùng healthcheck hoặc retry logic trong app.',
+      'Compose rất tốt cho dev/test/demo, nhưng không nên nhầm nó là Kubernetes đầy đủ.',
+    ],
+    misconceptions: [
+      '“Compose là Kubernetes mini” — không hẳn. Compose đơn giản hơn, ít cơ chế self-healing/scheduling/rollout.',
+      '“depends_on nghĩa là database đã sẵn sàng nhận query” — sai; thường chỉ là container đã start.',
+      '“Compose chỉ chạy được một container” — sai; mục tiêu chính là mô tả nhiều service cùng nhau.',
+    ],
+    nextQuestions: ['depends_on khác healthcheck?', 'Compose network hoạt động thế nào?', 'Khi nào chuyển từ Compose sang Kubernetes?'],
+  },
+  {
+    id: 'docker-network',
+    topic: 'Docker',
+    title: 'Docker network hoạt động thế nào?',
+    question: 'Container gọi nhau bằng gì, port mapping khác container network ra sao?',
+    summary: 'Docker network quyết định container thấy nhau như thế nào. Bridge network mặc định cho container giao tiếp nội bộ; Compose tạo network riêng và DNS theo tên service. Port mapping như -p 8080:80 chỉ mở cổng từ host vào container, không phải cách container nội bộ bắt buộc phải gọi nhau.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart LR
+Host["Host machine"] -- "-p 8080:80" --> Web["container web:80"]
+Web -- "http://api:3000" --> API["container api"]
+API -- "postgres://db:5432" --> DB["container db"]
+Network["Docker bridge/compose network"] --> Web
+Network --> API
+Network --> DB`,
+    points: [
+      'Port mapping là đường từ host vào container, ví dụ localhost:8080 trên máy bạn vào web:80 trong container.',
+      'Container cùng user-defined bridge network có thể gọi nhau bằng container name hoặc service name trong Compose.',
+      'Không cần publish port DB ra host nếu chỉ API container cần gọi DB nội bộ.',
+      'localhost bên trong container là chính container đó, không phải host và không phải container khác.',
+      'Muốn container gọi host trên Docker Desktop thường dùng host.docker.internal; trên Linux cần cấu hình khác tùy setup.',
+    ],
+    misconceptions: [
+      '“Container A gọi localhost là tới container B” — sai. localhost là chính container A.',
+      '“Muốn container nói chuyện với nhau phải expose port ra host” — sai. Cùng network thì gọi port container nội bộ được.',
+      '“Port EXPOSE tự mở cổng ra ngoài” — sai. EXPOSE chủ yếu là metadata; cần -p/ports để publish ra host.',
+    ],
+    nextQuestions: ['Bridge network là gì?', 'EXPOSE khác ports?', 'host.docker.internal dùng khi nào?'],
   },
   {
     id: 'master-hermes-agent',
