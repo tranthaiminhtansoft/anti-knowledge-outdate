@@ -95,9 +95,9 @@ const topics: Topic[] = [
     title: 'Kubernetes',
     description: 'Master Kubernetes từ mental model: control plane, node, pod, service, ingress, rollout và cách debug.',
     status: 'available',
-    articleCount: 1,
+    articleCount: 2,
     icon: <Network />,
-    bullets: ['Master Kubernetes', 'Control plane vs worker node', 'Pod/Deployment/Service/Ingress', 'Ví von như thành phố/cảng container'],
+    bullets: ['Master Kubernetes', 'Control plane vs worker node', 'Pod/Deployment/Service/Ingress', 'Multi-container Pod patterns'],
   },
   {
     id: 'docker',
@@ -277,6 +277,41 @@ Kubelet --> PodB`,
       '“Master K8s là nhớ hết YAML” — sai. Quan trọng là hiểu object nào giải quyết vấn đề gì, luồng traffic đi đâu, và debug từ symptom về đúng layer.',
     ],
     nextQuestions: ['Pod khác Deployment thế nào?', 'Service khác Ingress thế nào?', 'Debug CrashLoopBackOff theo lớp nào?'],
+  },
+  {
+    id: 'multi-container-trong-pod',
+    topic: 'Kubernetes',
+    title: 'Mấy loại multi-container trong một Pod?',
+    question: 'Khi nào một Pod nên có nhiều container, và mỗi pattern dùng để làm gì?',
+    summary: 'Multi-container Pod là khi nhiều container cần sống chung cực gần: cùng network namespace, cùng localhost, cùng volume, cùng lifecycle Pod. Các pattern phổ biến gồm sidecar, ambassador/proxy, adapter, init container và helper/log shipper. Không nên nhét nhiều app độc lập vào một Pod chỉ để “cho tiện”.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart TD
+Pod["Pod: chung IP, localhost, volume, lifecycle"] --> Main["Main container: app chính"]
+Pod --> Sidecar["Sidecar: phụ trợ chạy cạnh app"]
+Pod --> Ambassador["Ambassador: proxy/đại sứ kết nối ra ngoài"]
+Pod --> Adapter["Adapter: chuẩn hóa output/log/metrics"]
+Init["Init container: chạy xong trước khi app start"] --> Pod
+Sidecar --> Use1["Ví dụ: log shipper, service mesh proxy, config watcher"]
+Ambassador --> Use2["Ví dụ: proxy DB/cache/API bên ngoài"]
+Adapter --> Use3["Ví dụ: đổi log custom thành Prometheus metrics"]`,
+    points: [
+      'Rule gốc: một Pod nên đại diện cho một “đơn vị triển khai” chặt chẽ. Nếu hai container có thể scale/deploy/restart độc lập, thường nên tách Pod.',
+      'Sidecar container: container phụ chạy song song với app chính để hỗ trợ chức năng ngang hông như log shipping, service mesh proxy, config reload, TLS proxy.',
+      'Ambassador container: đóng vai “đại sứ/proxy” giúp app nói chuyện với dịch vụ bên ngoài bằng interface đơn giản, ví dụ app gọi localhost còn ambassador forward tới DB/API/cache thật.',
+      'Adapter container: biến đổi output của app chính sang format chuẩn mà hệ thống khác hiểu, ví dụ convert log custom thành metrics Prometheus hoặc chuẩn hóa log format.',
+      'Init container: không chạy song song mãi; nó chạy trước app chính để chuẩn bị môi trường như migrate nhẹ, chờ dependency, render config, tải file cần thiết.',
+      'Helper/log shipper: nhiều tài liệu xem là một dạng sidecar cụ thể; nhiệm vụ là gom file log/volume rồi đẩy ra Fluent Bit/Elasticsearch/Loki/S3.',
+      'Tất cả container trong Pod dùng chung IP và có thể gọi nhau qua localhost; muốn chia sẻ file thì dùng shared volume trong Pod.',
+      'Điểm cần nhớ: multi-container Pod dùng cho coupling chặt, không dùng để gom frontend + backend + database vào chung một Pod trong production.',
+    ],
+    misconceptions: [
+      '“Một Pod nên chứa càng nhiều container càng tiết kiệm” — sai. Nó làm scale, rollout, debug và ownership khó hơn.',
+      '“Sidecar là app chính thứ hai” — sai. Sidecar là phụ trợ cho main container, không nên là workload độc lập cần scale riêng.',
+      '“Init container là sidecar” — không đúng. Init container chạy xong rồi thoát trước khi main container start; sidecar chạy cùng app trong vòng đời Pod.',
+      '“Container trong cùng Pod gọi nhau qua Service” — thường không cần; chúng dùng chung network namespace nên có thể gọi nhau qua localhost.',
+    ],
+    nextQuestions: ['Sidecar khác init container thế nào?', 'Khi nào nên tách sang Pod riêng?', 'Service mesh proxy có phải sidecar không?'],
   },
   {
     id: 'master-hermes-agent',
@@ -641,7 +676,7 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
           </div>
         </div>
         <div className="panel">
-          <div className="metric"><BookOpen/> 5 bài AI + 1 bài Kubernetes</div>
+          <div className="metric"><BookOpen/> 5 bài AI + 2 bài Kubernetes</div>
           <div className="metric"><Layers/> Docker/DevOps đang cập nhật</div>
           <div className="metric"><GitBranch/> GitHub Pages ready khi public</div>
           <div className="metric"><Bot/> Cập nhật qua Issue → PR → Review</div>
