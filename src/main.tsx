@@ -24,7 +24,7 @@ type View = { type: 'home' } | { type: 'topic'; topicId: string } | { type: 'art
 
 type Article = {
   id: string;
-  topic: 'AI';
+  topic: 'AI' | 'Kubernetes' | 'Docker' | 'DevOps';
   title: string;
   question: string;
   summary: string;
@@ -93,11 +93,11 @@ const topics: Topic[] = [
   {
     id: 'k8s',
     title: 'Kubernetes',
-    description: 'Pod, Deployment, Service, Ingress, rollout, autoscaling và cách debug cluster.',
-    status: 'updating',
-    articleCount: 0,
+    description: 'Master Kubernetes từ mental model: control plane, node, pod, service, ingress, rollout và cách debug.',
+    status: 'available',
+    articleCount: 1,
     icon: <Network />,
-    bullets: ['Pod/Deployment/Service', 'Ingress vs Gateway API', 'Rolling update và rollback'],
+    bullets: ['Master Kubernetes', 'Control plane vs worker node', 'Pod/Deployment/Service/Ingress', 'Ví von như thành phố/cảng container'],
   },
   {
     id: 'docker',
@@ -230,6 +230,53 @@ Hermes --> Verify["Verify: chạy test, build, đọc output thật"]`,
       '“Có Hermes thì không cần Copilot” — không đúng; Copilot vẫn rất tiện khi coding trong IDE.',
     ],
     nextQuestions: ['Workflow nào nên chạy bằng Hermes?', 'Khi nào dùng Copilot song song Hermes?', 'Rủi ro khi agent có quyền terminal là gì?'],
+  },
+  {
+    id: 'master-kubernetes',
+    topic: 'Kubernetes',
+    title: 'Làm sao master Kubernetes?',
+    question: 'Cần hiểu mô hình K8s, các thành phần và ví von nó như cái gì?',
+    summary: 'Muốn master Kubernetes thì hãy xem cluster như một thành phố/cảng container tự vận hành: control plane là tòa thị chính điều phối, worker node là khu nhà xưởng, pod là căn hộ/container chạy app, service là số điện thoại ổn định, ingress là cổng vào thành phố, deployment là kế hoạch đảm bảo luôn đủ bản sao app chạy đúng trạng thái mong muốn.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart TD
+User["User gửi request"] --> Ingress["Ingress hoặc Gateway: cổng vào cluster"]
+Ingress --> Service["Service: địa chỉ ổn định cho app"]
+Service --> PodA["Pod A: chạy container app"]
+Service --> PodB["Pod B: bản sao app"]
+Service --> PodC["Pod C: bản sao app"]
+Deploy["Deployment: mong muốn có N bản sao"] --> ReplicaSet["ReplicaSet: giữ đúng số pod"]
+ReplicaSet --> PodA
+ReplicaSet --> PodB
+ReplicaSet --> PodC
+Scheduler["Scheduler: xếp pod lên node"] --> Node1["Worker node 1: máy chạy workload"]
+Scheduler --> Node2["Worker node 2: máy chạy workload"]
+APIServer["API Server: cửa tiếp nhận lệnh"] --> Scheduler
+APIServer --> Controller["Controller Manager: so thực tế với mong muốn"]
+Controller --> Deploy
+Etcd["etcd: sổ hộ khẩu trạng thái cluster"] --> APIServer
+Kubelet["Kubelet: quản gia trên mỗi node"] --> PodA
+Kubelet --> PodB`,
+    points: [
+      'Mental model: Kubernetes không phải “máy chủ thần kỳ”. Nó là hệ điều hành cho cụm máy, chuyên giữ workload chạy đúng trạng thái mong muốn.',
+      'Ví von dễ hiểu: cluster là thành phố/cảng container; control plane là tòa thị chính/trung tâm điều phối; worker node là khu nhà xưởng; pod là căn hộ nhỏ chứa container app.',
+      'API Server là quầy tiếp nhận mọi yêu cầu. kubectl, CI/CD, controller đều nói chuyện với API Server trước, không đi sửa node trực tiếp.',
+      'etcd là sổ cái/sổ hộ khẩu của cluster: lưu trạng thái mong muốn và trạng thái quan trọng. Mất etcd là mất trí nhớ cluster.',
+      'Scheduler giống bộ phận phân nhà/xếp bãi: thấy pod chưa có node thì chọn worker node phù hợp dựa trên tài nguyên, rule, taint/toleration, affinity.',
+      'Controller Manager giống ban kiểm tra: liên tục so “mong muốn” với “thực tế”. Thiếu pod thì tạo thêm, dư thì giảm, pod chết thì kéo lại.',
+      'Kubelet là quản gia trên từng node: nhận nhiệm vụ từ API Server, bảo container runtime chạy pod, rồi báo health/status về cluster.',
+      'Service là số điện thoại cố định cho nhóm pod. Pod có thể chết/sinh IP mới, nhưng Service giữ endpoint ổn định để app khác gọi.',
+      'Ingress/Gateway là cổng vào thành phố: nhận traffic HTTP/HTTPS bên ngoài rồi route vào Service phù hợp.',
+      'Muốn master K8s: học theo luồng request → ingress → service → pod → node, và luồng control → desired state → scheduler/controller/kubelet → actual state.',
+    ],
+    misconceptions: [
+      '“Pod là container” — chưa chính xác. Pod là đơn vị deploy nhỏ nhất, có thể chứa một hoặc nhiều container cùng network/storage namespace.',
+      '“Service chạy app” — sai. Service không chạy app; Service định tuyến tới các pod đang chạy app.',
+      '“Deployment chỉ để deploy lần đầu” — sai. Deployment giữ trạng thái mong muốn lâu dài, hỗ trợ rollout/rollback và tự phục hồi qua ReplicaSet.',
+      '“kubectl sửa trực tiếp container” — sai. kubectl gửi intent tới API Server; control plane và node agent thực hiện phần còn lại.',
+      '“Master K8s là nhớ hết YAML” — sai. Quan trọng là hiểu object nào giải quyết vấn đề gì, luồng traffic đi đâu, và debug từ symptom về đúng layer.',
+    ],
+    nextQuestions: ['Pod khác Deployment thế nào?', 'Service khác Ingress thế nào?', 'Debug CrashLoopBackOff theo lớp nào?'],
   },
   {
     id: 'master-hermes-agent',
@@ -435,7 +482,7 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
   return (
     <button className="articleListItem" onClick={onOpen} type="button">
       <div>
-        <span className="badge">AI · Bài {index + 1}</span>
+        <span className="badge">{article.topic} · Bài {index + 1}</span>
         <h3>{article.title}</h3>
         <p className="question">{article.question}</p>
         <p>{article.summary}</p>
@@ -461,17 +508,18 @@ function UpdatingPage({ topic, onBack, onHome }: { topic: Topic; onBack: () => v
 }
 
 function TopicPage({ topic, onBack, onHome, onOpenArticle }: { topic: Topic; onBack: () => void; onHome: () => void; onOpenArticle: (articleId: string) => void }) {
+  const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
   return (
     <main className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại trang chính" />
       <section className="pageHeader">
         <span className="badge">{topic.title}</span>
-        <h1>Các câu hỏi AI đầu tiên</h1>
+        <h1>{topic.id === 'ai' ? 'Các câu hỏi AI đầu tiên' : `Bài học ${topic.title}`}</h1>
         <p className="lead">Chọn từng bài để mở nội dung chi tiết. Trang này không show toàn bộ bài để tránh bị quá tải khi đọc.</p>
       </section>
-      <ModelTypesOverview />
+      {topic.id === 'ai' && <ModelTypesOverview />}
       <div className="articleList">
-        {articles.map((article, index) => <ArticleListItem article={article} index={index} key={article.id} onOpen={() => onOpenArticle(article.id)} />)}
+        {topicArticles.map((article, index) => <ArticleListItem article={article} index={index} key={article.id} onOpen={() => onOpenArticle(article.id)} />)}
       </div>
     </main>
   );
@@ -480,10 +528,10 @@ function TopicPage({ topic, onBack, onHome, onOpenArticle }: { topic: Topic; onB
 function ArticlePage({ article, onBack, onHome }: { article: Article; onBack: () => void; onHome: () => void }) {
   return (
     <main className="pageShell">
-      <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại danh sách AI" />
+      <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
       <article className="card articleCard detailArticle">
         <div className="cardHeader">
-          <span className="badge">AI</span>
+          <span className="badge">{article.topic}</span>
           <span className={`status ${article.status}`}>{article.status}</span>
         </div>
         <p className="question">Câu hỏi: {article.question}</p>
@@ -543,11 +591,12 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
           <p className="lead">Chọn một mảng bên dưới để mở nội dung. Trang chính chỉ giữ vai trò bản đồ kiến thức, không đổ hết bài viết ra một lần.</p>
           <div className="heroActions">
             <button onClick={() => onOpenTopic('ai')} type="button">Mở AI căn bản</button>
+            <button onClick={() => onOpenTopic('k8s')} type="button">Mở Kubernetes</button>
           </div>
         </div>
         <div className="panel">
-          <div className="metric"><BookOpen/> 4 bài AI đầu tiên</div>
-          <div className="metric"><Layers/> K8s/Docker/DevOps đang cập nhật</div>
+          <div className="metric"><BookOpen/> 5 bài AI + 1 bài Kubernetes</div>
+          <div className="metric"><Layers/> Docker/DevOps đang cập nhật</div>
           <div className="metric"><GitBranch/> GitHub Pages ready khi public</div>
           <div className="metric"><Bot/> Cập nhật qua Issue → PR → Review</div>
         </div>
@@ -563,7 +612,7 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
         <div className="sectionIntro">
           <span className="badge">Knowledge map</span>
           <h2>Chọn mảng kiến thức</h2>
-          <p>AI đang có nội dung đầu tiên. Kubernetes, Docker và DevOps được để sẵn khung “đang cập nhật”.</p>
+          <p>AI và Kubernetes đã có bài đầu tiên. Docker và DevOps được để sẵn khung “đang cập nhật”.</p>
         </div>
         <div className="topicGrid">{topics.map((topic) => <TopicCard key={topic.id} topic={topic} onOpen={() => onOpenTopic(topic.id)} />)}</div>
       </section>
@@ -608,7 +657,8 @@ function App() {
 
   if (view.type === 'article') {
     const article = articles.find((item) => item.id === view.articleId) ?? articles[0];
-    return <ArticlePage article={article} onBack={() => openTopic('ai')} onHome={openHome} />;
+    const parentTopic = topics.find((topic) => topic.title === article.topic || (article.topic === 'AI' && topic.id === 'ai')) ?? topics[0];
+    return <ArticlePage article={article} onBack={() => openTopic(parentTopic.id)} onHome={openHome} />;
   }
 
   return <HomePage onOpenTopic={openTopic} />;
