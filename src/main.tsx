@@ -86,9 +86,9 @@ const topics: Topic[] = [
     title: 'AI căn bản',
     description: 'Model, agent, reasoning, Copilot, ChatGPT, Hermes — giải thích bằng tiếng Việt thực dụng.',
     status: 'available',
-    articleCount: 4,
+    articleCount: 5,
     icon: <BrainCircuit />,
-    bullets: ['AI vs model vs agent', 'Model có “suy nghĩ” không?', 'Reasoning vs non-reasoning', 'Hermes vs Copilot vs ChatGPT'],
+    bullets: ['AI vs model vs agent', 'Model có “suy nghĩ” không?', 'Reasoning vs non-reasoning', 'Hermes vs Copilot vs ChatGPT', 'Master Hermes Agent'],
   },
   {
     id: 'k8s',
@@ -230,6 +230,46 @@ Hermes --> Verify["Verify: chạy test, build, đọc output thật"]`,
       '“Có Hermes thì không cần Copilot” — không đúng; Copilot vẫn rất tiện khi coding trong IDE.',
     ],
     nextQuestions: ['Workflow nào nên chạy bằng Hermes?', 'Khi nào dùng Copilot song song Hermes?', 'Rủi ro khi agent có quyền terminal là gì?'],
+  },
+  {
+    id: 'master-hermes-agent',
+    topic: 'AI',
+    title: 'Làm sao master Hermes Agent?',
+    question: 'Cần hiểu hệ thống Hermes như thế nào, hoạt động ra sao?',
+    summary: 'Muốn master Hermes thì đừng xem nó chỉ là chatbot. Hãy hiểu nó như một agent runtime: model là não dự đoán, system prompt/profile là vai trò, tools là tay chân, memory/skills là kinh nghiệm, session/cron/gateway là cách nó chạy workflow lâu dài và kiểm chứng bằng output thật.',
+    lastVerified: '2026-07-16',
+    status: 'draft',
+    diagram: `flowchart TD
+User["Người dùng đưa mục tiêu"] --> Surface["Surface: Desktop, CLI, TUI, Gateway"]
+Surface --> Profile["Profile: vai trò, quy tắc, memory riêng"]
+Profile --> Prompt["Prompt builder: system prompt + context + skills"]
+Prompt --> Model["Model provider: OpenAI, Anthropic, OpenRouter, local, custom"]
+Model --> Decision{"Cần hành động thật?"}
+Decision -- "Không" --> Answer["Trả lời trực tiếp"]
+Decision -- "Có" --> Tool["Tool call: file, terminal, browser, GitHub, Sheets, MCP"]
+Tool --> Observe["Đọc output thật"]
+Observe --> Loop{"Đạt mục tiêu chưa?"}
+Loop -- "Chưa" --> Model
+Loop -- "Rồi" --> Final["Final: kết luận + bằng chứng verify"]
+Profile --> Memory["Memory: sở thích và facts bền vững"]
+Profile --> Skills["Skills: quy trình tái dùng"]
+Profile --> Automation["Cron, webhook, gateway: tự động hóa"]`,
+    points: [
+      'Mental model đúng: Hermes không phải “một model mới”. Hermes là lớp runtime/orchestrator điều khiển model, tool, memory, skill, profile và automation.',
+      'Luồng cơ bản: người dùng đưa mục tiêu → Hermes dựng context/system prompt → gọi model → nếu cần thì model gọi tool → Hermes đọc output thật → lặp lại cho đến khi đủ bằng chứng → trả lời cuối.',
+      'Profile là “nhân sự” khác nhau: default router, engineering-manager, travel-manager, specialist. Mỗi profile có config, memory, skills và session riêng nên phù hợp để chia vai trò.',
+      'Tools là điểm khác biệt lớn: Hermes có thể đọc/sửa file, chạy terminal, dùng browser, gọi GitHub, Google Sheets, MCP, cron… Vì vậy nó có thể thực thi và verify, không chỉ gợi ý.',
+      'Memory dùng cho facts bền vững về người dùng/môi trường; skills dùng cho quy trình tái dùng. Đừng nhét task tạm thời vào memory; workflow lặp lại thì biến thành skill.',
+      'Gateway/cron/webhook biến Hermes thành hệ thống tự động hóa: nhận việc từ Discord/Telegram/Slack/email, chạy job định kỳ, hoặc phản ứng theo event.',
+      'Cách master thực dụng: bắt đầu bằng một workflow thật, yêu cầu Hermes chạy và verify; sau đó tách phần lặp lại thành skill/profile/cron thay vì prompt thủ công mỗi lần.',
+    ],
+    misconceptions: [
+      '“Hermes giống ChatGPT nhưng có giao diện khác” — thiếu. ChatGPT là app hội thoại; Hermes là runtime để điều phối model + tool + workflow trên máy/dịch vụ của bạn.',
+      '“Có tool là đủ thành agent tốt” — sai. Agent tốt cần scope rõ, quyền vừa đủ, đọc output thật, biết dừng khi có bằng chứng và có guardrail.',
+      '“Memory càng nhiều càng tốt” — sai. Memory nên ngắn và bền; quy trình dài nên lưu thành skill, còn tiến độ task thì để session/git/issue quản lý.',
+      '“Master Hermes là học hết command” — chưa đủ. Quan trọng hơn là biết thiết kế workflow: profile nào làm gì, tool nào được phép, verify ở đâu, và khi nào cần human review.',
+    ],
+    nextQuestions: ['Khi nào nên tạo profile mới?', 'Skill khác memory thế nào?', 'Thiết kế workflow Hermes cho DevOps ra sao?'],
   },
 ];
 
