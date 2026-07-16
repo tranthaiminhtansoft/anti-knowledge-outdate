@@ -2,16 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   ArrowLeft,
-  BookOpen,
-  Bot,
   BrainCircuit,
   Boxes,
   Container,
-  GitBranch,
-  Layers,
   Network,
-  ShieldCheck,
-  Sparkles,
 } from 'lucide-react';
 import mermaid from 'mermaid';
 import './styles.css';
@@ -696,31 +690,7 @@ function ComparisonTable() {
 function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
   return (
     <main>
-      <section className="hero compactHero">
-        <div>
-          <p className="eyebrow"><Sparkles size={16}/> Anti Knowledge Outdate</p>
-          <h1>Kho kiến thức công nghệ bằng tiếng Việt, có sơ đồ và ví dụ dễ hiểu.</h1>
-          <p className="lead">Chọn một mảng bên dưới để mở nội dung. Trang chính chỉ giữ vai trò bản đồ kiến thức, không đổ hết bài viết ra một lần.</p>
-          <div className="heroActions">
-            <button onClick={() => onOpenTopic('ai')} type="button">Mở AI căn bản</button>
-            <button onClick={() => onOpenTopic('k8s')} type="button">Mở Kubernetes</button>
-          </div>
-        </div>
-        <div className="panel">
-          <div className="metric"><BookOpen/> 5 bài AI + 2 bài Kubernetes</div>
-          <div className="metric"><Layers/> Docker/DevOps đang cập nhật</div>
-          <div className="metric"><GitBranch/> GitHub Pages ready khi public</div>
-          <div className="metric"><Bot/> Cập nhật qua Issue → PR → Review</div>
-        </div>
-      </section>
-
-      <section className="principles">
-        <div><BrainCircuit/><h2>Giải thích từ gốc</h2><p>Không chỉ định nghĩa; mỗi bài trả lời câu hỏi “vậy bản chất là gì?”.</p></div>
-        <div><Bot/><h2>Có sơ đồ dễ hiểu</h2><p>Dùng flowchart/mô phỏng để thấy luồng hoạt động thay vì chỉ đọc chữ.</p></div>
-        <div><ShieldCheck/><h2>Có ngày kiểm chứng</h2><p>Kiến thức AI/DevOps đổi nhanh, mỗi bài cần nguồn và thời điểm review.</p></div>
-      </section>
-
-      <section className="topicSection">
+      <section className="topicSection homeTopicSection">
         <div className="sectionIntro">
           <span className="badge">Knowledge map</span>
           <h2>Chọn mảng kiến thức</h2>
