@@ -319,8 +319,10 @@ function WeatherPipelineFlow() {
           <div className="conditionBranch failBranch">
             <span>Không</span>
             <div className="flowNode warnNode">Hỏi lại: bạn muốn xem thời tiết ở đâu?</div>
-            <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
-            <small>Quay lại nhận input có địa điểm</small>
+            <div className="returnToDecision">
+              <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
+              <small>↺ trỏ lại hình thoi “Đủ địa điểm?” sau khi người dùng bổ sung</small>
+            </div>
           </div>
           <div className="conditionBranch passBranch">
             <span>Có</span>
@@ -331,8 +333,10 @@ function WeatherPipelineFlow() {
           <div className="conditionBranch failBranch">
             <span>Không</span>
             <div className="flowNode warnNode">Xin quyền tra cứu hoặc yêu cầu nguồn dữ liệu</div>
-            <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
-            <small>Quay lại sau khi có nguồn</small>
+            <div className="returnToDecision">
+              <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
+              <small>↺ trỏ lại hình thoi “Có tool / nguồn live?” khi đã cấp quyền hoặc chọn nguồn khác</small>
+            </div>
           </div>
           <div className="conditionBranch passBranch">
             <span>Có</span>
@@ -343,8 +347,10 @@ function WeatherPipelineFlow() {
           <div className="conditionBranch failBranch">
             <span>Fail</span>
             <div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div>
-            <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
-            <small>Quay lại bước gọi tool</small>
+            <div className="returnToDecision">
+              <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
+              <small>↺ trỏ lại hình thoi “Tool trả kết quả?” sau khi thử nguồn khác</small>
+            </div>
           </div>
           <div className="conditionBranch passBranch">
             <span>Đúng</span>
