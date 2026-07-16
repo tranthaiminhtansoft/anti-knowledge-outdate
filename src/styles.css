@@ -103,7 +103,7 @@ th { color: #8cc7ff; }
 .branchRow { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .conditionBranch { display: grid; gap: 8px; padding: 10px; border-radius: 16px; border: 1px solid #223958; background: #081525; }
 .conditionBranch > span { width: fit-content; padding: 5px 9px; border-radius: 999px; font-weight: 900; font-size: .82rem; }
-.conditionBranch small { color: #aebdd2; line-height: 1.35; text-align: center; }
+.returnArrow { width: 30px; height: 30px; display: grid; place-items: center; justify-self: center; border-radius: 999px; color: #f59e0b; border: 1px solid #f59e0b88; background: #211604; animation: spin 1.8s linear infinite; }
 .returnToDecision { display: grid; gap: 7px; padding: 8px; border-radius: 14px; border: 1px dashed #f59e0b66; background: #100f08; }
 .passBranch > span { color: #86efac; background: #062015; border: 1px solid #22c55e66; }
 .failBranch > span { color: #fde68a; background: #211604; border: 1px solid #f59e0b66; }

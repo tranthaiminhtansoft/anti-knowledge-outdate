@@ -308,7 +308,7 @@ function WeatherPipelineFlow() {
             <div className="decisionBlock">
               <div className="flowNode decisionNode">Đủ địa điểm?</div>
               <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Hỏi lại địa điểm</div><small>↺ quay lại hình thoi này</small></div>
+                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Hỏi lại địa điểm</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div></div>
                 <div className="conditionBranch passBranch"><span>Yes</span><div className="flowNode">Đi tiếp: cần dữ liệu realtime</div></div>
               </div>
             </div>
@@ -316,7 +316,7 @@ function WeatherPipelineFlow() {
             <div className="decisionBlock">
               <div className="flowNode decisionNode">Có tool / nguồn live?</div>
               <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Xin quyền tra cứu / yêu cầu nguồn</div><small>↺ quay lại hình thoi này</small></div>
+                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Xin quyền tra cứu / yêu cầu nguồn</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div></div>
                 <div className="conditionBranch passBranch"><span>Yes</span><div className="flowNode">Gọi weather API / web</div></div>
               </div>
             </div>
@@ -324,7 +324,7 @@ function WeatherPipelineFlow() {
             <div className="decisionBlock">
               <div className="flowNode decisionNode">Tool trả kết quả?</div>
               <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>Fail</span><div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div><small>↺ quay lại gọi tool rồi kiểm tra lại</small></div>
+                <div className="conditionBranch failBranch"><span>Fail</span><div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div></div>
                 <div className="conditionBranch passBranch"><span>Đúng</span><div className="flowNode checkNode">Kiểm tra độ tin cậy</div></div>
               </div>
             </div>
