@@ -275,92 +275,64 @@ function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHom
   );
 }
 
-function FlowLane({ title, tone, steps }: { title: string; tone: 'fast' | 'reasoning'; steps: string[] }) {
-  return (
-    <div className={`flowLane ${tone}`}>
-      <div className="laneHeader"><span className="pulseDot" />{title}</div>
-      <div className="pipeline">
-        {steps.map((step, index) => (
-          <React.Fragment key={step}>
-            <div className="flowNode" style={{ animationDelay: `${index * 0.55}s` }}>{step}</div>
-            {index < steps.length - 1 && (
-              <div className="flowEdge" aria-hidden="true">
-                <span style={{ animationDelay: `${index * 0.55}s` }} />
-                <span style={{ animationDelay: `${index * 0.55 + 0.22}s` }} />
-                <span style={{ animationDelay: `${index * 0.55 + 0.44}s` }} />
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function WeatherPipelineFlow() {
   return (
     <div className="animatedFlow" aria-label="Pipeline xử lý câu hỏi thời tiết">
-      <div className="flowInput">
+      <div className="flowInput splitInput">
         <span className="badge">Input</span>
         <strong>“Thời tiết hôm nay thế nào?”</strong>
         <div className="tokenStream" aria-hidden="true"><span /><span /><span /><span /><span /></div>
       </div>
-      <FlowLane
-        title="Non-reasoning: đi đường ngắn"
-        tone="fast"
-        steps={["Đọc câu hỏi", "Trả lời theo context", "Thiếu live data → hỏi địa điểm/cho phép tra cứu"]}
-      />
-      <div className="flowLane reasoning">
-        <div className="laneHeader"><span className="pulseDot" />Reasoning model: một flow có nhánh đúng/sai</div>
-        <div className="reasoningFlow">
-          <div className="flowNode startNode">Nhận input</div>
-          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode decisionNode">Đủ địa điểm?</div>
-          <div className="conditionBranch failBranch">
-            <span>Không</span>
-            <div className="flowNode warnNode">Hỏi lại: bạn muốn xem thời tiết ở đâu?</div>
-            <div className="returnToDecision">
-              <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
-              <small>↺ trỏ lại hình thoi “Đủ địa điểm?” sau khi người dùng bổ sung</small>
-            </div>
-          </div>
-          <div className="conditionBranch passBranch">
-            <span>Có</span>
-            <div className="flowNode">Cần dữ liệu realtime</div>
-          </div>
-          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode decisionNode">Có tool / nguồn live?</div>
-          <div className="conditionBranch failBranch">
-            <span>Không</span>
-            <div className="flowNode warnNode">Xin quyền tra cứu hoặc yêu cầu nguồn dữ liệu</div>
-            <div className="returnToDecision">
-              <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
-              <small>↺ trỏ lại hình thoi “Có tool / nguồn live?” khi đã cấp quyền hoặc chọn nguồn khác</small>
-            </div>
-          </div>
-          <div className="conditionBranch passBranch">
-            <span>Có</span>
-            <div className="flowNode">Gọi weather API / web</div>
-          </div>
-          <div className="flowEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode decisionNode">Tool trả kết quả?</div>
-          <div className="conditionBranch failBranch">
-            <span>Fail</span>
-            <div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div>
-            <div className="returnToDecision">
-              <div className="loopRail integratedLoop" aria-hidden="true"><span /><span /><span /><span /></div>
-              <small>↺ trỏ lại hình thoi “Tool trả kết quả?” sau khi thử nguồn khác</small>
-            </div>
-          </div>
-          <div className="conditionBranch passBranch">
-            <span>Đúng</span>
-            <div className="flowNode checkNode">Kiểm tra kết quả</div>
-          </div>
-          <div className="flowEdge finalEdge" aria-hidden="true"><span /><span /><span /></div>
-          <div className="flowNode outputNode">Tóm tắt đầu ra</div>
-        </div>
+      <div className="splitter" aria-hidden="true">
+        <span />
+        <span />
       </div>
-      <div className="flowOutput"><span>Output cuối</span> “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
+      <div className="dualModelFlow">
+        <section className="modelPath basePath">
+          <div className="laneHeader"><span className="pulseDot" />Base / non-reasoning model</div>
+          <div className="verticalPipeline">
+            <div className="flowNode startNode">Nhận input</div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="flowNode">Sinh phản hồi nhanh theo context</div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="flowNode warnNode">Không có live weather → nói thiếu dữ liệu / hỏi địa điểm</div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="flowNode outputNode">Output base: “Mình cần địa điểm hoặc quyền tra cứu thời tiết hiện tại.”</div>
+          </div>
+        </section>
+        <section className="modelPath reasoningPath">
+          <div className="laneHeader"><span className="pulseDot" />Reasoning model</div>
+          <div className="reasoningDecisionFlow">
+            <div className="flowNode startNode">Nhận input</div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="decisionBlock">
+              <div className="flowNode decisionNode">Đủ địa điểm?</div>
+              <div className="branchRow">
+                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Hỏi lại địa điểm</div><small>↺ quay lại hình thoi này</small></div>
+                <div className="conditionBranch passBranch"><span>Yes</span><div className="flowNode">Đi tiếp: cần dữ liệu realtime</div></div>
+              </div>
+            </div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="decisionBlock">
+              <div className="flowNode decisionNode">Có tool / nguồn live?</div>
+              <div className="branchRow">
+                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Xin quyền tra cứu / yêu cầu nguồn</div><small>↺ quay lại hình thoi này</small></div>
+                <div className="conditionBranch passBranch"><span>Yes</span><div className="flowNode">Gọi weather API / web</div></div>
+              </div>
+            </div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="decisionBlock">
+              <div className="flowNode decisionNode">Tool trả kết quả?</div>
+              <div className="branchRow">
+                <div className="conditionBranch failBranch"><span>Fail</span><div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div><small>↺ quay lại gọi tool rồi kiểm tra lại</small></div>
+                <div className="conditionBranch passBranch"><span>Đúng</span><div className="flowNode checkNode">Kiểm tra độ tin cậy</div></div>
+              </div>
+            </div>
+            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+            <div className="flowNode outputNode">Output reasoning: “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
