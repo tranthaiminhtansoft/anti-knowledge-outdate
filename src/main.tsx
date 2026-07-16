@@ -362,6 +362,52 @@ function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHom
   );
 }
 
+function K8sTrafficFlow() {
+  return (
+    <div className="k8sTrafficFlow" aria-label="Mô phỏng traffic vào và ra trong Kubernetes">
+      <div className="trafficLegend">
+        <span className="badge">Traffic simulator</span>
+        <strong>Request đi vào cluster → app xử lý → response đi ra</strong>
+      </div>
+      <div className="internetCloud">Internet / User</div>
+      <div className="trafficLane inbound" aria-hidden="true"><span /><span /><span /><span /></div>
+      <div className="k8sCity">
+        <section className="controlPlaneBox">
+          <span className="zoneLabel">Control Plane = tòa thị chính</span>
+          <div className="controlGrid">
+            <div>API Server<br/><small>quầy tiếp nhận lệnh</small></div>
+            <div>Scheduler<br/><small>xếp pod lên node</small></div>
+            <div>Controller<br/><small>giữ đúng mong muốn</small></div>
+            <div>etcd<br/><small>sổ hộ khẩu cluster</small></div>
+          </div>
+          <div className="controlPulse" aria-hidden="true"><span /><span /><span /></div>
+        </section>
+        <section className="trafficPathBox">
+          <span className="zoneLabel">Data plane = đường traffic thật</span>
+          <div className="trafficStages">
+            <div className="trafficNode entry">Ingress / Gateway<br/><small>cổng vào thành phố</small></div>
+            <div className="trafficRail" aria-hidden="true"><span /><span /><span /></div>
+            <div className="trafficNode service">Service<br/><small>số điện thoại ổn định</small></div>
+            <div className="fanoutRail" aria-hidden="true"><span /><span /><span /></div>
+            <div className="podPool">
+              <div className="nodeBox"><span>Worker Node 1</span><div className="pod activePod">Pod A</div><div className="pod">Pod B</div></div>
+              <div className="nodeBox"><span>Worker Node 2</span><div className="pod">Pod C</div><div className="pod activePod delayed">Pod D</div></div>
+            </div>
+          </div>
+          <div className="responseLane" aria-hidden="true"><span /><span /><span /><span /></div>
+          <div className="trafficNode response">Response trả ngược ra ngoài</div>
+        </section>
+      </div>
+      <div className="k8sAnalogyGrid">
+        <div><strong>Ingress</strong><span>Cổng vào thành phố</span></div>
+        <div><strong>Service</strong><span>Số điện thoại không đổi</span></div>
+        <div><strong>Pod</strong><span>Căn hộ chạy app</span></div>
+        <div><strong>Control Plane</strong><span>Tòa thị chính điều phối</span></div>
+      </div>
+    </div>
+  );
+}
+
 function WeatherPipelineFlow() {
   return (
     <div className="animatedFlow" aria-label="Pipeline xử lý câu hỏi thời tiết">
@@ -537,7 +583,7 @@ function ArticlePage({ article, onBack, onHome }: { article: Article; onBack: ()
         <p className="question">Câu hỏi: {article.question}</p>
         <h1>{article.title}</h1>
         <p className="summary">{article.summary}</p>
-        <MermaidDiagram chart={article.diagram} id={article.id} />
+        {article.id === 'master-kubernetes' ? <K8sTrafficFlow /> : <MermaidDiagram chart={article.diagram} id={article.id} />}
         <div className="grid2">
           <section>
             <h4>Ý chính</h4>
