@@ -17,6 +17,22 @@ body {
 }
 button { font: inherit; color: inherit; }
 main, .pageShell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0; }
+.lessonLayout { width: min(1440px, calc(100% - 28px)); margin: 0 auto; padding: 24px 0 48px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start; }
+.lessonLayout .pageShell { width: 100%; padding: 0; }
+.lessonSidebar { position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow: auto; padding: 16px; border-radius: 26px; border: 1px solid #243a5c; background: linear-gradient(180deg, #101d31ee, #0c1728ee); box-shadow: 0 22px 60px #0008; }
+.sidebarHome { width: 100%; cursor: pointer; text-align: left; padding: 14px; border-radius: 18px; border: 1px solid #31517c; background: #0a1323; color: #e7edf7; font-weight: 950; margin-bottom: 14px; }
+.sidebarTopic { border: 1px solid transparent; border-radius: 20px; padding: 8px; margin-bottom: 10px; }
+.sidebarTopic.active { border-color: #60a5fa; background: #0b1728; box-shadow: 0 0 0 1px #60a5fa33; }
+.sidebarTopicButton { width: 100%; display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; cursor: pointer; text-align: left; padding: 10px; border-radius: 16px; border: 0; background: transparent; color: #d9e8ff; font-weight: 900; }
+.sidebarTopicButton small { grid-column: 2; color: #8cc7ff; font-weight: 800; }
+.sidebarIcon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 12px; color: #67e8f9; border: 1px solid #28466d; background: #081525; }
+.sidebarArticleList { display: grid; gap: 7px; margin: 6px 0 4px 44px; }
+.sidebarArticle { cursor: pointer; text-align: left; padding: 9px 10px; border-radius: 14px; border: 1px solid #223958; background: #081525; color: #aebdd2; line-height: 1.35; }
+.sidebarArticle.current { color: #031225; background: #60a5fa; border-color: #60a5fa; font-weight: 900; transform: scale(1.03); box-shadow: 0 12px 28px #60a5fa22; }
+.sidebarToggle { display: none; cursor: pointer; align-items: center; gap: 8px; width: fit-content; padding: 11px 14px; border-radius: 999px; border: 1px solid #31517c; background: #0b1728; color: #d9e8ff; font-weight: 900; }
+.sidebarBackdrop { display: none; }
+.homeTitle { text-align: center; margin-bottom: 28px; }
+.homeTitle h2 { font-size: clamp(2.6rem, 7vw, 5.8rem); }
 .hero { display: grid; grid-template-columns: 1.3fr .7fr; gap: 28px; align-items: center; min-height: 56vh; }
 .compactHero { min-height: 46vh; }
 .eyebrow { color: #8cc7ff; display: inline-flex; gap: 8px; align-items: center; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
@@ -203,6 +219,12 @@ th { color: #8cc7ff; }
 .checklist { padding-left: 22px; }
 @media (max-width: 1080px) { .topicGrid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 820px) {
+  .lessonLayout { display: block; width: min(100% - 24px, 1180px); padding-top: 18px; }
+  .sidebarToggle { display: inline-flex; margin-bottom: 14px; }
+  .lessonSidebar { position: fixed; z-index: 30; inset: 0 auto 0 0; width: min(86vw, 340px); max-height: none; border-radius: 0 26px 26px 0; transform: translateX(-104%); transition: transform .2s ease; }
+  .lessonLayout.sidebarOpen .lessonSidebar { transform: translateX(0); }
+  .sidebarBackdrop { position: fixed; inset: 0; z-index: 20; background: #0008; }
+  .lessonLayout.sidebarOpen .sidebarBackdrop { display: block; }
   .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .exampleGrid, .dualModelFlow, .branchRow, .splitter, .k8sCity, .trafficStages, .podPool, .k8sAnalogyGrid, .podPatternCards { grid-template-columns: 1fr; }
   .podOrbit { min-height: 760px; }
   .orbitItem { position: static; width: 100%; border-radius: 18px; }

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   ArrowLeft,
+  Menu,
   BrainCircuit,
   Boxes,
   Container,
@@ -598,9 +599,55 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
   );
 }
 
-function UpdatingPage({ topic, onBack, onHome }: { topic: Topic; onBack: () => void; onHome: () => void }) {
+function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void }) {
   return (
-    <main className="pageShell">
+    <aside className="lessonSidebar" aria-label="Danh sách bài học">
+      <button className="sidebarHome" onClick={onHome} type="button">Anti Knowledge Outdate</button>
+      {topics.map((topic) => {
+        const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
+        const isActiveTopic = activeTopicId === topic.id;
+        return (
+          <section className={`sidebarTopic ${isActiveTopic ? 'active' : ''}`} key={topic.id}>
+            <button className="sidebarTopicButton" onClick={() => onOpenTopic(topic.id)} type="button">
+              <span className="sidebarIcon">{topic.icon}</span>
+              <span>{topic.title}</span>
+              <small>{topic.status === 'available' ? `${topic.articleCount} bài` : 'Đang cập nhật'}</small>
+            </button>
+            {topicArticles.length > 0 && (
+              <div className="sidebarArticleList">
+                {topicArticles.map((article) => (
+                  <button className={`sidebarArticle ${activeArticleId === article.id ? 'current' : ''}`} key={article.id} onClick={() => onOpenArticle(article.id)} type="button">
+                    {article.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </aside>
+  );
+}
+
+function LessonShell({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, children }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const closeAndTopic = (topicId: string) => { setSidebarOpen(false); onOpenTopic(topicId); };
+  const closeAndArticle = (articleId: string) => { setSidebarOpen(false); onOpenArticle(articleId); };
+  const closeAndHome = () => { setSidebarOpen(false); onHome(); };
+  return (
+    <main className={`lessonLayout ${sidebarOpen ? 'sidebarOpen' : ''}`}>
+      <button className="sidebarToggle" onClick={() => setSidebarOpen((open) => !open)} type="button"><Menu size={18}/> Bài học</button>
+      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} />
+      <div className="sidebarBackdrop" onClick={() => setSidebarOpen(false)} />
+      <div className="lessonContent">{children}</div>
+    </main>
+  );
+}
+
+function UpdatingPage({ topic, onBack, onHome, onOpenTopic, onOpenArticle }: { topic: Topic; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void }) {
+  return (
+    <LessonShell activeTopicId={topic.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
+      <div className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại" />
       <section className="card emptyPage">
         <div className="placeholderIcon">{topic.icon}</div>
@@ -609,31 +656,36 @@ function UpdatingPage({ topic, onBack, onHome }: { topic: Topic; onBack: () => v
         <p className="lead">Section này đã được giữ chỗ. Khi Tân đưa câu hỏi về {topic.title}, mình sẽ bổ sung bài giải thích, sơ đồ và mô phỏng vào đây.</p>
         <div className="pillRow">{topic.bullets.map((item) => <span key={item}>{item}</span>)}</div>
       </section>
-    </main>
+      </div>
+    </LessonShell>
   );
 }
 
-function TopicPage({ topic, onBack, onHome, onOpenArticle }: { topic: Topic; onBack: () => void; onHome: () => void; onOpenArticle: (articleId: string) => void }) {
+function TopicPage({ topic, onBack, onHome, onOpenTopic, onOpenArticle }: { topic: Topic; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void }) {
   const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
   return (
-    <main className="pageShell">
+    <LessonShell activeTopicId={topic.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
+      <div className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel="Quay lại trang chính" />
       <section className="pageHeader">
         <span className="badge">{topic.title}</span>
         <h1>{topic.id === 'ai' ? 'Các câu hỏi AI đầu tiên' : `Bài học ${topic.title}`}</h1>
         <p className="lead">Chọn từng bài để mở nội dung chi tiết. Trang này không show toàn bộ bài để tránh bị quá tải khi đọc.</p>
       </section>
+      {topic.id === 'ai' && <ComparisonTable />}
       {topic.id === 'ai' && <ModelTypesOverview />}
       <div className="articleList">
         {topicArticles.map((article, index) => <ArticleListItem article={article} index={index} key={article.id} onOpen={() => onOpenArticle(article.id)} />)}
       </div>
-    </main>
+      </div>
+    </LessonShell>
   );
 }
 
-function ArticlePage({ article, onBack, onHome }: { article: Article; onBack: () => void; onHome: () => void }) {
+function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOpenArticle }: { article: Article; parentTopicId: string; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void }) {
   return (
-    <main className="pageShell">
+    <LessonShell activeTopicId={parentTopicId} activeArticleId={article.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
+      <div className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
       <article className="card articleCard detailArticle">
         <div className="cardHeader">
@@ -659,7 +711,8 @@ function ArticlePage({ article, onBack, onHome }: { article: Article; onBack: ()
           <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
         </footer>
       </article>
-    </main>
+      </div>
+    </LessonShell>
   );
 }
 
@@ -691,15 +744,11 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
   return (
     <main>
       <section className="topicSection homeTopicSection">
-        <div className="sectionIntro">
-          <span className="badge">Knowledge map</span>
-          <h2>Chọn mảng kiến thức</h2>
-          <p>AI và Kubernetes đã có bài đầu tiên. Docker và DevOps được để sẵn khung “đang cập nhật”.</p>
+        <div className="sectionIntro homeTitle">
+          <h2>Anti Knowledge Outdate</h2>
         </div>
         <div className="topicGrid">{topics.map((topic) => <TopicCard key={topic.id} topic={topic} onOpen={() => onOpenTopic(topic.id)} />)}</div>
       </section>
-
-      <ComparisonTable />
 
     </main>
   );
@@ -733,14 +782,14 @@ function App() {
 
   if (view.type === 'topic') {
     const topic = topics.find((item) => item.id === view.topicId) ?? topics[0];
-    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={openHome} onHome={openHome} />;
-    return <TopicPage topic={topic} onBack={openHome} onHome={openHome} onOpenArticle={openArticle} />;
+    if (topic.status === 'updating') return <UpdatingPage topic={topic} onBack={openHome} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;
+    return <TopicPage topic={topic} onBack={openHome} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;
   }
 
   if (view.type === 'article') {
     const article = articles.find((item) => item.id === view.articleId) ?? articles[0];
     const parentTopic = topics.find((topic) => topic.title === article.topic || (article.topic === 'AI' && topic.id === 'ai')) ?? topics[0];
-    return <ArticlePage article={article} onBack={() => openTopic(parentTopic.id)} onHome={openHome} />;
+    return <ArticlePage article={article} parentTopicId={parentTopic.id} onBack={() => openTopic(parentTopic.id)} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;
   }
 
   return <HomePage onOpenTopic={openTopic} />;
