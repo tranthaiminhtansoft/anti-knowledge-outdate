@@ -162,6 +162,31 @@ th { color: #8cc7ff; }
 .k8sAnalogyGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
 .k8sAnalogyGrid > div { display: grid; gap: 4px; padding: 12px; border-radius: 16px; border: 1px solid #223958; background: #091426; }
 .k8sAnalogyGrid span { color: #aebdd2; font-size: .9rem; }
+.podCircleViz { margin: 22px 0; padding: 22px; border-radius: 28px; border: 1px solid #7c3aed88; background: radial-gradient(circle at 50% 45%, #7c3aed33, transparent 34%), radial-gradient(circle at 18% 12%, #22c55e22, transparent 24%), #06111f; overflow: hidden; }
+.podCircleHeader { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 18px; color: #dbeafe; }
+.podOrbit { position: relative; min-height: 560px; width: min(760px, 100%); margin: 0 auto; display: grid; place-items: center; }
+.orbitRing { position: absolute; border-radius: 999px; border: 2px dashed #31517c; inset: 52px; animation: spin 28s linear infinite; opacity: .8; }
+.ringTwo { inset: 108px; border-color: #7c3aed88; animation-direction: reverse; animation-duration: 22s; }
+.centerPod { position: absolute; width: 210px; height: 210px; border-radius: 999px; display: grid; place-items: center; align-content: center; gap: 8px; text-align: center; padding: 22px; border: 2px solid #67e8f9; background: radial-gradient(circle, #12335c, #07101d); box-shadow: 0 0 50px #67e8f922; z-index: 2; }
+.centerPod span { font-size: 2rem; font-weight: 950; }
+.centerPod small { color: #b8c4d9; line-height: 1.45; }
+.orbitItem { position: absolute; width: 160px; min-height: 96px; display: grid; place-items: center; align-content: center; gap: 6px; text-align: center; padding: 14px; border-radius: 999px; border: 1px solid #31517c; background: #0b1728; box-shadow: 0 0 20px #0007; animation: nodeGlow 4s ease-in-out infinite; }
+.orbitItem strong { color: #e7edf7; }
+.orbitItem span { color: #aebdd2; font-size: .86rem; line-height: 1.35; }
+.mainContainer { top: 0; left: 50%; transform: translateX(-50%); border-color: #22c55e; }
+.sidecarContainer { top: 24%; right: 0; border-color: #67e8f9; animation-delay: .3s; }
+.ambassadorContainer { bottom: 18%; right: 5%; border-color: #60a5fa; animation-delay: .6s; }
+.adapterContainer { bottom: 0; left: 50%; transform: translateX(-50%); border-color: #f59e0b; animation-delay: .9s; }
+.initContainer { bottom: 18%; left: 5%; border-color: #f472b6; animation-delay: 1.2s; }
+.helperContainer { top: 24%; left: 0; border-color: #a78bfa; animation-delay: 1.5s; }
+.orbitDot { position: absolute; width: 12px; height: 12px; border-radius: 999px; background: #67e8f9; box-shadow: 0 0 18px #67e8f9; transform-origin: 0 0; animation: orbitAround 7s linear infinite; }
+.d1 { left: 50%; top: 50%; animation-delay: 0s; }
+.d2 { left: 50%; top: 50%; animation-delay: -2.2s; background: #22c55e; box-shadow: 0 0 18px #22c55e; }
+.d3 { left: 50%; top: 50%; animation-delay: -4.4s; background: #f59e0b; box-shadow: 0 0 18px #f59e0b; }
+.podPatternCards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+.podPatternCards > div { display: grid; gap: 5px; padding: 14px; border-radius: 18px; border: 1px solid #223958; background: #091426; }
+.podPatternCards span { color: #aebdd2; line-height: 1.45; }
+@keyframes orbitAround { from { transform: rotate(0deg) translateX(238px) rotate(0deg); } to { transform: rotate(360deg) translateX(238px) rotate(-360deg); } }
 @keyframes tokenRun { to { transform: translateX(1100%); } }
 @keyframes dotAcross { to { left: calc(100% + 12px); } }
 @keyframes dotDown { to { top: calc(100% + 12px); } }
@@ -178,7 +203,11 @@ th { color: #8cc7ff; }
 .checklist { padding-left: 22px; }
 @media (max-width: 1080px) { .topicGrid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 820px) {
-  .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .exampleGrid, .dualModelFlow, .branchRow, .splitter, .k8sCity, .trafficStages, .podPool, .k8sAnalogyGrid { grid-template-columns: 1fr; }
+  .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .exampleGrid, .dualModelFlow, .branchRow, .splitter, .k8sCity, .trafficStages, .podPool, .k8sAnalogyGrid, .podPatternCards { grid-template-columns: 1fr; }
+  .podOrbit { min-height: 760px; }
+  .orbitItem { position: static; width: 100%; border-radius: 18px; }
+  .centerPod { position: static; width: 190px; height: 190px; margin: 0 auto 14px; }
+  .orbitRing, .orbitDot { display: none; }
   .pipeline, .loopBack { grid-template-columns: 1fr; }
   .flowEdge { height: 28px; width: 4px; justify-self: center; }
   .flowEdge span, .loopRail span { top: -12px; left: -3px; animation-name: dotDown; }

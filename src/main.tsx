@@ -397,6 +397,37 @@ function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHom
   );
 }
 
+function MultiContainerPodCircle() {
+  return (
+    <div className="podCircleViz" aria-label="Sơ đồ vòng tròn các pattern multi-container trong Pod">
+      <div className="podCircleHeader">
+        <span className="badge">Pod circle</span>
+        <strong>Pod ở giữa, các container pattern xoay quanh</strong>
+      </div>
+      <div className="podOrbit">
+        <div className="orbitRing ringOne" />
+        <div className="orbitRing ringTwo" />
+        <div className="centerPod">
+          <span>Pod</span>
+          <small>chung IP · localhost · volume · lifecycle</small>
+        </div>
+        <div className="orbitItem mainContainer"><strong>Main</strong><span>app chính</span></div>
+        <div className="orbitItem sidecarContainer"><strong>Sidecar</strong><span>log/proxy/config watcher</span></div>
+        <div className="orbitItem ambassadorContainer"><strong>Ambassador</strong><span>proxy ra dịch vụ ngoài</span></div>
+        <div className="orbitItem adapterContainer"><strong>Adapter</strong><span>chuẩn hóa log/metrics</span></div>
+        <div className="orbitItem initContainer"><strong>Init</strong><span>chạy trước rồi thoát</span></div>
+        <div className="orbitItem helperContainer"><strong>Helper</strong><span>log shipper/file helper</span></div>
+        <div className="orbitDot d1" /><div className="orbitDot d2" /><div className="orbitDot d3" />
+      </div>
+      <div className="podPatternCards">
+        <div><strong>Luôn có Main</strong><span>Container chạy business logic chính.</span></div>
+        <div><strong>Chạy song song</strong><span>Sidecar/Ambassador/Adapter/Helper sống cùng Pod.</span></div>
+        <div><strong>Chạy trước</strong><span>Init container chuẩn bị xong rồi mới tới app chính.</span></div>
+      </div>
+    </div>
+  );
+}
+
 function K8sTrafficFlow() {
   return (
     <div className="k8sTrafficFlow" aria-label="Mô phỏng traffic vào và ra trong Kubernetes">
@@ -618,7 +649,7 @@ function ArticlePage({ article, onBack, onHome }: { article: Article; onBack: ()
         <p className="question">Câu hỏi: {article.question}</p>
         <h1>{article.title}</h1>
         <p className="summary">{article.summary}</p>
-        {article.id === 'master-kubernetes' ? <K8sTrafficFlow /> : <MermaidDiagram chart={article.diagram} id={article.id} />}
+        {article.id === 'master-kubernetes' ? <K8sTrafficFlow /> : article.id === 'multi-container-trong-pod' ? <MultiContainerPodCircle /> : <MermaidDiagram chart={article.diagram} id={article.id} />}
         <div className="grid2">
           <section>
             <h4>Ý chính</h4>
