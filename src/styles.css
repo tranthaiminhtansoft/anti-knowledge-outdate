@@ -88,11 +88,34 @@ th { color: #8cc7ff; }
 .modelTypeGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .modelTypeCard { padding: 18px; border-radius: 20px; border: 1px solid #223958; background: #091426; }
 .modelTypeCard p { color: #b8c4d9; line-height: 1.65; }
+.modelMechanics { margin-top: 16px; padding: 20px; border-radius: 22px; border: 1px solid #31517c; background: radial-gradient(circle at 90% 0%, #22c55e22, transparent 28%), #07101d; }
+.mechanicsLead { color: #c3d0e5; line-height: 1.75; max-width: 980px; }
+.inputTrace { margin-top: 14px; padding: 16px; border-radius: 18px; border: 1px solid #60a5fa88; background: #0b1728; display: grid; gap: 8px; }
+.inputTrace strong { font-size: 1.25rem; color: #e7edf7; }
+.inputTrace p { margin: 0; color: #b8c4d9; line-height: 1.65; }
+.traceLabel { width: fit-content; padding: 6px 10px; border-radius: 999px; background: #10233d; color: #8cc7ff; border: 1px solid #31517c; font-weight: 900; }
+.questionLadder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.questionLadder > div { display: grid; gap: 6px; padding: 14px; border-radius: 18px; border: 1px solid #223958; background: #091426; }
+.questionLadder span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 999px; color: #031225; background: #67e8f9; font-weight: 950; }
+.questionLadder small { color: #aebdd2; line-height: 1.45; }
+.mechanicsGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 14px; }
+.mechanicCard { padding: 18px; border-radius: 20px; border: 1px solid #223958; background: #091426; }
+.mechanicCard h4 { margin-top: 0; }
+.reasoningCard { border-color: #22c55e66; background: linear-gradient(180deg, #081525, #07101d); }
+.tokenExample { margin-top: 14px; display: grid; gap: 8px; padding: 14px; border-radius: 18px; border: 1px dashed #60a5fa88; background: #0b1728; color: #c3d0e5; line-height: 1.65; }
+.tokenExample strong { color: #8cc7ff; }
 .exampleBox { margin-top: 16px; padding: 20px; border-radius: 22px; border: 1px solid #31517c; background: linear-gradient(180deg, #0b1728, #091426); }
 .exampleGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }
 .exampleGrid > div { padding: 16px; border-radius: 18px; border: 1px solid #223958; background: #07101d; }
 .exampleGrid p { color: #c3d0e5; line-height: 1.7; }
 .animatedFlow { margin-top: 18px; padding: 18px; border-radius: 22px; background: radial-gradient(circle at 10% 0%, #38bdf833, transparent 26%), #07101d; border: 1px solid #1d3554; overflow: hidden; }
+.inputDecoder, .questionBuilder { margin: 12px 0; padding: 16px; border-radius: 20px; border: 1px solid #31517c; background: #081525; }
+.signalGrid, .derivedQuestionGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.signalGrid > div, .derivedQuestionGrid > div { display: grid; gap: 5px; padding: 12px; border-radius: 16px; border: 1px solid #223958; background: #0b1728; }
+.signalGrid span { width: fit-content; padding: 5px 8px; border-radius: 999px; background: #10233d; color: #67e8f9; font-weight: 900; }
+.signalGrid small, .derivedQuestionGrid span, .questionBuilder p, .sourceHint { color: #aebdd2; line-height: 1.45; }
+.derivedQuestionGrid strong { color: #e7edf7; }
+.sourceHint { width: fit-content; padding: 5px 8px; border-radius: 999px; border: 1px dashed #60a5fa88; background: #0b1728; }
 .flowInput, .flowOutput { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: #0b1728; border: 1px solid #31517c; }
 .tokenStream { flex: 1; min-width: 180px; height: 18px; position: relative; overflow: hidden; }
 .tokenStream span { position: absolute; width: 10px; height: 10px; border-radius: 999px; background: #67e8f9; top: 4px; left: -20px; box-shadow: 0 0 18px #67e8f9; animation: tokenRun 2.4s linear infinite; }
@@ -120,6 +143,7 @@ th { color: #8cc7ff; }
 .conditionBranch { display: grid; gap: 8px; padding: 10px; border-radius: 16px; border: 1px solid #223958; background: #081525; }
 .conditionBranch > span { width: fit-content; padding: 5px 9px; border-radius: 999px; font-weight: 900; font-size: .82rem; }
 .returnArrow { width: 30px; height: 30px; display: grid; place-items: center; justify-self: center; border-radius: 999px; color: #f59e0b; border: 1px solid #f59e0b88; background: #211604; animation: spin 1.8s linear infinite; }
+.loopLabel { justify-self: center; color: #fcd34d; font-weight: 800; }
 .returnToDecision { display: grid; gap: 7px; padding: 8px; border-radius: 14px; border: 1px dashed #f59e0b66; background: #100f08; }
 .passBranch > span { color: #86efac; background: #062015; border: 1px solid #22c55e66; }
 .failBranch > span { color: #fde68a; background: #211604; border: 1px solid #f59e0b66; }
@@ -145,6 +169,36 @@ th { color: #8cc7ff; }
 .checkNode { border-color: #f59e0b88; }
 .flowOutput { margin-top: 14px; border-color: #22c55e66; background: #062015; color: #d8ffe7; }
 .flowOutput span { font-weight: 900; color: #86efac; }
+.hermesArchitecture { margin: 22px 0; padding: 20px; border-radius: 28px; border: 1px solid #22d3ee88; background: radial-gradient(circle at 8% 0%, #22d3ee33, transparent 24%), radial-gradient(circle at 88% 12%, #22c55e22, transparent 28%), #06111f; overflow: hidden; }
+.hermesArchHeader, .hermesEntry, .archOutput { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; color: #dbeafe; }
+.hermesArchHeader { margin-bottom: 18px; }
+.archNode, .surfaceCluster, .hermesCoreBox, .loopPanel { border: 1px solid #31517c; background: #0b1728; color: #e7edf7; border-radius: 20px; padding: 14px; }
+.archNode { display: grid; gap: 6px; text-align: center; font-weight: 850; }
+.archNode small, .surfaceCluster div, .profileExplain span, .statePanel p { color: #aebdd2; font-weight: 700; line-height: 1.45; }
+.surfaceCluster { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 10px; flex: 1; }
+.surfaceCluster .zoneLabel { grid-column: 1 / -1; }
+.surfaceCluster div, .stateGrid div { padding: 10px; border-radius: 14px; border: 1px solid #223958; background: #07101d; text-align: center; }
+.archRail, .miniRail { position: relative; overflow: hidden; border-radius: 999px; background: repeating-linear-gradient(90deg, #31517c 0 14px, transparent 14px 24px); }
+.archRail.horizontal { flex: 1; min-width: 90px; height: 5px; }
+.archRail.vertical { width: 5px; height: 30px; margin: 6px auto; background: repeating-linear-gradient(180deg, #31517c 0 14px, transparent 14px 24px); }
+.archRail span, .miniRail span { position: absolute; top: -3px; left: -12px; width: 11px; height: 11px; border-radius: 999px; background: #67e8f9; box-shadow: 0 0 18px #67e8f9; animation: dotAcross 1.7s linear infinite; }
+.archRail.vertical span { left: -3px; top: -14px; animation-name: dotDown; }
+.archRail span:nth-child(2), .miniRail span:nth-child(2) { animation-delay: .35s; }
+.archRail span:nth-child(3) { animation-delay: .7s; }
+.hermesCoreBox { border-color: #22d3ee88; background: linear-gradient(180deg, #071a2d, #07101d); }
+.coreGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+.profileRouter { border-color: #22c55e88; }
+.promptBuilder { border-color: #60a5fa88; }
+.modelRouter { border-color: #a78bfa88; }
+.toolDispatcher { border-color: #f59e0b88; }
+.profileExplain { display: grid; gap: 8px; margin-top: 14px; padding: 14px; border-radius: 18px; border: 1px dashed #22c55e88; background: #06201555; }
+.profileExplain code { color: #67e8f9; }
+.runtimeLoop { display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; }
+.loopPanel { display: grid; gap: 10px; }
+.miniRail { width: 4px; height: 28px; justify-self: center; background: repeating-linear-gradient(180deg, #31517c 0 12px, transparent 12px 20px); }
+.miniRail span { left: -3px; top: -12px; animation-name: dotDown; }
+.stateGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.archOutput { margin-top: 14px; }
 .k8sTrafficFlow { margin: 22px 0; padding: 20px; border-radius: 26px; border: 1px solid #1d4ed8aa; background: radial-gradient(circle at 12% 0%, #22c55e33, transparent 24%), radial-gradient(circle at 85% 10%, #60a5fa33, transparent 28%), #06111f; overflow: hidden; }
 .trafficLegend { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; color: #dbeafe; }
 .internetCloud, .trafficNode, .nodeBox, .controlGrid > div, .response { border: 1px solid #31517c; background: #0b1728; color: #e7edf7; border-radius: 18px; padding: 14px; text-align: center; font-weight: 850; }
@@ -211,7 +265,8 @@ th { color: #8cc7ff; }
 @keyframes nodeGlow { 0%, 100% { border-color: #31517c; box-shadow: none; } 45% { border-color: #67e8f9; box-shadow: 0 0 24px #67e8f922; } }
 .articleListItem { width: 100%; padding: 22px; text-align: left; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; transition: transform .18s ease, border-color .18s ease; }
 .articleListItem p { color: #b8c4d9; line-height: 1.6; margin-bottom: 0; }
-.detailArticle h1 { font-size: clamp(2rem, 4vw, 3.6rem); }
+.detailArticle h1 { font-size: clamp(2rem, 4vw, 3.6rem); overflow-wrap: anywhere; }
+.detailArticle, .articleCard, .lessonContent, .hermesArchitecture { min-width: 0; }
 .emptyPage { min-height: 58vh; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
 .placeholderIcon { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 22px; background: #0a1323; border: 1px solid #28466d; color: #94a3b8; margin-bottom: 16px; }
 .pillRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
@@ -225,7 +280,7 @@ th { color: #8cc7ff; }
   .lessonLayout.sidebarOpen .lessonSidebar { transform: translateX(0); }
   .sidebarBackdrop { position: fixed; inset: 0; z-index: 20; background: #0008; }
   .lessonLayout.sidebarOpen .sidebarBackdrop { display: block; }
-  .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .exampleGrid, .dualModelFlow, .branchRow, .splitter, .k8sCity, .trafficStages, .podPool, .k8sAnalogyGrid, .podPatternCards { grid-template-columns: 1fr; }
+  .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .questionLadder, .mechanicsGrid, .signalGrid, .derivedQuestionGrid, .exampleGrid, .dualModelFlow, .branchRow, .splitter, .coreGrid, .runtimeLoop, .stateGrid, .k8sCity, .trafficStages, .podPool, .k8sAnalogyGrid, .podPatternCards { grid-template-columns: 1fr; }
   .podOrbit { min-height: 760px; }
   .orbitItem { position: static; width: 100%; border-radius: 18px; }
   .centerPod { position: static; width: 190px; height: 190px; margin: 0 auto 14px; }

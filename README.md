@@ -1,6 +1,11 @@
 # Anti Knowledge Outdate
 
-Kho kiến thức AI bằng tiếng Việt dễ hiểu, có sơ đồ và mô phỏng tương tác để giảm tình trạng “kiến thức bị lỗi thời”.
+Kho kiến thức AI/DevOps bằng tiếng Việt dễ hiểu, có sơ đồ và mô phỏng tương tác để giảm tình trạng “kiến thức bị lỗi thời”.
+
+## Link
+
+- Website: https://tranthaiminhtansoft.github.io/anti-knowledge-outdate/#/
+- Repository: https://github.com/tranthaiminhtansoft/anti-knowledge-outdate
 
 ## Mục tiêu
 
@@ -9,9 +14,9 @@ Kho kiến thức AI bằng tiếng Việt dễ hiểu, có sơ đồ và mô ph
 - Giải thích Hermes khác GitHub Copilot/ChatGPT ở đâu mà không quảng cáo quá đà.
 - Mỗi bài có ngày kiểm chứng, nguồn, hiểu lầm thường gặp và sơ đồ.
 
-## Public readiness
+## Trạng thái
 
-Repo đang được khởi tạo ở chế độ private. Trước khi public cần hoàn tất checklist trong `docs/public-readiness.md`.
+Repo đã public và được deploy qua GitHub Pages. Trước khi cập nhật production, chạy review local + build/lint và chỉ push/deploy sau khi đã xác nhận.
 
 ## Chạy local
 
