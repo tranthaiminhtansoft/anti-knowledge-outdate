@@ -1,0 +1,94 @@
+.modelAgentSimulator {
+  --sim-accent: #43d3a4;
+  margin: 24px 0;
+  padding: 22px;
+  border: 1px solid #355574;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(67,211,164,.11), transparent 26%),
+    radial-gradient(circle at 50% 0%, rgba(122,167,255,.13), transparent 27%),
+    radial-gradient(circle at 92% 0%, rgba(255,191,105,.12), transparent 28%),
+    #07111f;
+  overflow: hidden;
+}
+.simulatorHeader { display: flex; justify-content: space-between; gap: 22px; align-items: flex-start; }
+.simulatorHeader h2 { max-width: 760px; }
+.simulatorHeader p { color: #9fb2c8; line-height: 1.6; max-width: 850px; }
+.simulatorControls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.simulatorControls button, .simulatorControls label, .simulatorControls select {
+  border: 1px solid #365674; background: #10243c; color: #eef6ff; border-radius: 10px;
+  padding: 9px 11px; font-size: 12px; font-weight: 800;
+}
+.simulatorControls button, .simulatorControls select { cursor: pointer; }
+.simulatorControls label { display: flex; align-items: center; gap: 7px; }
+.simulatorControls select { padding: 4px 6px; }
+.simulatorPrompt { margin: 16px 0; display: grid; grid-template-columns: 160px 1fr minmax(220px, 310px); gap: 12px; align-items: center; padding: 14px 16px; border-radius: 17px; border: 1px solid #ffffff24; background: linear-gradient(180deg, #11263ff5, #09182af5); }
+.simulatorPrompt > span { font-size: 1.05rem; font-weight: 900; }
+.simulatorPrompt small { color: #d9ecff; padding: 8px 10px; border-radius: 10px; background: #ffbf6914; border: 1px solid #ffbf6940; line-height: 1.4; }
+.simulatorBoard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; align-items: start; }
+.simulatorLane { --lane: #43d3a4; border: 1px solid #ffffff26; border-radius: 21px; overflow: hidden; background: linear-gradient(180deg, #10243bfa, #081626fa); box-shadow: 0 20px 60px #00000047; }
+.lane-r { --lane: #7aa7ff; }
+.lane-a { --lane: #ffbf69; }
+.simulatorLaneHead { display: flex; align-items: center; gap: 10px; padding: 16px 17px; border-bottom: 1px solid #ffffff1a; background: #ffffff07; }
+.simulatorLaneHead h3 { font-size: 1rem; margin: 0; }
+.laneLamp { width: 11px; height: 11px; flex: 0 0 auto; border-radius: 50%; background: var(--lane); box-shadow: 0 0 18px var(--lane); }
+.laneTag { margin-left: auto; white-space: nowrap; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: #9fb2c8; border: 1px solid #385675; border-radius: 999px; padding: 5px 7px; }
+.laneCapability { margin: 12px 17px 0; padding: 10px 11px; border-radius: 12px; border: 1px solid #ffffff1c; background: #ffffff09; font-size: 11px; line-height: 1.5; color: #9fb2c8; }
+.laneCapability strong { color: #eef6ff; }
+.agentStack { margin: 12px 17px 0; padding: 10px; border-radius: 14px; border: 1px solid #ffbf6938; background: #ffbf690e; }
+.agentStack > strong { color: #ffe0b5; font-size: 11px; }
+.agentStack div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.agentStack span { font-size: 9px; border: 1px solid #ffffff24; border-radius: 999px; padding: 4px 6px; color: #9fb2c8; }
+.simulatorSteps { padding: 13px 17px 16px; display: grid; gap: 11px; }
+.simulatorStep { position: relative; border: 1px solid #ffffff1c; background: #ffffff08; border-radius: 14px; padding: 11px 12px; opacity: .72; transition: opacity .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+.simulatorStep::after { content: ''; position: absolute; left: 23px; bottom: -12px; width: 2px; height: 11px; background: #355574; }
+.simulatorStep:last-child::after { display: none; }
+.simulatorStep.active { opacity: 1; border-color: var(--lane); transform: translateX(5px); box-shadow: 0 10px 28px #0000003d; }
+.simulatorStep.done { opacity: .84; }
+.simulatorStep > div { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.stepNumber { width: 23px; height: 23px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 7px; color: var(--lane); background: #ffffff0e; border: 1px solid #ffffff1a; font-size: 11px; }
+.simulatorStep p { margin: 6px 0 0; color: #9fb2c8; font-size: 11px; line-height: 1.5; }
+.simulatorStep code { display: block; margin-top: 7px; padding: 7px; border-radius: 8px; background: #071522; color: #d9ecff; font-size: 9.5px; overflow-wrap: anywhere; }
+.simulatorStep > small { display: inline-block; margin-top: 7px; padding: 4px 7px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--lane) 45%, transparent); color: #d7e7f7; font-size: 8.5px; text-transform: uppercase; letter-spacing: .06em; }
+.activePacket { position: absolute; top: 10px; right: 10px; width: 11px; height: 11px; border-radius: 999px; background: var(--lane); box-shadow: 0 0 20px var(--lane); animation: simulatorPacket 1.2s ease-in-out infinite alternate; }
+.simulatorOutput { --lane: inherit; position: relative; margin: 0 17px 17px; border: 1px solid #ffffff21; border-radius: 17px; padding: 14px; background: #030e19a8; opacity: .72; transition: .25s ease; }
+.simulatorOutput.active { opacity: 1; border-color: var(--lane); box-shadow: 0 12px 30px #00000038; }
+.simulatorOutput.done { opacity: .88; }
+.simulatorOutput > span:first-of-type { display: block; margin-bottom: 8px; color: var(--lane); font-size: 9px; letter-spacing: .1em; font-weight: 950; }
+.simulatorOutput p { margin: 0; padding: 11px; border: 1px solid #ffffff1c; background: #ffffff0d; border-radius: 14px 14px 14px 4px; font-size: 12px; line-height: 1.55; }
+.simulatorOutput small { display: block; margin-top: 8px; color: #9fb2c8; font-size: 10px; line-height: 1.45; }
+.simulatorComparison { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
+.simulatorComparison p { margin: 0; padding: 12px 13px; border: 1px solid #ffffff21; border-radius: 14px; background: #0d1c30c2; color: #9fb2c8; font-size: 11px; line-height: 1.55; }
+.simulatorComparison strong { color: #eef6ff; }
+.workflowDisclaimer { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; border: 1px dashed #7aa7ff66; background: #0d1c30a8; color: #c8d8ec; font-size: 11px; line-height: 1.55; }
+.simulatorStatus { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.simulatorProgress { margin-top: 13px; display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; color: #9fb2c8; font-size: 10.5px; }
+.simulatorProgress i { grid-column: 1 / -1; height: 7px; border-radius: 999px; overflow: hidden; background: #172b43; }
+.simulatorProgress b { display: block; height: 100%; background: linear-gradient(90deg, #43d3a4, #7aa7ff, #ffbf69); transition: width .25s ease; }
+@keyframes simulatorPacket { from { transform: translateY(0); opacity: .65; } to { transform: translateY(13px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .modelAgentSimulator *, .modelAgentSimulator *::before, .modelAgentSimulator *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+@media (max-width: 1220px) {
+  .simulatorBoard, .simulatorComparison { grid-template-columns: 1fr; }
+  .simulatorPrompt { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .modelAgentSimulator { padding: 14px; }
+  .simulatorHeader { flex-direction: column; }
+  .simulatorControls { justify-content: flex-start; width: 100%; }
+  .simulatorControls button, .simulatorControls label { flex: 1 1 130px; min-width: 0; justify-content: center; }
+  .simulatorLaneHead { flex-wrap: wrap; }
+  .simulatorLaneHead h3 { min-width: 0; overflow-wrap: anywhere; }
+  .laneTag { margin-left: 0; white-space: normal; overflow-wrap: anywhere; }
+  .simulatorStep.active { transform: none; }
+}
+:root[data-theme='light'] .modelAgentSimulator { color: #17243a; border-color: #b7cbe4; background: radial-gradient(circle at 8% 0%, #a7f3d055, transparent 26%), radial-gradient(circle at 50% 0%, #bfdbfe88, transparent 27%), #f8fbff; }
+:root[data-theme='light'] :is(.simulatorPrompt, .simulatorLane, .simulatorStep, .simulatorOutput, .simulatorComparison p, .workflowDisclaimer, .laneCapability, .agentStack) { color: #17243a; border-color: #c5d4e7; background: #ffffff; box-shadow: none; }
+:root[data-theme='light'] :is(.simulatorHeader p, .simulatorStep p, .simulatorOutput small, .simulatorComparison p, .laneCapability, .agentStack span, .simulatorProgress) { color: #40536d; }
+:root[data-theme='light'] :is(.simulatorLaneHead h3, .simulatorStep strong, .simulatorComparison strong) { color: #17243a; }
+:root[data-theme='light'] .simulatorControls :is(button, label, select) { color: #1e3a5f; border-color: #b9cbea; background: #edf4ff; }
+:root[data-theme='light'] .simulatorStep code { color: #d9ecff; background: #0f2034; }
+:root[data-theme='light'] .simulatorOutput p { color: #243b53; background: #f1f5f9; border-color: #d8e2ef; }
+:root[data-theme='light'] .laneTag { color: #334155; border-color: #b9cbea; }
+
