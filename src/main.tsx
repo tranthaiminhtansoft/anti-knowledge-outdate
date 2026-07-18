@@ -3,12 +3,18 @@ import ReactDOM from 'react-dom/client';
 import {
   ArrowLeft,
   Menu,
+  X,
+  Sun,
+  Moon,
   BrainCircuit,
   Boxes,
   Container,
   Network,
 } from 'lucide-react';
 import mermaid from 'mermaid';
+import { AIApplicationDiagram, AgentArchitectureDiagram, LessonQA } from './components/AIFundamentalsDiagrams';
+import { DockerCoreDiagram, DockerLessonDetails } from './components/DockerLearning';
+import { ModelAgentSimulator } from './components/ModelAgentSimulator';
 import './styles.css';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
@@ -21,6 +27,7 @@ type Article = {
   id: string;
   topic: 'AI' | 'Kubernetes' | 'Docker' | 'DevOps';
   title: string;
+  navLabel?: string;
   question: string;
   summary: string;
   lastVerified: string;
@@ -75,15 +82,54 @@ const modelTypes: ModelType[] = [
   },
 ];
 
+const lessonQAs: Record<string, { question: string; answer: string }[]> = {
+  'ai-model-assistant-agent': [
+    {
+      question: 'AI application có bắt buộc phải có đủ mọi thành phần không?',
+      answer: 'Không. Thành phần phụ thuộc mục tiêu. Image classifier có thể chỉ cần model runtime + vision model; assistant nhiều bước mới cần application runtime, tools, permissions, context và bước kiểm tra.',
+    },
+    {
+      question: 'Để AI có khả năng học được thì cần gì?',
+      answer: 'Cần model được train hoặc fine-tune từ dữ liệu. Runtime và logic chính điều phối hệ thống nhưng không tự mang những pattern đã học trong trọng số model.',
+    },
+  ],
+  'model-co-thuc-su-suy-nghi-khong': [
+    {
+      question: 'Model có thực sự tự suy nghĩ?',
+      answer: 'Không theo nghĩa ý thức như con người. Model tính output từ trọng số đã học và context hiện tại. “Reasoning” mô tả khả năng xử lý bài nhiều bước và tự kiểm tra tốt hơn, không chứng minh model có trải nghiệm chủ quan.',
+    },
+    {
+      question: 'Tại sao lại cần model?',
+      answer: 'Model chứa khả năng đã học từ dữ liệu. Nếu chỉ có runtime và code thông thường, hệ thống chỉ làm được rule do lập trình viên viết sẵn; nó không tự phân loại ảnh, sinh ngôn ngữ hoặc nhận ra pattern phức tạp từ dữ liệu.',
+    },
+  ],
+  agent: [
+    {
+      question: 'Agent khác AI application thế nào?',
+      answer: 'Agent là một loại AI application có control loop và quyền tự điều phối nhiều bước. AI application thông thường có thể chỉ chạy một inference rồi trả output; agent có thể chọn tool, thực thi, quan sát kết quả, cập nhật state và lặp đến khi đạt mục tiêu.',
+    },
+  ],
+  'hermes-vs-copilot-chatgpt': [
+    {
+      question: 'Hermes Agent có phải là một model không?',
+      answer: 'Không. Hermes là agent runtime dùng model/provider phía sau, sau đó kết hợp profile, tools, memory, skills, sessions và automation để thực thi workflow.',
+    },
+    {
+      question: 'Profile khác một system prompt thế nào?',
+      answer: 'System prompt chỉ là một phần. Profile là gói cấu hình/data home tách riêng, có thể gồm config, SOUL.md, sessions, memory, skills và plugins; Hermes runtime nạp profile khi bắt đầu một phiên.',
+    },
+  ],
+};
+
 const topics: Topic[] = [
   {
     id: 'ai',
     title: 'AI căn bản',
-    description: 'Model, agent, reasoning, Copilot, ChatGPT, Hermes — giải thích bằng tiếng Việt thực dụng.',
+    description: 'Bốn lớp nền tảng: AI application, Model, Agent và Hermes Agent — từ khái niệm đến runtime thực thi.',
     status: 'available',
     articleCount: 4,
     icon: <BrainCircuit />,
-    bullets: ['AI vs model vs agent', 'Model có “suy nghĩ” không?', 'Hermes vs Copilot vs ChatGPT', 'Master Hermes Agent'],
+    bullets: ['AI', 'Model', 'Agent', 'Hermes Agent'],
   },
   {
     id: 'k8s',
@@ -97,11 +143,11 @@ const topics: Topic[] = [
   {
     id: 'docker',
     title: 'Docker',
-    description: 'Docker từ nền tảng tới thực chiến: image layer, multi-stage build, cache, volume, network và compose.',
+    description: 'Docker từ core runtime tới build, cache, dữ liệu, Compose và container networking.',
     status: 'available',
     articleCount: 6,
     icon: <Container />,
-    bullets: ['Build trong vs ngoài Docker', 'Multi-stage build', 'Build cache', 'Volume', 'Compose', 'Network'],
+    bullets: ['Core', 'Multi-stages', 'Build Cache', 'Volume', 'Docker Compose', 'Network'],
   },
   {
     id: 'devops',
@@ -118,64 +164,81 @@ const articles: Article[] = [
   {
     id: 'ai-model-assistant-agent',
     topic: 'AI',
-    title: 'AI, model, assistant, agent khác nhau như thế nào?',
-    question: 'Một “AI app” thật ra gồm những lớp nào?',
-    summary: 'AI là khái niệm rộng; model là “động cơ dự đoán”; assistant là giao diện trò chuyện; agent là hệ thống biết lập bước, dùng công cụ và kiểm tra kết quả.',
-    lastVerified: '2026-07-14',
-    status: 'draft',
-    diagram: `flowchart LR
-AI["AI: lĩnh vực rộng"] --> Model["Model: học từ dữ liệu, sinh dự đoán"]
-Model --> Assistant["Assistant: UX trò chuyện + hướng dẫn"]
-Assistant --> Agent["Agent: mục tiêu + công cụ + vòng lặp kiểm chứng"]
-Agent --> Tools["Tools: terminal, browser, GitHub, Sheets"]
-Agent --> Memory["Memory và Context: nhớ quy ước, trạng thái"]`,
+    title: 'AI application là gì?',
+    navLabel: 'AI',
+    question: 'Một AI application hoàn chỉnh gồm những thành phần nào?',
+    summary: 'AI application là phần mềm sử dụng một hoặc nhiều model, kết hợp với runtime, dữ liệu, tools và logic ứng dụng để cung cấp một chức năng thông minh hoàn chỉnh. Model là phần giúp hệ thống có khả năng đã học từ dữ liệu; các lớp còn lại biến khả năng đó thành một sản phẩm có input, output, quyền và mục tiêu rõ ràng.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Custom static AI application architecture`,
     points: [
-      'Model không tự “đi làm việc” nếu không có hệ thống bao quanh.',
-      'Assistant giúp con người hỏi/đáp dễ hơn nhưng thường vẫn cần người điều khiển nhiều bước.',
-      'Agent nhận mục tiêu, chia bước, gọi tool, đọc kết quả thật và sửa hướng đi.',
-      'Khác biệt lớn nhất không phải “thông minh hơn”, mà là mức độ tự động hóa và khả năng xác minh.',
+      'AI application/system có thể gồm model, model runtime, application runtime, data/context, tools hoặc external APIs, logic chính, security/permissions và user interface.',
+      'Không phải hệ thống nào cũng cần đủ tám thành phần. Image classifier đơn giản có thể chỉ cần Image → Model runtime → Vision model → Label.',
+      'Một AI assistant thường cần nhiều lớp hơn: Người dùng → Application runtime → Reasoning model → Tools/APIs → kiểm tra kết quả → Final answer.',
+      'Model chứa khả năng đã học từ dữ liệu. Runtime chỉ nạp/chạy model và điều phối request; runtime không thay thế kiến thức đã được học trong model.',
+      'Business logic và security quyết định AI được phép làm gì, khi nào phải hỏi người dùng và output nào được chấp nhận.',
     ],
     misconceptions: [
-      '“Cứ có LLM là agent” — sai; agent cần vòng lặp hành động và quan sát.',
-      '“Agent luôn đúng hơn” — sai; agent có thể sai nhanh hơn nếu tool/quyền/context sai.',
+      '“AI application chính là model” — sai. Model chỉ là một thành phần của sản phẩm AI hoàn chỉnh.',
+      '“AI nào cũng cần agent, tools và memory” — sai. Bài toán inference đơn giản có thể chỉ cần model runtime và model.',
+      '“Có model là tự có UI, API và quyền truy cập dữ liệu” — sai. Những phần đó thuộc application/runtime bao quanh model.',
     ],
-    nextQuestions: ['Khi nào chỉ cần ChatGPT?', 'Khi nào cần agent có quyền chạy tool?', 'Agent nên bị giới hạn quyền ra sao?'],
+    nextQuestions: ['Model runtime khác application runtime thế nào?', 'Khi nào một AI app cần tools?', 'Business logic nên kiểm tra output ra sao?'],
   },
   {
     id: 'model-co-thuc-su-suy-nghi-khong',
     topic: 'AI',
-    title: 'Model có thực sự tự suy nghĩ không?',
-    question: '“Suy nghĩ” của model là mode, là tính năng, hay là thứ gì khác?',
-    summary: 'Model không suy nghĩ như con người. Nó nhận input, biến thành token/vector, rồi dự đoán token tiếp theo theo xác suất. Cái ta gọi là “reasoning/suy luận” là hành vi nổi lên từ dữ liệu huấn luyện, kiến trúc, fine-tuning, prompt, tool và cách runtime cấp thêm bước/tài nguyên để giải bài toán.',
-    lastVerified: '2026-07-14',
-    status: 'draft',
-    diagram: `flowchart TD
-Input["Câu hỏi của người dùng"] --> Tokens["Token hóa + context"]
-Tokens --> Network["Mạng neural tính xác suất token tiếp theo"]
-Network --> Decode["Decoding: chọn token phù hợp"]
-Decode --> Output["Câu trả lời"]
-Output --> Check{"Có cần kiểm chứng?"}
-Check -- "Có" --> Tools["Tool, source, test, agent loop"]
-Tools --> Input
-Check -- "Không" --> User["Trả lời người dùng"]`,
+    title: 'Model là gì và có mấy loại?',
+    navLabel: 'Model',
+    question: 'Tại sao AI cần model, và model có thực sự tự suy nghĩ không?',
+    summary: 'Model là phần đã học pattern từ dữ liệu để biến input thành prediction/output. Có nhiều cách phân loại theo nhiệm vụ và hành vi: classification, regression, generative/LLM, embedding, vision, multimodal, reasoning và non-reasoning. Một model có thể thuộc nhiều nhóm cùng lúc; tên nhóm chỉ giúp chọn đúng công cụ, không phải ranh giới tuyệt đối.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Interactive ModelAgentSimulator component`,
     points: [
-      'Ở mức kỹ thuật, model không có ý thức, mục tiêu cá nhân hay trải nghiệm chủ quan; nó tính toán xác suất dựa trên trọng số đã học và context hiện tại.',
-      '“Reasoning model” thường là model được huấn luyện/post-train và vận hành để làm tốt bài nhiều bước hơn; runtime có thể cho nó thêm token, thêm vòng tự kiểm tra hoặc chiến lược giải quyết bài toán.',
-      'Vì vậy “suy nghĩ” không chỉ là một nút bật/tắt. Nó là tổ hợp của model architecture, dữ liệu, fine-tuning/RL, prompt, decoding, tool use và agent loop.',
-      'Khi thấy model giải từng bước, đó là dấu hiệu của quá trình suy luận được mô phỏng bằng ngôn ngữ; không nên hiểu là model có nhận thức giống người.',
-      'Cách dùng an toàn: đừng hỏi “nó có nghĩ thật không?”, hãy hỏi “kết luận có đúng không, có nguồn/test/tool nào kiểm chứng không?”.',
+      'Model học các tham số/trọng số từ dữ liệu huấn luyện. Inference dùng những trọng số đó và input hiện tại để tạo prediction, vector, label hoặc token tiếp theo.',
+      'Theo output có classification model, regression model, generative model/LLM và embedding model. Theo modality có text, vision, audio và multimodal model.',
+      'Reasoning/non-reasoning mô tả cách model được huấn luyện và vận hành cho bài nhiều bước; không có nghĩa một bên có ý thức còn bên kia không suy nghĩ.',
+      'Model chạy một mình chỉ thấy context và tool schemas được cung cấp. Nó không tự có Internet, quyền file hay API nếu application/agent runtime không cấp.',
+      'AI cần model vì runtime và logic chính không tự mang khả năng đã học. Không có model, hệ thống chỉ còn code/rule do con người viết sẵn.',
     ],
     misconceptions: [
-      '“Model biết mình đang làm gì như con người” — không nên kết luận vậy; hiện tại nó chủ yếu tối ưu sinh câu trả lời phù hợp.',
-      '“Reasoning mode là linh hồn mới của model” — sai; đó là cách huấn luyện/vận hành để cải thiện bài toán nhiều bước.',
-      '“Model nói tự tin thì chắc đúng” — sai; model có thể hallucinate nếu thiếu dữ kiện hoặc không kiểm chứng.',
+      '“Model biết mình đang làm gì như con người” — không nên kết luận vậy; model tính toán output dựa trên trọng số và context.',
+      '“Reasoning model tự có Internet và tool” — sai. Tool access đến từ runtime và permission bên ngoài model.',
+      '“Mỗi model chỉ thuộc đúng một loại” — sai. Một multimodal LLM có thể vừa generative, reasoning và tool-capable.',
+      '“Model càng lớn thì luôn phù hợp hơn” — sai. Latency, chi phí, dữ liệu, task và khả năng kiểm chứng đều quan trọng.',
     ],
-    nextQuestions: ['Token là gì?', 'Tại sao model hallucinate?', 'Tool use giúp giảm sai như thế nào?'],
+    nextQuestions: ['Model được train như thế nào?', 'Embedding khác generation ra sao?', 'Reasoning model có thêm gì ở runtime?'],
+  },
+  {
+    id: 'agent',
+    topic: 'AI',
+    title: 'AI Agent là gì?',
+    navLabel: 'Agent',
+    question: 'Agent khác một AI application thông thường như thế nào?',
+    summary: 'Agent là một kiểu AI system có khả năng tự điều phối nhiều bước để hoàn thành mục tiêu. Model chọn bước tiếp theo; runtime thực thi hành động; tools mở quyền ra thế giới bên ngoài; state/memory giữ tiến độ; control loop đưa kết quả quay lại cho model cho đến khi đạt điều kiện dừng.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Custom static agent architecture`,
+    points: [
+      'Agent vẫn là một AI application, nhưng có thêm quyền tự chọn và điều phối nhiều bước thay vì chỉ xử lý một request rồi trả một output.',
+      'Model quyết định nên làm gì tiếp theo dựa trên goal, context, tool schemas và observations hiện có.',
+      'Runtime mới là phần thực thi hành động thật: gọi API, đọc file, chạy code, gửi email hoặc mở browser theo permission.',
+      'State/memory lưu tiến độ và kết quả trung gian để bước sau biết điều gì đã làm; không phải mọi state đều nên trở thành memory lâu dài.',
+      'Control loop lặp suy luận → hành động → quan sát → kiểm tra mục tiêu; cần max turns, timeout, approval và điều kiện dừng để tránh chạy vô hạn.',
+    ],
+    misconceptions: [
+      '“Agent là một loại model” — sai. Agent là system bao quanh model bằng runtime, tools, state và control loop.',
+      '“AI application nào cũng là agent” — sai. Image classifier hoặc chatbot một lượt vẫn là AI application nhưng không tự điều phối nhiều bước.',
+      '“Agent tự động thì không cần human review” — sai. Hành động có side effect cần permission, audit và approval phù hợp.',
+    ],
+    nextQuestions: ['Agent loop dừng khi nào?', 'State khác memory thế nào?', 'Tool permission nên giới hạn ra sao?'],
   },
   {
     id: 'hermes-vs-copilot-chatgpt',
     topic: 'AI',
-    title: 'Hermes khác GitHub Copilot và ChatGPT ở đâu?',
+    title: 'Hermes Agent hoạt động như thế nào?',
+    navLabel: 'Hermes Agent',
     question: 'Hermes là model, chatbot, hay agent runtime? Profile trong Hermes là gì?',
     summary: 'Hermes không phải một model riêng. Hermes là agent runtime: nhận yêu cầu từ CLI/Desktop/Gateway, nạp profile/cấu hình phù hợp, gọi model/provider, dùng tool thật, ghi nhớ memory/skills/session và kiểm chứng bằng output thật. ChatGPT/Copilot chủ yếu là sản phẩm trợ lý; Hermes là runtime mở, đa provider, có tool loop, state và profile isolation. Profile là một “nhân cách + cấu hình + kho nhớ + skill/tool riêng” để tách manager, developer, reviewer hoặc travel agent thành các agent độc lập.',
     lastVerified: '2026-07-17',
@@ -186,9 +249,9 @@ Check -- "Không" --> User["Trả lời người dùng"]`,
       'Khác với ChatGPT/Copilot thường đóng gói thành một sản phẩm trợ lý, Hermes cho bạn cấu hình runtime mở: chọn provider/model, bật tool loop, gắn memory/skills/cron và tách profile theo vai trò.',
       'Sau đó Hermes gọi provider/model được cấu hình: OpenRouter, Anthropic, OpenAI, Gemini, Copilot OAuth, local model server hoặc provider custom.',
       'Tool layer là “tay chân”: terminal, browser, file, GitHub, Google Sheets, cron, MCP, image, TTS... Model đề xuất tool call, Hermes thực thi thật rồi đưa output quay lại vòng suy luận.',
-      'Profile là một Hermes instance có thư mục riêng trong ~/.hermes/profiles/<name>/: config, SOUL.md, sessions, memories, skills/plugins có thể tách biệt. Vì vậy có thể có engineering-manager, software-engineer, ui-ux-reviewer, travel-manager...',
+      'Profile là gói cấu hình/data home tại ~/.hermes/profiles/<name>/: config, SOUL.md, sessions, memories, skills/plugins có thể tách biệt. Runtime nạp profile khi bắt đầu phiên; mỗi profile chỉ hoạt động như agent instance khi được chạy.',
       'Trong setup team có cấu hình orchestration, default profile có thể làm router; manager profile điều phối specialist profiles; specialist chỉ review/coding theo scope để tránh một agent ôm quá nhiều vai trò.',
-      'Memory lưu sở thích/facts bền vững; skills lưu quy trình tái dùng; sessions lưu lịch sử cuộc trò chuyện; cron/gateway giúp Hermes chạy tự động hoặc nhận việc từ nhiều nền tảng.',
+      'Runtime chọn profile để xác định vùng config, session, memory và skills riêng. SOUL.md được nạp khi có; skill chỉ được preload hoặc tải khi phù hợp, không phải mọi skill đều được đưa vào context cùng lúc.',
     ],
     misconceptions: [
       '“Hermes là một LLM mới” — sai. Hermes dùng model/provider phía sau; anh có thể đổi model mà workflow vẫn giữ nguyên.',
@@ -201,91 +264,67 @@ Check -- "Không" --> User["Trả lời người dùng"]`,
   {
     id: 'master-kubernetes',
     topic: 'Kubernetes',
-    title: 'Làm sao master Kubernetes?',
-    question: 'Cần hiểu mô hình K8s, các thành phần và ví von nó như cái gì?',
-    summary: 'Muốn master Kubernetes thì hãy xem cluster như một thành phố/cảng container tự vận hành: control plane là tòa thị chính điều phối, worker node là khu nhà xưởng, pod là căn hộ/container chạy app, service là số điện thoại ổn định, ingress là cổng vào thành phố, deployment là kế hoạch đảm bảo luôn đủ bản sao app chạy đúng trạng thái mong muốn.',
-    lastVerified: '2026-07-16',
-    status: 'draft',
-    diagram: `flowchart TD
-User["User gửi request"] --> Ingress["Ingress hoặc Gateway: cổng vào cluster"]
-Ingress --> Service["Service: địa chỉ ổn định cho app"]
-Service --> PodA["Pod A: chạy container app"]
-Service --> PodB["Pod B: bản sao app"]
-Service --> PodC["Pod C: bản sao app"]
-Deploy["Deployment: mong muốn có N bản sao"] --> ReplicaSet["ReplicaSet: giữ đúng số pod"]
-ReplicaSet --> PodA
-ReplicaSet --> PodB
-ReplicaSet --> PodC
-Scheduler["Scheduler: xếp pod lên node"] --> Node1["Worker node 1: máy chạy workload"]
-Scheduler --> Node2["Worker node 2: máy chạy workload"]
-APIServer["API Server: cửa tiếp nhận lệnh"] --> Scheduler
-APIServer --> Controller["Controller Manager: so thực tế với mong muốn"]
-Controller --> Deploy
-Etcd["etcd: sổ hộ khẩu trạng thái cluster"] --> APIServer
-Kubelet["Kubelet: quản gia trên mỗi node"] --> PodA
-Kubelet --> PodB`,
+    title: 'Kubernetes cốt lõi',
+    navLabel: 'Kubernetes cốt lõi',
+    question: 'Làm sao học để master được Kubernetes thay vì chỉ nhớ YAML?',
+    summary: 'Muốn master Kubernetes, đừng bắt đầu bằng việc học thuộc YAML. Hãy nắm 3 luồng: bạn khai báo trạng thái mong muốn vào API Server; control plane liên tục reconcile để biến mong muốn thành thực tế; data plane đưa traffic qua Ingress, Service, Pod và Node. Khi hiểu object nào chịu trách nhiệm cho đoạn nào của luồng này, bạn sẽ biết phải deploy, scale, debug và rollback ở đúng layer.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Custom animated Kubernetes architecture lab`,
     points: [
-      'Mental model: Kubernetes không phải “máy chủ thần kỳ”. Nó là hệ điều hành cho cụm máy, chuyên giữ workload chạy đúng trạng thái mong muốn.',
-      'Ví von dễ hiểu: cluster là thành phố/cảng container; control plane là tòa thị chính/trung tâm điều phối; worker node là khu nhà xưởng; pod là căn hộ nhỏ chứa container app.',
-      'API Server là quầy tiếp nhận mọi yêu cầu. kubectl, CI/CD, controller đều nói chuyện với API Server trước, không đi sửa node trực tiếp.',
-      'etcd là sổ cái/sổ hộ khẩu của cluster: lưu trạng thái mong muốn và trạng thái quan trọng. Mất etcd là mất trí nhớ cluster.',
-      'Scheduler giống bộ phận phân nhà/xếp bãi: thấy pod chưa có node thì chọn worker node phù hợp dựa trên tài nguyên, rule, taint/toleration, affinity.',
-      'Controller Manager giống ban kiểm tra: liên tục so “mong muốn” với “thực tế”. Thiếu pod thì tạo thêm, dư thì giảm, pod chết thì kéo lại.',
-      'Kubelet là quản gia trên từng node: nhận nhiệm vụ từ API Server, bảo container runtime chạy pod, rồi báo health/status về cluster.',
-      'Service là số điện thoại cố định cho nhóm pod. Pod có thể chết/sinh IP mới, nhưng Service giữ endpoint ổn định để app khác gọi.',
-      'Ingress/Gateway là cổng vào thành phố: nhận traffic HTTP/HTTPS bên ngoài rồi route vào Service phù hợp.',
-      'Muốn master K8s: học theo luồng request → ingress → service → pod → node, và luồng control → desired state → scheduler/controller/kubelet → actual state.',
+      'Master Kubernetes = hiểu trạng thái mong muốn, reconciliation loop và traffic path; YAML chỉ là cách ghi intent cho API Server.',
+      'Cluster giống một thành phố/cảng container: control plane là tòa thị chính, worker node là khu nhà xưởng, pod là căn hộ chạy app, service là số điện thoại ổn định, ingress/gateway là cổng vào.',
+      'Luồng control: kubectl/CI gửi manifest → API Server validate/lưu trạng thái → Scheduler chọn node → Controller giữ đủ replica → Kubelet bảo container runtime chạy Pod.',
+      'Luồng traffic: Người dùng → Ingress/Gateway → Service → Pod endpoint → container trong Node → response trả ngược ra ngoài.',
+      'Cách học thực chiến: luôn hỏi symptom nằm ở layer nào: manifest/API, scheduling, image/runtime, networking/service discovery, storage, rollout hay app health.',
+      'Khi debug, đi từ ngoài vào trong: DNS/Ingress → Service endpoints → Pod status/logs/events → Node/kubelet/runtime → object owner như Deployment/ReplicaSet.',
     ],
     misconceptions: [
-      '“Pod là container” — chưa chính xác. Pod là đơn vị deploy nhỏ nhất, có thể chứa một hoặc nhiều container cùng network/storage namespace.',
-      '“Service chạy app” — sai. Service không chạy app; Service định tuyến tới các pod đang chạy app.',
-      '“Deployment chỉ để deploy lần đầu” — sai. Deployment giữ trạng thái mong muốn lâu dài, hỗ trợ rollout/rollback và tự phục hồi qua ReplicaSet.',
-      '“kubectl sửa trực tiếp container” — sai. kubectl gửi intent tới API Server; control plane và node agent thực hiện phần còn lại.',
-      '“Master K8s là nhớ hết YAML” — sai. Quan trọng là hiểu object nào giải quyết vấn đề gì, luồng traffic đi đâu, và debug từ symptom về đúng layer.',
+      '“Master K8s là nhớ hết YAML” — sai. Quan trọng hơn là hiểu object nào tạo ra trạng thái nào và ai reconcile nó.',
+      '“Pod là container” — chưa chính xác. Pod là đơn vị deploy nhỏ nhất, chứa một hoặc nhiều container cùng một boundary runtime.',
+      '“Service chạy app” — sai. Service chỉ định tuyến tới Pod endpoints; app thật chạy trong container bên trong Pod.',
+      '“Control plane xử lý request user trực tiếp” — sai. Traffic người dùng thường đi qua data plane: Ingress/Gateway, Service, Pod và Node.',
+      '“kubectl sửa trực tiếp node” — sai. kubectl gửi intent tới API Server; controller/scheduler/kubelet thực hiện phần còn lại.',
     ],
-    nextQuestions: ['Pod khác Deployment thế nào?', 'Service khác Ingress thế nào?', 'Debug CrashLoopBackOff theo lớp nào?'],
+    nextQuestions: ['Desired state là gì?', 'Service endpoint debug ra sao?', 'Khi nào lỗi nằm ở Scheduler, Kubelet hay app?'],
   },
   {
     id: 'multi-container-trong-pod',
     topic: 'Kubernetes',
-    title: 'Mấy loại multi-container trong một Pod?',
-    question: 'Khi nào một Pod nên có nhiều container, và mỗi pattern dùng để làm gì?',
-    summary: 'Multi-container Pod là khi nhiều container cần sống chung cực gần: cùng network namespace, cùng localhost, cùng volume, cùng lifecycle Pod. Các pattern phổ biến gồm sidecar, ambassador/proxy, adapter, init container và helper/log shipper. Không nên nhét nhiều app độc lập vào một Pod chỉ để “cho tiện”.',
-    lastVerified: '2026-07-16',
-    status: 'draft',
-    diagram: `flowchart TD
-Pod["Pod: chung IP, localhost, volume, lifecycle"] --> Main["Main container: app chính"]
-Pod --> Sidecar["Sidecar: phụ trợ chạy cạnh app"]
-Pod --> Ambassador["Ambassador: proxy/đại sứ kết nối ra ngoài"]
-Pod --> Adapter["Adapter: chuẩn hóa output/log/metrics"]
-Init["Init container: chạy xong trước khi app start"] --> Pod
-Sidecar --> Use1["Ví dụ: log shipper, service mesh proxy, config watcher"]
-Ambassador --> Use2["Ví dụ: proxy DB/cache/API bên ngoài"]
-Adapter --> Use3["Ví dụ: đổi log custom thành Prometheus metrics"]`,
+    title: 'Multi-container trong một Pod',
+    navLabel: 'Multi-container Pod',
+    question: 'Trong một Pod có mấy kiểu multi-container, dùng khi nào, lợi và hại là gì?',
+    summary: 'Multi-container Pod dùng khi các container phải sống rất gần nhau trong cùng một ranh giới Pod: chung network namespace, chung Pod IP/localhost, có thể chia sẻ volume đã khai báo, và được lên lịch và co giãn theo cùng ranh giới Pod. Các pattern chính gồm sidecar, ambassador/proxy, adapter, init container và helper/log shipper. Dùng nó cho coupling chặt, không dùng để gom nhiều app độc lập vào cùng một Pod.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Custom animated multi-container Pod pattern lab`,
     points: [
-      'Rule gốc: một Pod nên đại diện cho một “đơn vị triển khai” chặt chẽ. Nếu hai container có thể scale/deploy/restart độc lập, thường nên tách Pod.',
-      'Sidecar container: container phụ chạy song song với app chính để hỗ trợ chức năng ngang hông như log shipping, service mesh proxy, config reload, TLS proxy.',
-      'Ambassador container: đóng vai “đại sứ/proxy” giúp app nói chuyện với dịch vụ bên ngoài bằng interface đơn giản, ví dụ app gọi localhost còn ambassador forward tới DB/API/cache thật.',
-      'Adapter container: biến đổi output của app chính sang format chuẩn mà hệ thống khác hiểu, ví dụ convert log custom thành metrics Prometheus hoặc chuẩn hóa log format.',
-      'Init container: không chạy song song mãi; nó chạy trước app chính để chuẩn bị môi trường như migrate nhẹ, chờ dependency, render config, tải file cần thiết.',
-      'Helper/log shipper: nhiều tài liệu xem là một dạng sidecar cụ thể; nhiệm vụ là gom file log/volume rồi đẩy ra Fluent Bit/Elasticsearch/Loki/S3.',
-      'Tất cả container trong Pod dùng chung IP và có thể gọi nhau qua localhost; muốn chia sẻ file thì dùng shared volume trong Pod.',
-      'Điểm cần nhớ: multi-container Pod dùng cho coupling chặt, không dùng để gom frontend + backend + database vào chung một Pod trong production.',
+      'Chung ranh giới Pod: container trong cùng Pod chia sẻ network namespace, Pod IP và localhost; dữ liệu chỉ chia sẻ khi có volume dùng chung được mount rõ ràng.',
+      'Vòng đời Pod: các container được lên lịch và co giãn cùng Pod, nhưng container bị lỗi có thể được kubelet khởi động lại riêng theo khởi động lạiPolicy; khi Pod bị thay thế thì toàn bộ container được tạo lại.',
+      'Sidecar: chạy song song với container chính để bổ trợ như proxy service mesh, trình theo dõi cấu hình, helper TLS hoặc forwarder log.',
+      'Ambassador/proxy: app gọi localhost, ambassador chuyển tiếp tới service bên ngoài như database, cache, API hoặc endpoint legacy.',
+      'Adapter: biến đổi đầu ra của app chính sang format chuẩn, ví dụ log custom → log có cấu trúc hoặc metric app → metric thân thiện với Prometheus.',
+      'Helper/log shipper: đọc file/log từ volume dùng chung rồi đẩy ra Fluent Bit, Loki, Elasticsearch, S3 hoặc collector khác; thường là một dạng sidecar cụ thể.',
+      'Trường hợp dùng tốt: sidecar service mesh, shipper log, adapter metric, init để render config/template, init chờ dependency, proxy local cho dependency phức tạp.',
+      'Ưu điểm: giao tiếp localhost nhanh, chia sẻ volume đơn giản, deploy cùng nhau, tách concern phụ khỏi image chính của app.',
+      'Nhược điểm: scale cùng Pod, ngữ nghĩa khởi động lại phức tạp hơn, phân bổ resource khó hơn, debug nhiều container phức tạp hơn, coupling cao và dễ nhét sai nhiều app độc lập vào một Pod.',
     ],
     misconceptions: [
-      '“Một Pod nên chứa càng nhiều container càng tiết kiệm” — sai. Nó làm scale, rollout, debug và ownership khó hơn.',
-      '“Sidecar là app chính thứ hai” — sai. Sidecar là phụ trợ cho main container, không nên là workload độc lập cần scale riêng.',
-      '“Init container là sidecar” — không đúng. Init container chạy xong rồi thoát trước khi main container start; sidecar chạy cùng app trong vòng đời Pod.',
-      '“Container trong cùng Pod gọi nhau qua Service” — thường không cần; chúng dùng chung network namespace nên có thể gọi nhau qua localhost.',
+      '“Chung Pod nghĩa là chung filesystem mặc định” — sai. Filesystem container tách riêng; chỉ volume dùng chung mới chia sẻ dữ liệu.',
+      '“Container trong Pod gọi nhau qua Service” — thường không cần; chúng dùng chung network namespace nên gọi nhau qua localhost và port nội bộ.',
+      '“Init container chạy song song với main” — cần phân biệt. Init container thường chạy xong rồi thoát trước khi app khởi động; native sidecar nằm trong initContainers nhưng dùng khởi động lạiPolicy: Always và tiếp tục chạy cùng app.',
+      '“Sidecar luôn tốt hơn tách service riêng” — sai. Nếu cần scale, release hoặc ownerđẩy đi độc lập thì nên tách Pod/service riêng.',
+      '“Multi-container Pod phù hợp để gom frontend + backend + database” — sai với production; đó là nhiều workload độc lập, nên tách deployment.',
     ],
-    nextQuestions: ['Sidecar khác init container thế nào?', 'Khi nào nên tách sang Pod riêng?', 'Service mesh proxy có phải sidecar không?'],
+    nextQuestions: ['Sidecar native trong Kubernetes mới khác gì?', 'Resource limit chia cho từng container ra sao?', 'Khi nào nên tách thành service riêng?'],
   },
   {
     id: 'docker-build-trong-vs-ngoai',
     topic: 'Docker',
-    title: 'Build trong Docker hay build ngoài rồi copy artifact?',
-    question: 'Nên compile app ngay trong Dockerfile, hay build ở CI/host rồi Docker chỉ copy artifact vào đúng path?',
-    summary: 'Có hai cách đóng gói phổ biến: build trong Docker để môi trường build tái lập và image tự chứa quy trình build; hoặc build ngoài Docker rồi Dockerfile chỉ copy artifact đã kiểm chứng vào runtime image. Không có đáp án tuyệt đối: chọn theo độ phức tạp dependency, tốc độ CI, yêu cầu reproducibility và mức kiểm soát artifact.',
+    title: 'Docker Core: tại sao cần Docker?',
+    navLabel: 'Core',
+    question: 'Docker giải quyết vấn đề gì, core runtime gồm những component nào, và nên build artifact ở đâu?',
+    summary: 'Docker đóng gói application, userspace dependencies và filesystem thành image có version để chạy nhất quán qua dev, CI và production. Linux container chia sẻ kernel Linux host; trên macOS/Windows Docker Desktop cung cấp Linux VM và container chia sẻ kernel của VM đó. Khi đóng gói app, mặc định nên build bằng multi-stage; build ngoài rồi COPY phù hợp khi CI đã kiểm soát chặt toolchain và artifact.',
     lastVerified: '2026-07-16',
     status: 'draft',
     diagram: `flowchart TD
@@ -322,6 +361,7 @@ CopyB --> Image`,
     id: 'docker-multistage-build',
     topic: 'Docker',
     title: 'Docker multi-stage build là gì?',
+    navLabel: 'Multi-stages',
     question: 'Làm sao build image nhỏ, sạch, không mang tool build vào production?',
     summary: 'Multi-stage build tách quá trình build và runtime thành nhiều stage. Stage đầu có compiler/dependency để build artifact; stage cuối chỉ copy thứ cần chạy. Kết quả là image production nhỏ hơn, ít attack surface hơn và dễ cache hơn.',
     lastVerified: '2026-07-16',
@@ -349,6 +389,7 @@ Runtime --> Image["Production image nhỏ hơn"]`,
     id: 'docker-build-cache',
     topic: 'Docker',
     title: 'Docker build cache hoạt động thế nào?',
+    navLabel: 'Build Cache',
     question: 'Tại sao đổi một dòng code đôi khi làm Docker build lại rất lâu?',
     summary: 'Docker build cache dựa trên từng instruction/layer. Nếu layer trước thay đổi thì các layer sau thường phải build lại. Muốn build nhanh phải sắp xếp Dockerfile từ thứ ít đổi đến thứ hay đổi, dùng .dockerignore và tận dụng BuildKit cache mount khi cần.',
     lastVerified: '2026-07-16',
@@ -378,6 +419,7 @@ Cache -- "Có" --> Rebuild["Build lại layer sau"]`,
     id: 'docker-volume',
     topic: 'Docker',
     title: 'Docker volume dùng để làm gì?',
+    navLabel: 'Volume',
     question: 'Data trong container có mất không, volume khác bind mount thế nào?',
     summary: 'Container nên được xem là tạm thời; volume là nơi lưu dữ liệu bền vững hoặc chia sẻ dữ liệu giữa container. Named volume do Docker quản lý; bind mount trỏ trực tiếp vào thư mục host, tiện cho dev nhưng cần cẩn thận quyền và path.',
     lastVerified: '2026-07-16',
@@ -405,8 +447,9 @@ Bind --> Dev["Dev workflow: sửa file trên host, container thấy ngay"]`,
     id: 'docker-compose',
     topic: 'Docker',
     title: 'Docker Compose giải quyết vấn đề gì?',
+    navLabel: 'Docker Compose',
     question: 'Khi nào nên dùng compose thay vì gõ docker run dài ngoằng?',
-    summary: 'Docker Compose mô tả nhiều container của một app bằng file YAML: service, image/build, port, env, volume, network, dependency. Nó rất hợp local dev, demo, lab và môi trường nhỏ; production lớn thường chuyển sang orchestrator như Kubernetes/ECS/Nomad tùy nhu cầu.',
+    summary: 'Docker Compose mô tả nhiều container của một app bằng file YAML: service, image/build, port, env, volume, network, dependency. Nó rất hợp local dev, demo, lab, môi trường nhỏ và CI cần dựng database tạm thời/on-demand để test cô lập; production lớn thường chuyển sang orchestrator như Kubernetes/ECS/Nomad tùy nhu cầu.',
     lastVerified: '2026-07-16',
     status: 'draft',
     diagram: `flowchart TD
@@ -422,7 +465,9 @@ API --> DB`,
       'Các service trong cùng Compose project thường tự thấy nhau bằng DNS theo tên service, ví dụ api gọi db:5432.',
       'Dùng compose up để chạy stack, compose down để dừng/xóa network container; volume chỉ xóa nếu thêm -v.',
       'depends_on chỉ kiểm soát thứ tự start cơ bản; muốn đợi service sẵn sàng nên dùng healthcheck hoặc retry logic trong app.',
-      'Compose rất tốt cho dev/test/demo, nhưng không nên nhầm nó là Kubernetes đầy đủ.',
+      'Compose rất tốt cho dev/test/demo, nhất là khi cần chạy database tạm thời hoặc on-demand ngay trong CI để test integration rồi xóa sau job.',
+      'Trường hợp CI thực tế: mỗi workflow có thể spin up Postgres/MySQL/Redis bằng Compose trên network riêng, chạy test, sau đó compose down -v để cô lập dữ liệu và hạn chế impact tới môi trường dev/staging/prod.',
+      'Không nên nhầm Compose là Kubernetes đầy đủ; nó thiếu nhiều cơ chế scheduling, rollout và self-healing của orchestrator production.',
     ],
     misconceptions: [
       '“Compose là Kubernetes mini” — không hẳn. Compose đơn giản hơn, ít cơ chế self-healing/scheduling/rollout.',
@@ -435,6 +480,7 @@ API --> DB`,
     id: 'docker-network',
     topic: 'Docker',
     title: 'Docker network hoạt động thế nào?',
+    navLabel: 'Network',
     question: 'Container gọi nhau bằng gì, port mapping khác container network ra sao?',
     summary: 'Docker network quyết định container thấy nhau như thế nào. Bridge network mặc định cho container giao tiếp nội bộ; Compose tạo network riêng và DNS theo tên service. Port mapping như -p 8080:80 chỉ mở cổng từ host vào container, không phải cách container nội bộ bắt buộc phải gọi nhau.',
     lastVerified: '2026-07-16',
@@ -460,46 +506,6 @@ Network --> DB`,
     ],
     nextQuestions: ['Bridge network là gì?', 'EXPOSE khác ports?', 'host.docker.internal dùng khi nào?'],
   },
-  {
-    id: 'master-hermes-agent',
-    topic: 'AI',
-    title: 'Làm sao master Hermes Agent?',
-    question: 'Cần hiểu hệ thống Hermes như thế nào, hoạt động ra sao?',
-    summary: 'Muốn master Hermes thì đừng xem nó chỉ là chatbot. Hãy hiểu nó như một agent runtime: model là não dự đoán, system prompt/profile là vai trò, tools là tay chân, memory/skills là kinh nghiệm, session/cron/gateway là cách nó chạy workflow lâu dài và kiểm chứng bằng output thật.',
-    lastVerified: '2026-07-16',
-    status: 'draft',
-    diagram: `flowchart TD
-User["Người dùng đưa mục tiêu"] --> Surface["Surface: Desktop, CLI, TUI, Gateway"]
-Surface --> Profile["Profile: vai trò, quy tắc, memory riêng"]
-Profile --> Prompt["Prompt builder: system prompt + context + skills"]
-Prompt --> Model["Model provider: OpenAI, Anthropic, OpenRouter, local, custom"]
-Model --> Decision{"Cần hành động thật?"}
-Decision -- "Không" --> Answer["Trả lời trực tiếp"]
-Decision -- "Có" --> Tool["Tool call: file, terminal, browser, GitHub, Sheets, MCP"]
-Tool --> Observe["Đọc output thật"]
-Observe --> Loop{"Đạt mục tiêu chưa?"}
-Loop -- "Chưa" --> Model
-Loop -- "Rồi" --> Final["Final: kết luận + bằng chứng verify"]
-Profile --> Memory["Memory: sở thích và facts bền vững"]
-Profile --> Skills["Skills: quy trình tái dùng"]
-Profile --> Automation["Cron, webhook, gateway: tự động hóa"]`,
-    points: [
-      'Mental model đúng: Hermes không phải “một model mới”. Hermes là lớp runtime/orchestrator điều khiển model, tool, memory, skill, profile và automation.',
-      'Luồng cơ bản: người dùng đưa mục tiêu → Hermes dựng context/system prompt → gọi model → nếu cần thì model gọi tool → Hermes đọc output thật → lặp lại cho đến khi đủ bằng chứng → trả lời cuối.',
-      'Profile là “nhân sự” khác nhau: default router, engineering-manager, travel-manager, specialist. Mỗi profile có config, memory, skills và session riêng nên phù hợp để chia vai trò.',
-      'Tools là điểm khác biệt lớn: Hermes có thể đọc/sửa file, chạy terminal, dùng browser, gọi GitHub, Google Sheets, MCP, cron… Vì vậy nó có thể thực thi và verify, không chỉ gợi ý.',
-      'Memory dùng cho facts bền vững về người dùng/môi trường; skills dùng cho quy trình tái dùng. Đừng nhét task tạm thời vào memory; workflow lặp lại thì biến thành skill.',
-      'Gateway/cron/webhook biến Hermes thành hệ thống tự động hóa: nhận việc từ Discord/Telegram/Slack/email, chạy job định kỳ, hoặc phản ứng theo event.',
-      'Cách master thực dụng: bắt đầu bằng một workflow thật, yêu cầu Hermes chạy và verify; sau đó tách phần lặp lại thành skill/profile/cron thay vì prompt thủ công mỗi lần.',
-    ],
-    misconceptions: [
-      '“Hermes giống ChatGPT nhưng có giao diện khác” — thiếu. ChatGPT là app hội thoại; Hermes là runtime để điều phối model + tool + workflow trên máy/dịch vụ của bạn.',
-      '“Có tool là đủ thành agent tốt” — sai. Agent tốt cần scope rõ, quyền vừa đủ, đọc output thật, biết dừng khi có bằng chứng và có guardrail.',
-      '“Memory càng nhiều càng tốt” — sai. Memory nên ngắn và bền; quy trình dài nên lưu thành skill, còn tiến độ task thì để session/git/issue quản lý.',
-      '“Master Hermes là học hết command” — chưa đủ. Quan trọng hơn là biết thiết kế workflow: profile nào làm gì, tool nào được phép, verify ở đâu, và khi nào cần human review.',
-    ],
-    nextQuestions: ['Khi nào nên tạo profile mới?', 'Skill khác memory thế nào?', 'Thiết kế workflow Hermes cho DevOps ra sao?'],
-  },
 ];
 
 function scrollTop() {
@@ -508,7 +514,9 @@ function scrollTop() {
 
 function viewFromHash(): View {
   const hash = window.location.hash.replace(/^#\/?/, '');
-  const [kind, id] = hash.split('/');
+  const [kind, rawId] = hash.split('/');
+  const articleAliases: Record<string, string> = { 'master-hermes-agent': 'hermes-vs-copilot-chatgpt' };
+  const id = articleAliases[rawId] ?? rawId;
   if (kind === 'topic' && id) return { type: 'topic', topicId: id };
   if (kind === 'article' && id) return { type: 'article', articleId: id };
   return { type: 'home' };
@@ -522,16 +530,26 @@ function hashForView(view: View) {
 
 function MermaidDiagram({ chart, id }: { chart: string; id: string }) {
   const ref = React.useRef<HTMLDivElement>(null);
+  const [themeRevision, setThemeRevision] = React.useState(0);
+
+  React.useEffect(() => {
+    const rerender = () => setThemeRevision((value) => value + 1);
+    window.addEventListener('knowledge-theme-change', rerender);
+    return () => window.removeEventListener('knowledge-theme-change', rerender);
+  }, []);
+
   React.useEffect(() => {
     let cancelled = false;
-    mermaid.render(`diagram-${id}`, chart).then(({ svg }) => {
+    const theme = document.documentElement.dataset.theme === 'light' ? 'default' : 'dark';
+    mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict' });
+    mermaid.render(`diagram-${id}-${themeRevision}`, chart).then(({ svg }) => {
       if (!cancelled && ref.current) ref.current.innerHTML = svg;
     }).catch((error: unknown) => {
       console.error('Mermaid render failed', id, error);
       if (!cancelled && ref.current) ref.current.textContent = 'Sơ đồ đang được chỉnh lại để hiển thị đúng.';
     });
     return () => { cancelled = true; };
-  }, [chart, id]);
+  }, [chart, id, themeRevision]);
   return <div className="diagram" ref={ref} aria-label="Sơ đồ minh họa" />;
 }
 
@@ -544,79 +562,102 @@ function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHom
   );
 }
 
-function MultiContainerPodCircle() {
+function KubernetesCoreArchitectureLab() {
+  const components = [
+    ['API Server', 'Nhận lệnh từ kubectl, CI/CD và controller; validate request rồi mở API Kubernetes cho toàn cluster.'],
+    ['etcd', 'Lưu trạng thái mong muốn và trạng thái quan trọng; đây là bộ nhớ/sổ cái của cluster.'],
+    ['Scheduler', 'Tìm Pod chưa có Node và chọn Worker Node phù hợp nhất để đặt Pod.'],
+    ['Controller Manager', 'So sánh trạng thái mong muốn với actual state rồi tạo/sửa resource để kéo cluster về đúng mong muốn.'],
+    ['Kubelet', 'Chạy trên mỗi Worker Node; yêu cầu container runtime chạy Pod và báo status về control plane.'],
+    ['Container Runtime', 'Pull image và chạy container bên trong Pod.'],
+    ['Pod', 'Đơn vị deploy nhỏ nhất; bọc một hoặc nhiều container phía sau cùng một Pod IP.'],
+    ['Service', 'Địa chỉ ảo ổn định để route traffic tới endpoint đủ điều kiện, thường là Pod endpoint ở trạng thái Ready.'],
+    ['Ingress / Gateway', 'Cổng vào cho HTTP hoặc traffic L7 từ bên ngoài trước khi tới Service.'],
+  ];
+
   return (
-    <div className="podCircleViz" aria-label="Sơ đồ vòng tròn các pattern multi-container trong Pod">
-      <div className="podCircleHeader">
-        <span className="badge">Pod circle</span>
-        <strong>Pod ở giữa, các container pattern xoay quanh</strong>
+    <div className="k8sCoreLab" aria-label="Sơ đồ động kiến trúc Kubernetes cốt lõi">
+      <div className="trafficLegend">
+        <span className="badge">Kubernetes cốt lõi</span>
+        <strong>Vòng reconcile biến trạng thái mong muốn thành Pod đang chạy; luồng dữ liệu đưa traffic người dùng đi qua cluster.</strong>
       </div>
-      <div className="podOrbit">
-        <div className="orbitRing ringOne" />
-        <div className="orbitRing ringTwo" />
-        <div className="centerPod">
-          <span>Pod</span>
-          <small>chung IP · localhost · volume · lifecycle</small>
-        </div>
-        <div className="orbitItem mainContainer"><strong>Main</strong><span>app chính</span></div>
-        <div className="orbitItem sidecarContainer"><strong>Sidecar</strong><span>log/proxy/config watcher</span></div>
-        <div className="orbitItem ambassadorContainer"><strong>Ambassador</strong><span>proxy ra dịch vụ ngoài</span></div>
-        <div className="orbitItem adapterContainer"><strong>Adapter</strong><span>chuẩn hóa log/metrics</span></div>
-        <div className="orbitItem initContainer"><strong>Init</strong><span>chạy trước rồi thoát</span></div>
-        <div className="orbitItem helperContainer"><strong>Helper</strong><span>log shipper/file helper</span></div>
-        <div className="orbitDot d1" /><div className="orbitDot d2" /><div className="orbitDot d3" />
+      <div className="k8sMasterIdea">
+        <strong>Cách master Kubernetes</strong>
+        <span>Hãy đọc mọi vấn đề qua hai luồng: luồng điều khiển tạo trạng thái và luồng dữ liệu phục vụ traffic.</span>
       </div>
-      <div className="podPatternCards">
-        <div><strong>Luôn có Main</strong><span>Container chạy business logic chính.</span></div>
-        <div><strong>Chạy song song</strong><span>Sidecar/Ambassador/Adapter/Helper sống cùng Pod.</span></div>
-        <div><strong>Chạy trước</strong><span>Init container chuẩn bị xong rồi mới tới app chính.</span></div>
+      <div className="k8sCoreGrid">
+        <section className="k8sControlPanel">
+          <span className="zoneLabel">Control plane: tòa thị chính</span>
+          <div className="kubectlBox">kubectl / manifest từ CI</div>
+          <div className="controlRailDown" aria-hidden="true"><span /><span /><span /></div>
+          <div className="controlHub apiHub">API Server</div>
+          <div className="controlFanout">
+            <div className="controlMini schedulerMini">Scheduler<br/><small>xếp Pod</small></div>
+            <div className="controlMini controllerMini">Controller<br/><small>reconcile</small></div>
+            <div className="controlMini etcdMini">etcd<br/><small>lưu state</small></div>
+          </div>
+          <div className="reconcileLoop" aria-hidden="true"><span >desired</span><b>↻</b><span>actual</span></div>
+        </section>
+        <section className="k8sDataPlanePanel">
+          <span className="zoneLabel">Data plane: đường traffic</span>
+          <div className="dataPlanePath">
+            <div className="trafficNode userTraffic">Người dùng</div>
+            <div className="trafficRail" aria-hidden="true"><span /><span /><span /></div>
+            <div className="trafficNode entry">Ingress / Gateway</div>
+            <div className="trafficRail" aria-hidden="true"><span /><span /><span /></div>
+            <div className="trafficNode service">Service</div>
+            <div className="fanoutRail" aria-hidden="true"><span /><span /><span /></div>
+            <div className="workerCluster">
+              <div className="workerNodeCard"><span>Worker Node A</span><div className="kubeletChip">Kubelet</div><div className="runtimeChip">Runtime container</div><div className="pod activePod">Pod: app-1</div></div>
+              <div className="workerNodeCard"><span>Worker Node B</span><div className="kubeletChip">Kubelet</div><div className="runtimeChip">Runtime container</div><div className="pod activePod delayed">Pod: app-2</div></div>
+            </div>
+          </div>
+          <div className="responseLane" aria-hidden="true"><span /><span /><span /><span /></div>
+          <div className="trafficNode response">Phản hồi trả về người dùng</div>
+        </section>
       </div>
+      <section className="componentMissionGrid" aria-label="Nhiệm vụ ngắn của từng component Kubernetes">
+        {components.map(([name, mission]) => <article key={name}><strong>{name}</strong><span>{mission}</span></article>)}
+      </section>
     </div>
   );
 }
 
-function K8sTrafficFlow() {
+function MultiContainerPodPatternLab() {
+  const patterns = [
+    { name: 'Sidecar', usecase: 'Proxy service mesh, trình theo dõi cấu hình, helper TLS hoặc forwarder log cần chạy cạnh app chính. Native sidecar có thể khai báo trong initContainers với khởi động lạiPolicy: Always.', pros: 'Giữ main image tập trung vào logic chính, trong khi vẫn chia sẻ localhost và volume đã khai báo.', cons: 'Scale theo Pod và làm tăng coupling về lifecycle/resource.' },
+    { name: 'Ambassador / Proxy', usecase: 'Container chính app gọi localhost, còn proxy xử lý DB/cache/API dịch vụ remote, TLS hoặc retry logic.', pros: 'Ẩn kết nối bên ngoài phức tạp sau một interface local đơn giản.', cons: 'Thêm một hop mạng và có thể che mất lỗi network nếu observability yếu.' },
+    { name: 'Adapter', usecase: 'Biến log hoặc metric custom thành format chuẩn của platform.', pros: 'Tránh phải sửa code legacy app chỉ để khớp format platform.', cons: 'Có thể lệch nghĩa so với app và trở thành lớp compatibility ẩn.' },
+    { name: 'Init container', usecase: 'Init container thường chuẩn bị config, chờ dependency, chạy setup một lần hoặc tải file trước khi app start.', pros: 'Làm thứ tự startup rõ ràng và tách setup code khỏi app image.', cons: 'Nếu init container thường bị treo hoặc lỗi, app chính sẽ không start.' },
+    { name: 'Helper / log shipper', usecase: 'Đọc log file hoặc artifact từ volume dùng chung rồi đẩy tới Fluent Bit, Loki, Elasticsearch, S3 hoặc collector khác.', pros: 'Tách phần vận chuyển log khỏi process của ứng dụng.', cons: 'Cần quản lý volume dùng chung rõ ràng và đặt resource limit cẩn thận.' },
+  ];
+
   return (
-    <div className="k8sTrafficFlow" aria-label="Mô phỏng traffic vào và ra trong Kubernetes">
-      <div className="trafficLegend">
-        <span className="badge">Traffic simulator</span>
-        <strong>Request đi vào cluster → app xử lý → response đi ra</strong>
-      </div>
-      <div className="internetCloud">Internet / User</div>
-      <div className="trafficLane inbound" aria-hidden="true"><span /><span /><span /><span /></div>
-      <div className="k8sCity">
-        <section className="controlPlaneBox">
-          <span className="zoneLabel">Control Plane = tòa thị chính</span>
-          <div className="controlGrid">
-            <div>API Server<br/><small>quầy tiếp nhận lệnh</small></div>
-            <div>Scheduler<br/><small>xếp pod lên node</small></div>
-            <div>Controller<br/><small>giữ đúng mong muốn</small></div>
-            <div>etcd<br/><small>sổ hộ khẩu cluster</small></div>
-          </div>
-          <div className="controlPulse" aria-hidden="true"><span /><span /><span /></div>
+    <div className="multiPodLab" aria-label="Sơ đồ động các pattern multi-container trong Pod">
+      <div className="podCircleHeader"><span className="badge">Multi-container Pod</span><strong>Tất cả container nằm trong cùng ranh giới Pod, nhưng mỗi pattern có nhiệm vụ khác nhau.</strong></div>
+      <section className="sharedPodContract">
+        <div><strong>Chung không gian mạng</strong><span>cùng Pod IP và localhost</span></div>
+        <div><strong>Chung volume</strong><span>chỉ khi volume được khai báo và mount</span></div>
+        <div><strong>Chung ranh giới Pod</strong><span>được lên lịch/co giãn cùng nhau; từng container có thể khởi động lại theo khởi động lạiPolicy</span></div>
+        <div><strong>Tiến trình tách riêng</strong><span>mỗi container vẫn có tiến trình và góc nhìn filesystem riêng</span></div>
+      </section>
+      <div className="patternStageGrid">
+        <section className="patternStage parallelStage">
+          <span className="zoneLabel">Container chạy song song</span>
+          <div className="equalCircleRow"><div className="containerCircle mainCircle"><strong>Container chính</strong><small>logic chính</small></div><div className="localhostBridge" aria-hidden="true"><span /><span /><span /></div><div className="containerCircle sidecarCircle"><strong>Sidecar</strong><small>vòng lặp hỗ trợ</small></div></div>
+          <p>Container chính và sidecar là hai vòng tròn ngang hàng vì chúng chạy song song trong cùng một Pod.</p>
         </section>
-        <section className="trafficPathBox">
-          <span className="zoneLabel">Data plane = đường traffic thật</span>
-          <div className="trafficStages">
-            <div className="trafficNode entry">Ingress / Gateway<br/><small>cổng vào thành phố</small></div>
-            <div className="trafficRail" aria-hidden="true"><span /><span /><span /></div>
-            <div className="trafficNode service">Service<br/><small>số điện thoại ổn định</small></div>
-            <div className="fanoutRail" aria-hidden="true"><span /><span /><span /></div>
-            <div className="podPool">
-              <div className="nodeBox"><span>Worker Node 1</span><div className="pod activePod">Pod A</div><div className="pod">Pod B</div></div>
-              <div className="nodeBox"><span>Worker Node 2</span><div className="pod">Pod C</div><div className="pod activePod delayed">Pod D</div></div>
-            </div>
-          </div>
-          <div className="responseLane" aria-hidden="true"><span /><span /><span /><span /></div>
-          <div className="trafficNode response">Response trả ngược ra ngoài</div>
+        <section className="patternStage initStage">
+          <span className="zoneLabel">Luồng Init container</span>
+          <div className="initAnimationRow"><div className="initOrbit"><div className="initCircle"><strong>Init</strong><small>chuẩn bị</small></div></div><div className="initArrow" aria-hidden="true">→</div><div className="containerCircle mainCircle stable"><strong>Container chính</strong><small>khởi động sau init</small></div></div>
+          <p>Vòng Init xoay, hoàn tất rồi mờ đi; container chính ở lại. Hiệu ứng lặp để thể hiện thứ tự khởi động.</p>
         </section>
+        <section className="patternStage proxyStage"><span className="zoneLabel">Ambassador / proxy</span><div className="miniFlow"><div>Container chính</div><span>localhost</span><div>Proxy</div><span>dịch vụ remote</span><div>DB/API</div></div></section>
+        <section className="patternStage adapterStage"><span className="zoneLabel">Adapter và helper</span><div className="miniFlow"><div>Đầu ra của app</div><span>chuyển đổi</span><div>Adapter</div><span>đẩy đi</span><div>Nền tảng</div></div></section>
       </div>
-      <div className="k8sAnalogyGrid">
-        <div><strong>Ingress</strong><span>Cổng vào thành phố</span></div>
-        <div><strong>Service</strong><span>Số điện thoại không đổi</span></div>
-        <div><strong>Pod</strong><span>Căn hộ chạy app</span></div>
-        <div><strong>Control Plane</strong><span>Tòa thị chính điều phối</span></div>
-      </div>
+      <section className="patternUsecaseGrid">
+        {patterns.map((pattern) => <article key={pattern.name}><h4>{pattern.name}</h4><p><strong>Trường hợp dùng:</strong> {pattern.usecase}</p><p><strong>Ưu điểm:</strong> {pattern.pros}</p><p><strong>Nhược điểm:</strong> {pattern.cons}</p></article>)}
+      </section>
     </div>
   );
 }
@@ -629,7 +670,7 @@ function HermesArchitectureTraffic() {
         <strong>Request đi vào Hermes → orchestration/profile chọn vai trò → model suy luận → tool thực thi → verify output</strong>
       </div>
       <div className="hermesEntry">
-        <div className="archNode userNode"><strong>User / Minh Tân</strong><small>đưa mục tiêu hoặc câu hỏi</small></div>
+        <div className="archNode userNode"><strong>Người dùng / Minh Tân</strong><small>đưa mục tiêu hoặc câu hỏi</small></div>
         <div className="archRail horizontal" aria-hidden="true"><span /><span /><span /></div>
         <div className="surfaceCluster">
           <span className="zoneLabel">Surfaces</span>
@@ -641,13 +682,13 @@ function HermesArchitectureTraffic() {
         <span className="zoneLabel">Hermes core runtime</span>
         <div className="coreGrid">
           <div className="archNode profileRouter"><strong>Profile / orchestration layer</strong><small>có thể cấu hình default profile điều phối manager/specialist</small></div>
-          <div className="archNode promptBuilder"><strong>Prompt/context builder</strong><small>SOUL.md + project rules + session + memory + skills</small></div>
+          <div className="archNode promptBuilder"><strong>Prompt/context builder</strong><small>SOUL.md khi có + project rules + session + memory phù hợp; skills được preload/tải khi cần</small></div>
           <div className="archNode modelRouter"><strong>Model/provider router</strong><small>OpenRouter, Anthropic, OpenAI, Gemini, local/custom...</small></div>
           <div className="archNode toolDispatcher"><strong>Tool dispatcher</strong><small>terminal, browser, file, GitHub, Sheets, MCP, cron</small></div>
         </div>
         <div className="profileExplain">
           <strong>Profile là gì?</strong>
-          <span>Một profile là một Hermes instance được tách riêng: có SOUL.md, config, sessions, memory, skills/plugins riêng. Vì vậy <code>engineering-manager</code>, <code>software-engineer</code>, <code>ui-ux-reviewer</code> có thể hoạt động như các agent khác vai trò thay vì chỉ đổi tên prompt.</span>
+          <span>Profile là gói cấu hình và data home riêng — gồm SOUL.md, config, sessions, memory, skills/plugins. Hermes runtime nạp profile khi bắt đầu phiên; khi được chạy, <code>engineering-manager</code>, <code>software-engineer</code> hay <code>ui-ux-reviewer</code> hoạt động như các instance cô lập theo vai trò.</span>
         </div>
       </div>
       <div className="archRail vertical" aria-hidden="true"><span /><span /><span /></div>
@@ -674,169 +715,25 @@ function HermesArchitectureTraffic() {
   );
 }
 
-function WeatherPipelineFlow() {
-  return (
-    <div className="animatedFlow" aria-label="Pipeline xử lý câu hỏi thời tiết">
-      <div className="flowInput splitInput">
-        <span className="badge">Input người dùng</span>
-        <strong>“Thời tiết hôm nay thế nào?”</strong>
-        <div className="tokenStream" aria-hidden="true"><span /><span /><span /><span /><span /></div>
-      </div>
-      <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-      <section className="inputDecoder">
-        <div className="laneHeader"><span className="pulseDot" />Bước 1 — Model/runtime đọc input và rút ra tín hiệu</div>
-        <div className="signalGrid">
-          <div><span>“Thời tiết”</span><strong>Loại intent</strong><small>Người dùng hỏi về weather.</small></div>
-          <div><span>“hôm nay”</span><strong>Thời gian</strong><small>Cần dữ liệu hiện tại/realtime.</small></div>
-          <div><span>Không có thành phố</span><strong>Slot bị thiếu</strong><small>Chưa biết weather ở đâu.</small></div>
-          <div><span>Cần dữ liệu live</span><strong>Ràng buộc dữ liệu</strong><small>Model không tự có thời tiết hiện tại.</small></div>
-        </div>
-      </section>
-      <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-      <section className="questionBuilder">
-        <span className="badge">Bước 2 — Từ tín hiệu sinh ra câu hỏi kiểm tra</span>
-        <p>Những ô “Đủ địa điểm?”, “Có nguồn live?” không tự nhiên xuất hiện. Chúng được suy ra từ các slot/ràng buộc ở trên.</p>
-        <div className="derivedQuestionGrid">
-          <div><strong>Slot địa điểm trống</strong><span>→ hỏi: “Đủ địa điểm chưa?”</span></div>
-          <div><strong>Weather là dữ liệu realtime</strong><span>→ hỏi: “Có tool/web/API không?”</span></div>
-          <div><strong>Runtime có thể thiếu quyền/nguồn</strong><span>→ hỏi: “Cần xin quyền hay yêu cầu nguồn không?”</span></div>
-          <div><strong>Tool có thể lỗi/sai</strong><span>→ hỏi: “Kết quả có đáng tin không?”</span></div>
-        </div>
-      </section>
-      <div className="splitter" aria-hidden="true">
-        <span />
-        <span />
-      </div>
-      <div className="dualModelFlow">
-        <section className="modelPath basePath">
-          <div className="laneHeader"><span className="pulseDot" />Base / non-reasoning model</div>
-          <div className="verticalPipeline compactPipeline">
-            <div className="flowNode startNode">Nhận input + tín hiệu đã rút ra</div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="flowNode">Đi đường ngắn: sinh câu trả lời theo context</div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="flowNode warnNode">Thấy thiếu địa điểm / nguồn live → dừng an toàn</div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="flowNode outputNode">Output base: “Mình cần địa điểm hoặc quyền tra cứu thời tiết hiện tại.”</div>
-          </div>
-        </section>
-        <section className="modelPath reasoningPath">
-          <div className="laneHeader"><span className="pulseDot" />Reasoning model</div>
-          <div className="reasoningDecisionFlow">
-            <div className="flowNode startNode">Nhận input + lập checklist từ tín hiệu</div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="decisionBlock">
-              <small className="sourceHint">Nguồn gốc: slot địa điểm đang trống</small>
-              <div className="flowNode decisionNode">Đủ địa điểm?</div>
-              <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>Thiếu</span><div className="flowNode warnNode">Hỏi lại địa điểm</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div><small className="loopLabel">quay lại kiểm tra</small></div>
-                <div className="conditionBranch passBranch"><span>Đủ</span><div className="flowNode">Đi tiếp: cần dữ liệu realtime</div></div>
-              </div>
-            </div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="decisionBlock">
-              <small className="sourceHint">Nguồn gốc: “hôm nay” = dữ liệu live</small>
-              <div className="flowNode decisionNode">Có tool / nguồn live?</div>
-              <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>Không có</span><div className="flowNode warnNode">Xin quyền tra cứu / yêu cầu nguồn</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div><small className="loopLabel">quay lại kiểm tra</small></div>
-                <div className="conditionBranch passBranch"><span>Có</span><div className="flowNode">Gọi weather API / web</div></div>
-              </div>
-            </div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="decisionBlock">
-              <small className="sourceHint">Nguồn gốc: tool/web có thể lỗi hoặc trả dữ liệu cũ</small>
-              <div className="flowNode decisionNode">Kết quả đáng tin?</div>
-              <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>Không đạt</span><div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div><small className="loopLabel">thử lại</small></div>
-                <div className="conditionBranch passBranch"><span>Đúng</span><div className="flowNode checkNode">Tóm tắt + nêu độ chắc chắn</div></div>
-              </div>
-            </div>
-            <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="flowNode outputNode">Output reasoning: “Ở TP.HCM hiện khoảng …, khả năng mưa …; nên mang áo mưa.”</div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
 function ModelTypesOverview() {
   return (
-    <section className="card compact">
+    <section className="card compact modelCatalog">
       <div className="sectionIntro">
         <span className="badge">Phân loại model</span>
         <h2>Có mấy loại model thường gặp?</h2>
-        <p>Cách chia dưới đây là để dễ hiểu khi dùng sản phẩm AI. Thực tế một model có thể thuộc nhiều nhóm cùng lúc.</p>
+        <p>Không có một danh sách duy nhất. Có thể phân loại theo output, modality hoặc cách vận hành; một model có thể thuộc nhiều nhóm cùng lúc.</p>
       </div>
       <div className="modelTypeGrid">
         {modelTypes.map((modelType, index) => (
           <div className="modelTypeCard" key={modelType.name}>
-            <span className="topicStatus">Loại {index + 1}: {modelType.shortName}</span>
+            <span className="topicStatus">Nhóm {index + 1}: {modelType.shortName}</span>
             <h3>{modelType.name}</h3>
             <p>{modelType.description}</p>
             <div className="pillRow">{modelType.useCases.map((item) => <span key={item}>{item}</span>)}</div>
           </div>
         ))}
       </div>
-      <div className="modelMechanics">
-        <span className="badge">Mental model</span>
-        <h3>Model thật sự hoạt động như thế nào?</h3>
-        <p className="mechanicsLead">Cả non-reasoning và reasoning model đều không “suy nghĩ” như người. Chúng vẫn sinh token tuần tự. Khác biệt thực dụng là reasoning model thường được huấn luyện/cấu hình để dùng thêm compute và token trung gian nhằm <strong>phân rã bài toán, tự kiểm tra điều kiện, rồi mới kết luận</strong>. Đây là xu hướng, không phải bảo đảm tuyệt đối.</p>
-        <div className="inputTrace">
-          <span className="traceLabel">Input người dùng</span>
-          <strong>“Thời tiết hôm nay thế nào?”</strong>
-          <p>Các câu hỏi như “đủ địa điểm chưa?” không phải người dùng hỏi thêm. Đó là cách ta diễn giải những điều model/runtime cần tự kiểm tra từ input trước khi trả lời.</p>
-        </div>
-        <div className="questionLadder" aria-label="Các câu hỏi phát sinh từ input">
-          <div><span>1</span><strong>Người dùng đang hỏi gì?</strong><small>Muốn biết thời tiết hiện tại.</small></div>
-          <div><span>2</span><strong>Thiếu dữ kiện nào?</strong><small>Chưa có địa điểm; “hôm nay” là thời gian tương đối, còn phụ thuộc múi giờ.</small></div>
-          <div><span>3</span><strong>Có cần dữ liệu live không?</strong><small>Có, vì thời tiết thay đổi theo thời gian.</small></div>
-          <div><span>4</span><strong>Có tool/web/API không?</strong><small>Nếu có thì tra cứu; nếu không thì nói giới hạn.</small></div>
-        </div>
-        <div className="mechanicsGrid">
-          <div className="mechanicCard">
-            <h4>Non-reasoning: trả lời theo đường ngắn</h4>
-            <ol>
-              <li>Đọc prompt + context.</li>
-              <li>Sinh token tiếp theo theo hướng có xác suất cao.</li>
-              <li>Nếu thấy thiếu dữ liệu rõ ràng, có thể hỏi lại.</li>
-              <li>Ít dành token để giữ checklist nhiều bước, nên dễ bỏ sót điều kiện ẩn.</li>
-            </ol>
-            <p><strong>Hình dung:</strong> như người trả lời nhanh theo phản xạ.</p>
-          </div>
-          <div className="mechanicCard reasoningCard">
-            <h4>Reasoning: dựng checklist trước khi trả lời</h4>
-            <ol>
-              <li>Đọc input và tách thành các câu hỏi kiểm tra như bảng trên.</li>
-              <li>Có thể dùng token/trạng thái suy luận trung gian; phần này thường không hiện ra cho người dùng.</li>
-              <li>Đi từng điều kiện: thiếu gì, có nguồn không, tool lỗi thì làm gì.</li>
-              <li>Sau đó mới viết câu trả lời cuối ngắn gọn.</li>
-            </ol>
-            <p><strong>Hình dung:</strong> như người làm nháp và rà checklist trước khi nói.</p>
-          </div>
-        </div>
-        <div className="tokenExample">
-          <strong>Ví dụ luồng xử lý:</strong>
-          <span>Từ input “Thời tiết hôm nay thế nào?”, model không tự biết thời tiết. Luồng đúng là: nhận câu hỏi → thấy thiếu địa điểm → thấy cần dữ liệu realtime → kiểm tra có tool/web/API không → nếu có thì tra cứu, nếu không thì xin thêm dữ liệu hoặc nói rõ giới hạn.</span>
-        </div>
-      </div>
-      <div className="exampleBox">
-        <span className="badge">Ví dụ cùng một input</span>
-        <h3>Input: “Thời tiết hôm nay thế nào?”</h3>
-        <div className="exampleGrid">
-          <div>
-            <h4>Non-reasoning / chat model</h4>
-            <p>Thường đi theo đường ngắn: đọc câu hỏi → sinh câu trả lời trực tiếp từ context hiện có. Nếu không có dữ liệu live weather, câu trả lời an toàn là xin địa điểm hoặc nói thiếu dữ liệu.</p>
-            <p><strong>Điểm chính:</strong> nhanh, rẻ hơn, hợp câu hỏi đơn giản; nhưng nếu bài toán cần nhiều điều kiện, nó dễ bỏ sót bước kiểm tra.</p>
-          </div>
-          <div>
-            <h4>Reasoning model</h4>
-            <p>Dùng nhiều bước inference hơn: nhận ra thiếu địa điểm, xác định cần dữ liệu thời gian thực, quyết định có gọi tool/web/API không, xử lý lỗi tool, rồi mới tóm tắt kết quả.</p>
-            <p><strong>Điểm chính:</strong> chậm/tốn hơn nhưng hợp bài toán nhiều ràng buộc; vẫn không tự biết sự thật hiện tại nếu không có nguồn dữ liệu.</p>
-          </div>
-        </div>
-        <WeatherPipelineFlow />
-      </div>
+      <div className="keyConcept"><strong>Lưu ý:</strong> reasoning/non-reasoning là một trục hành vi; embedding/generative là một trục nhiệm vụ; text/vision/multimodal là một trục dữ liệu. Không nên xem chúng là bốn hộp loại trừ nhau.</div>
     </section>
   );
 }
@@ -865,12 +762,12 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
         <p className="question">{article.question}</p>
         <p>{article.summary}</p>
       </div>
-      <span className={`status ${article.status}`}>{article.status}</span>
+      <span className={`status ${article.status}`}>{article.status === 'review-needed' ? 'cần review' : article.status === 'ready' ? 'sẵn sàng' : 'bản nháp'}</span>
     </button>
   );
 }
 
-function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void }) {
+function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, onClose }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; onClose: () => void }) {
   const sidebarRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
@@ -880,8 +777,11 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
   }, [activeArticleId, activeTopicId]);
 
   return (
-    <aside className="lessonSidebar" aria-label="Danh sách bài học" ref={sidebarRef}>
-      <button className="sidebarHome" onClick={onHome} type="button">Anti Knowledge Outdate</button>
+    <aside className="lessonSidebar" aria-label="Danh sách bài học" id="lesson-sidebar" ref={sidebarRef}>
+      <div className="sidebarTopbar">
+        <button className="sidebarHome" onClick={onHome} type="button">Anti Knowledge Outdate</button>
+        <button className="sidebarClose" onClick={onClose} type="button" aria-label="Thu gọn menu bài học"><X size={20} /></button>
+      </div>
       {topics.map((topic) => {
         const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
         const isActiveTopic = activeTopicId === topic.id;
@@ -896,7 +796,7 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
               <div className="sidebarArticleList">
                 {topicArticles.map((article) => (
                   <button className={`sidebarArticle ${activeArticleId === article.id ? 'current' : ''}`} key={article.id} onClick={() => onOpenArticle(article.id)} type="button">
-                    {article.title}
+                    {article.navLabel ?? article.title}
                   </button>
                 ))}
               </div>
@@ -909,15 +809,46 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
 }
 
 function LessonShell({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, children }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const closeAndTopic = (topicId: string) => { setSidebarOpen(false); onOpenTopic(topicId); };
-  const closeAndArticle = (articleId: string) => { setSidebarOpen(false); onOpenArticle(articleId); };
-  const closeAndHome = () => { setSidebarOpen(false); onHome(); };
+  const [sidebarOpen, setSidebarOpen] = React.useState(() => window.matchMedia('(min-width: 821px)').matches);
+  const toggleRef = React.useRef<HTMLButtonElement | null>(null);
+  const closeSidebar = React.useCallback((restoreFocus = false) => {
+    setSidebarOpen(false);
+    if (restoreFocus) window.requestAnimationFrame(() => toggleRef.current?.focus());
+  }, []);
+  const closeOnMobile = React.useCallback(() => {
+    if (window.matchMedia('(max-width: 820px)').matches) closeSidebar();
+  }, [closeSidebar]);
+  const closeAndTopic = (topicId: string) => { closeOnMobile(); onOpenTopic(topicId); };
+  const closeAndArticle = (articleId: string) => { closeOnMobile(); onOpenArticle(articleId); };
+  const closeAndHome = () => { closeOnMobile(); onHome(); };
+
+  React.useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 821px)');
+    const syncSidebarWithViewport = (event: MediaQueryListEvent) => setSidebarOpen(event.matches);
+    desktopQuery.addEventListener('change', syncSidebarWithViewport);
+    return () => desktopQuery.removeEventListener('change', syncSidebarWithViewport);
+  }, []);
+
+  React.useEffect(() => {
+    if (!sidebarOpen) return;
+    const isMobile = window.matchMedia('(max-width: 820px)').matches;
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeSidebar(true);
+    };
+    if (isMobile) document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      if (isMobile) document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [closeSidebar, sidebarOpen]);
+
   return (
-    <main className={`lessonLayout ${sidebarOpen ? 'sidebarOpen' : ''}`}>
-      <button className="sidebarToggle" onClick={() => setSidebarOpen((open) => !open)} type="button"><Menu size={18}/> Bài học</button>
-      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} />
-      <div className="sidebarBackdrop" onClick={() => setSidebarOpen(false)} />
+    <main className={`lessonLayout ${sidebarOpen ? 'sidebarOpen' : 'sidebarClosed'}`}>
+      <button className="sidebarToggle" onClick={() => setSidebarOpen((open) => !open)} type="button" aria-expanded={sidebarOpen} aria-controls="lesson-sidebar" aria-label={sidebarOpen ? 'Ẩn danh sách bài học' : 'Hiện danh sách bài học'} ref={toggleRef}><Menu size={18}/> {sidebarOpen ? 'Ẩn menu' : 'Hiện menu'}</button>
+      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} onClose={() => closeSidebar(true)} />
+      <div className="sidebarBackdrop" onClick={() => closeSidebar(true)} aria-hidden="true" />
       <div className="lessonContent">{children}</div>
     </main>
   );
@@ -951,14 +882,24 @@ function TopicPage({ topic, onBack, onHome, onOpenTopic, onOpenArticle }: { topi
         <h1>{topic.id === 'ai' ? 'Các câu hỏi AI đầu tiên' : `Bài học ${topic.title}`}</h1>
         <p className="lead">Chọn từng bài để mở nội dung chi tiết. Trang này không show toàn bộ bài để tránh bị quá tải khi đọc.</p>
       </section>
-      {topic.id === 'ai' && <ComparisonTable />}
-      {topic.id === 'ai' && <ModelTypesOverview />}
       <div className="articleList">
         {topicArticles.map((article, index) => <ArticleListItem article={article} index={index} key={article.id} onOpen={() => onOpenArticle(article.id)} />)}
       </div>
       </div>
     </LessonShell>
   );
+}
+
+function ArticleVisual({ article }: { article: Article }) {
+  if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
+  if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelAgentSimulator /></>;
+  if (article.id === 'agent') return <AgentArchitectureDiagram />;
+  if (article.id === 'hermes-vs-copilot-chatgpt') return <HermesArchitectureTraffic />;
+  if (article.id === 'docker-build-trong-vs-ngoai') return <DockerCoreDiagram />;
+  if (article.topic === 'Docker') return <DockerLessonDetails articleId={article.id} />;
+  if (article.id === 'master-kubernetes') return <KubernetesCoreArchitectureLab />;
+  if (article.id === 'multi-container-trong-pod') return <MultiContainerPodPatternLab />;
+  return <MermaidDiagram chart={article.diagram} id={article.id} />;
 }
 
 function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOpenArticle }: { article: Article; parentTopicId: string; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void }) {
@@ -969,12 +910,12 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
       <article className="card articleCard detailArticle">
         <div className="cardHeader">
           <span className="badge">{article.topic}</span>
-          <span className={`status ${article.status}`}>{article.status}</span>
+          <span className={`status ${article.status}`}>{article.status === 'review-needed' ? 'cần review' : article.status === 'ready' ? 'sẵn sàng' : 'bản nháp'}</span>
         </div>
         <p className="question">Câu hỏi: {article.question}</p>
         <h1>{article.title}</h1>
         <p className="summary">{article.summary}</p>
-        {article.id === 'master-kubernetes' ? <K8sTrafficFlow /> : article.id === 'multi-container-trong-pod' ? <MultiContainerPodCircle /> : article.id === 'hermes-vs-copilot-chatgpt' ? <HermesArchitectureTraffic /> : <MermaidDiagram chart={article.diagram} id={article.id} />}
+        <ArticleVisual article={article} />
         <div className="grid2">
           <section>
             <h4>Ý chính</h4>
@@ -985,37 +926,14 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
             <ul>{article.misconceptions.map((p) => <li key={p}>{p}</li>)}</ul>
           </section>
         </div>
+        {(lessonQAs[article.id]?.length ?? 0) > 0 && <LessonQA items={lessonQAs[article.id]} />}
         <footer className="articleFooter">
-          <span>Last verified: {article.lastVerified}</span>
+          <span>Cập nhật lần cuối: {article.lastVerified}</span>
           <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
         </footer>
       </article>
       </div>
     </LessonShell>
-  );
-}
-
-function ComparisonTable() {
-  return (
-    <section className="card compact" id="compare">
-      <div className="sectionIntro">
-        <span className="badge">Bảng định vị</span>
-        <h2>So sánh nhanh các công cụ AI</h2>
-        <p>Không xếp hạng tuyệt đối; chọn theo việc cần làm, context và mức độ cần kiểm chứng.</p>
-      </div>
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr><th>Nền tảng</th><th>Mạnh nhất khi</th><th>Điểm cần nhớ</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>ChatGPT</td><td>Hỏi đáp, phân tích, viết, học khái niệm</td><td>Thường cần người copy/paste context và tự kiểm chứng</td></tr>
-            <tr><td>GitHub Copilot</td><td>Code completion, chat trong IDE/GitHub, hỗ trợ PR/code</td><td>Rất tiện cho developer nhưng không phải runtime workflow tổng quát</td></tr>
-            <tr><td>Hermes</td><td>Agent dùng tool thật, profile chuyên môn, automation, kiểm chứng output</td><td>Mạnh khi cấu hình đúng quyền/tool/skill; cần guardrail</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
   );
 }
 
@@ -1043,6 +961,34 @@ function NotFoundPage({ onHome }: { onHome: () => void }) {
         <p>URL này có thể đã được xoá hoặc đổi tên. Hãy quay lại trang chính để chọn bài đang có.</p>
       </section>
     </main>
+  );
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
+    const saved = window.localStorage.getItem('knowledge-theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
+
+  React.useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    window.localStorage.setItem('knowledge-theme', theme);
+    window.dispatchEvent(new CustomEvent('knowledge-theme-change', { detail: theme }));
+  }, [theme]);
+
+  const nextTheme = theme === 'dark' ? 'light' : 'dark';
+  return (
+    <button
+      className="themeToggle"
+      type="button"
+      onClick={() => setTheme(nextTheme)}
+      aria-label={`Chuyển sang giao diện ${nextTheme === 'light' ? 'sáng' : 'tối'}`}
+      title={`Chuyển sang giao diện ${nextTheme === 'light' ? 'sáng' : 'tối'}`}
+    >
+      {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
   );
 }
 
@@ -1088,4 +1034,9 @@ function App() {
   return <HomePage onOpenTopic={openTopic} />;
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <>
+    <ThemeToggle />
+    <App />
+  </>,
+);
