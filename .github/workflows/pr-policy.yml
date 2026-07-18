@@ -1,0 +1,76 @@
+name: PR Policy
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name and PR body
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking branch: ${HEAD_REF}"
+          if [[ ! "${HEAD_REF}" =~ ^(develop|release)/homelab/[a-z0-9][a-z0-9._-]*$ ]]; then
+            echo "::error::Branch must match develop/homelab/xxx or release/homelab/xxx"
+            exit 1
+          fi
+
+          if [[ "${PR_DRAFT}" == "true" ]]; then
+            echo "::error::Draft PRs cannot pass policy gate. Mark ready after profile review and evidence are complete."
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import os, re, sys
+
+          body = os.environ.get("PR_BODY") or ""
+          required = [
+              ("🧩", "WHAT CHANGED"),
+              ("🚀", "BENEFIT"),
+              ("✅", "EVIDENCE"),
+          ]
+          headings = list(re.finditer(r"^##\s+(.+?)\s*$", body, re.MULTILINE))
+          heading_texts = [h.group(1).strip() for h in headings]
+
+          def fail(message: str) -> None:
+              print(f"::error::{message}")
+              sys.exit(1)
+
+          for icon, title in required:
+              expected = f"{icon} {title}"
+              if expected not in heading_texts:
+                  fail(f"PR body must include exact heading: ## {expected}")
+
+              idx = heading_texts.index(expected)
+              start = headings[idx].end()
+              end = headings[idx + 1].start() if idx + 1 < len(headings) else len(body)
+              content = body[start:end]
+              meaningful = []
+              for line in content.splitlines():
+                  stripped = line.strip()
+                  if not stripped or stripped == "-" or stripped.startswith("<!--") or stripped.endswith("-->"):
+                      continue
+                  meaningful.append(stripped)
+              if not meaningful:
+                  fail(f"Section {title} must contain real content, not only placeholder text")
+
+          if "Profile reviewer đã review và OK" not in body:
+              fail("EVIDENCE must include profile reviewer confirmation line")
+
+          print("PR body policy passed.")
+          PY
+
+          echo "PR policy passed."
