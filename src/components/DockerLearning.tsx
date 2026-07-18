@@ -147,7 +147,7 @@ export function DockerCoreDiagram() {
         </article>
         <article>
           <span className="pathLabel run">Run path</span>
-          <div className="dockerPathSequence"><div><strong>containerd</strong><small>quản lý container lifecycle</small></div><b>→</b><div><strong>containerd-shim + runc</strong><small>tạo namespaces/cgroups và start process</small></div><b>→</b><div><strong>Container process</strong><small>process chạy từ image</small></div></div>
+          <div className="dockerPathSequence"><div><strong>containerd</strong><small>điều phối lifecycle và yêu cầu runtime</small></div><b>→</b><div><strong>containerd-shim</strong><small>gọi runc, giữ I/O và theo dõi lifecycle sau khi runc thoát</small></div><b>→</b><div><strong>runc</strong><small>tạo namespaces/cgroups rồi khởi chạy process</small></div><b>→</b><div><strong>Container process</strong><small>process chạy từ image</small></div></div>
         </article>
       </div>
 
@@ -185,9 +185,10 @@ export function DockerCoreDiagram() {
   );
 }
 
-const composeEphemeralCiScript = `# CI injects POSTGRES_PASSWORD as a masked secret
+const composeEphemeralCiScript = `# CI injects both values; CI_JOB_UNIQUE_ID must differ per parallel job
 : "\${POSTGRES_PASSWORD:?inject POSTGRES_PASSWORD from CI}"
-export COMPOSE_PROJECT_NAME="ci-\${CI_JOB_ID:-local}"
+: "\${CI_JOB_UNIQUE_ID:?inject a unique ID per CI job}"
+export COMPOSE_PROJECT_NAME="ci-\${CI_JOB_UNIQUE_ID}"
 
 cleanup() {
   docker compose down -v --remove-orphans
@@ -195,8 +196,8 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 docker compose up -d --wait db
-npm run db:migrate
-npm run test:integration`;
+docker compose run --rm api npm run db:migrate
+docker compose run --rm api npm run test:integration`;
 
 export function DockerLessonDetails({ articleId }: { articleId: string }) {
   const lesson = dockerLessons[articleId];
@@ -219,7 +220,7 @@ export function DockerLessonDetails({ articleId }: { articleId: string }) {
           <div>
             <span className="badge">CI on-demand</span>
             <h3>Ephemeral database cho test job</h3>
-            <p>Mỗi job tạo Compose project riêng, đợi database healthy rồi luôn xóa container và volume khi job kết thúc. Test dùng database thật chính xác hơn nên gọi là integration/component test, không phải pure unit test.</p>
+            <p>Mỗi job inject một <code>CI_JOB_UNIQUE_ID</code> riêng (ví dụ GitHub: run ID + job + matrix key; GitLab: job ID), tạo Compose project cô lập, đợi database healthy rồi luôn xóa container và volume khi kết thúc. Migration/test chạy trong service <code>api</code> nên kết nối được tới hostname <code>db</code>. Test dùng database thật chính xác hơn nên gọi là integration/component test, không phải pure unit test.</p>
           </div>
           <pre><code>{composeEphemeralCiScript}</code></pre>
         </article>

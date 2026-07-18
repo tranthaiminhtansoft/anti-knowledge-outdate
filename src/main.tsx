@@ -767,7 +767,7 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
   );
 }
 
-function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, onClose }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; onClose: () => void }) {
+function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, onClose, isOpen }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; onClose: () => void; isOpen: boolean }) {
   const sidebarRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
@@ -775,6 +775,39 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
       ?? sidebarRef.current?.querySelector('.sidebarTopic.active');
     activeItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [activeArticleId, activeTopicId]);
+
+  React.useEffect(() => {
+    if (!isOpen || !window.matchMedia('(max-width: 820px)').matches) return;
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
+    const focusableSelector = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+    const focusable = Array.from(sidebar.querySelectorAll<HTMLElement>(focusableSelector));
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    const closeButton = sidebar.querySelector<HTMLElement>('.sidebarClose');
+    const focusFrame = window.requestAnimationFrame(() => (closeButton ?? first)?.focus());
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !first || !last) return;
+      if (!sidebar.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', trapFocus);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', trapFocus);
+    };
+  }, [isOpen]);
 
   return (
     <aside className="lessonSidebar" aria-label="Danh sách bài học" id="lesson-sidebar" ref={sidebarRef}>
@@ -847,7 +880,7 @@ function LessonShell({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticl
   return (
     <main className={`lessonLayout ${sidebarOpen ? 'sidebarOpen' : 'sidebarClosed'}`}>
       <button className="sidebarToggle" onClick={() => setSidebarOpen((open) => !open)} type="button" aria-expanded={sidebarOpen} aria-controls="lesson-sidebar" aria-label={sidebarOpen ? 'Ẩn danh sách bài học' : 'Hiện danh sách bài học'} ref={toggleRef}><Menu size={18}/> {sidebarOpen ? 'Ẩn menu' : 'Hiện menu'}</button>
-      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} onClose={() => closeSidebar(true)} />
+      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} onClose={() => closeSidebar(true)} isOpen={sidebarOpen} />
       <div className="sidebarBackdrop" onClick={() => closeSidebar(true)} aria-hidden="true" />
       <div className="lessonContent">{children}</div>
     </main>
