@@ -1,0 +1,43 @@
+name: PR Policy
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name and PR body
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking branch: ${HEAD_REF}"
+          if [[ ! "${HEAD_REF}" =~ ^(develop|release)/homelab/[a-z0-9][a-z0-9._-]*$ ]]; then
+            echo "::error::Branch must match develop/homelab/xxx or release/homelab/xxx"
+            exit 1
+          fi
+
+          if [[ "${PR_DRAFT}" == "true" ]]; then
+            echo "::error::Draft PRs cannot pass policy gate. Mark ready after profile review and evidence are complete."
+            exit 1
+          fi
+
+          for section in "WHAT CHANGED" "BENEFIT" "EVIDENCE"; do
+            if ! grep -qiE "(^|[[:space:]])${section}([[:space:]]|$)" <<< "${PR_BODY}"; then
+              echo "::error::PR body must include section: ${section}"
+              exit 1
+            fi
+          done
+
+          echo "PR policy passed."
