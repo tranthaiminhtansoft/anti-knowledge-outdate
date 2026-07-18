@@ -176,29 +176,27 @@ Check -- "Không" --> User["Trả lời người dùng"]`,
     id: 'hermes-vs-copilot-chatgpt',
     topic: 'AI',
     title: 'Hermes khác GitHub Copilot và ChatGPT ở đâu?',
-    question: 'Nếu Copilot/ChatGPT cũng dùng được tool, vì sao còn cần Hermes?',
-    summary: 'ChatGPT mạnh về hội thoại tri thức; GitHub Copilot mạnh trong IDE/code completion; Hermes là agent runtime có profile, tool, memory, skill và automation để thực thi workflow trên máy/dịch vụ của bạn.',
-    lastVerified: '2026-07-14',
+    question: 'Hermes là model, chatbot, hay agent runtime? Profile trong Hermes là gì?',
+    summary: 'Hermes không phải một model riêng. Hermes là agent runtime: nhận yêu cầu từ CLI/Desktop/Gateway, nạp profile/cấu hình phù hợp, gọi model/provider, dùng tool thật, ghi nhớ memory/skills/session và kiểm chứng bằng output thật. ChatGPT/Copilot chủ yếu là sản phẩm trợ lý; Hermes là runtime mở, đa provider, có tool loop, state và profile isolation. Profile là một “nhân cách + cấu hình + kho nhớ + skill/tool riêng” để tách manager, developer, reviewer hoặc travel agent thành các agent độc lập.',
+    lastVerified: '2026-07-17',
     status: 'review-needed',
-    diagram: `flowchart LR
-User["Minh Tân"] --> ChatGPT["ChatGPT: hỏi đáp, phân tích"]
-User --> Copilot["GitHub Copilot: hỗ trợ code trong IDE và GitHub"]
-User --> Hermes["Hermes: agent runtime"]
-Hermes --> Profiles["Profiles: manager và specialist"]
-Hermes --> Tools["Tools: terminal, browser, GitHub, Sheets, cron"]
-Hermes --> Skills["Skills: quy trình tái dùng"]
-Hermes --> Verify["Verify: chạy test, build, đọc output thật"]`,
+    diagram: `Hermes architecture is rendered by HermesArchitectureTraffic component`,
     points: [
-      'Các nền tảng có phần giao nhau: đều có thể chat, viết code, phân tích nội dung.',
-      'Copilot thường gần editor/repo hơn; ChatGPT thường là app hội thoại tổng quát.',
-      'Hermes khác ở chỗ bạn cấu hình agent có tool thật, profile chuyên môn, skill, cron và memory để chạy quy trình lặp lại.',
-      'Hermes không thay thế hoàn toàn ChatGPT/Copilot; nó phù hợp khi bạn muốn orchestrate workflow và kiểm chứng bằng hành động thật.',
+      'Hermes = agent runtime, không phải model. Model chỉ là “não dự đoán”; Hermes là hệ điều hành nhỏ bao quanh model để đọc context, gọi tool, chạy workflow, ghi nhớ và verify.',
+      'Khác với ChatGPT/Copilot thường đóng gói thành một sản phẩm trợ lý, Hermes cho bạn cấu hình runtime mở: chọn provider/model, bật tool loop, gắn memory/skills/cron và tách profile theo vai trò.',
+      'Sau đó Hermes gọi provider/model được cấu hình: OpenRouter, Anthropic, OpenAI, Gemini, Copilot OAuth, local model server hoặc provider custom.',
+      'Tool layer là “tay chân”: terminal, browser, file, GitHub, Google Sheets, cron, MCP, image, TTS... Model đề xuất tool call, Hermes thực thi thật rồi đưa output quay lại vòng suy luận.',
+      'Profile là một Hermes instance có thư mục riêng trong ~/.hermes/profiles/<name>/: config, SOUL.md, sessions, memories, skills/plugins có thể tách biệt. Vì vậy có thể có engineering-manager, software-engineer, ui-ux-reviewer, travel-manager...',
+      'Trong setup team có cấu hình orchestration, default profile có thể làm router; manager profile điều phối specialist profiles; specialist chỉ review/coding theo scope để tránh một agent ôm quá nhiều vai trò.',
+      'Memory lưu sở thích/facts bền vững; skills lưu quy trình tái dùng; sessions lưu lịch sử cuộc trò chuyện; cron/gateway giúp Hermes chạy tự động hoặc nhận việc từ nhiều nền tảng.',
     ],
     misconceptions: [
-      '“Hermes là model riêng” — không hẳn; Hermes có thể dùng nhiều provider/model phía sau.',
-      '“Có Hermes thì không cần Copilot” — không đúng; Copilot vẫn rất tiện khi coding trong IDE.',
+      '“Hermes là một LLM mới” — sai. Hermes dùng model/provider phía sau; anh có thể đổi model mà workflow vẫn giữ nguyên.',
+      '“Profile chỉ là tên gọi khác của prompt” — thiếu. Profile có thể có SOUL.md, config, sessions, memory, skills/plugins riêng nên nó giống một agent runtime con được cô lập hơn là chỉ một system prompt.',
+      '“Có tool là thành agent” — chưa đủ. Agent cần vòng lặp mục tiêu → hành động/tool → quan sát output → sửa hướng → verify.',
+      '“Một profile giỏi nhất nên làm hết” — dễ loạn scope. Project software nên có manager + developer + QA + UI/UX + content reviewer.',
     ],
-    nextQuestions: ['Workflow nào nên chạy bằng Hermes?', 'Khi nào dùng Copilot song song Hermes?', 'Rủi ro khi agent có quyền terminal là gì?'],
+    nextQuestions: ['Profile khác skill ở đâu?', 'Khi nào cần tạo profile mới?', 'Hermes gọi tool và verify output như thế nào?'],
   },
   {
     id: 'master-kubernetes',
@@ -300,19 +298,23 @@ Artifact --> CopyB["Dockerfile runtime: COPY artifact vào đúng path"]
 CopyA --> Image["Runtime image"]
 CopyB --> Image`,
     points: [
-      'Build trong Docker: Dockerfile chứa luôn môi trường build, dependency và bước compile. Rất hợp khi muốn build tái lập giữa laptop/CI hoặc dùng multi-stage để stage cuối sạch.',
+      'Build trong Docker: Dockerfile chứa luôn môi trường build, dependency và bước compile. Thực tế nên dùng multi-stage: builder stage có compiler/source/deps, runtime stage chỉ giữ artifact cần chạy.',
       'Lợi điểm build trong Docker: ít lệ thuộc máy host, dễ reproduce, dễ pin toolchain bằng base image, phù hợp app cần native dependency hoặc nhiều bước build phức tạp.',
       'Khuyết điểm build trong Docker: build context lớn có thể chậm, cache cần thiết kế kỹ, debug build trong container đôi khi khó hơn, CI có thể tốn tài nguyên hơn.',
       'Build ngoài Docker: CI/host build artifact trước, chạy test trước, sau đó Dockerfile runtime chỉ COPY artifact vào đúng path như /app/dist, /usr/share/nginx/html hoặc /app/app.jar.',
+      'Các path artifact chỉ là convention: path thật phụ thuộc WORKDIR, runtime image, web server và command chạy app.',
       'Lợi điểm build ngoài Docker: Dockerfile rất mỏng, image build nhanh, pipeline tách rõ test/build/package, artifact có thể được ký/lưu/reuse trước khi đóng image.',
       'Khuyết điểm build ngoài Docker: dễ lệ thuộc môi trường CI/host, cần đảm bảo artifact tương thích runtime image, có nguy cơ copy nhầm artifact cũ nếu pipeline không clean.',
-      'Rule thực dụng: app cần reproducible build hoặc native deps phức tạp → ưu tiên build trong Docker multi-stage; frontend/static hoặc Java/Go đã có artifact chuẩn từ CI → có thể build ngoài rồi copy artifact.',
+      'Cache chỉ giúp tăng tốc build, không tự tạo reproducibility; cache sai hoặc stale có thể che dependency drift nếu pipeline thiếu lockfile và clean strategy.',
+      'Rule thực dụng: mặc định ưu tiên multi-stage build; chỉ copy artifact từ CI khi pipeline đã kiểm soát toolchain, dependency lock, target OS/architecture, CPU instruction set, runtime assets và tính toàn vẹn artifact.',
     ],
     misconceptions: [
       '“Dockerfile luôn phải build source từ đầu” — không đúng. Dockerfile có thể chỉ đóng gói artifact đã build sẵn nếu pipeline kiểm soát tốt.',
-      '“Build ngoài Docker luôn nhanh và tốt hơn” — không hẳn; nếu môi trường CI khác runtime hoặc thiếu pin toolchain, lỗi khó tái hiện sẽ tăng.',
+      '“Build ngoài Docker luôn nhanh và tốt hơn” — không hẳn; CI dùng image build được pin version, lockfile và cache đúng vẫn có thể nhanh và tái lập tốt, còn CI lỏng lẻo thì dễ sinh lỗi khó truy vết.',
       '“Copy artifact vào image là kém chuyên nghiệp” — sai. Đây là pattern bình thường khi artifact đã được build/test/ký ở bước CI trước đó.',
       '“Build trong Docker thì không cần CI test riêng” — sai. Vẫn cần test, scan, verify; chỉ khác nơi chạy bước build.',
+      '“Go/native binary build ở đâu cũng chạy được” — sai. Cần khớp OS/architecture, CPU instruction set, glibc vs musl, CGO, shared libraries và runtime assets như CA certificates/timezone data nếu app cần.',
+      '“Frontend dist dùng được cho mọi môi trường” — chưa chắc. Nhiều biến môi trường/API URL được nhúng ở build time; secret tuyệt đối không đưa vào bundle hoặc ARG/ENV của image.',
     ],
     nextQuestions: ['Khi nào dùng multi-stage?', 'Artifact path nên đặt ở đâu?', 'BuildKit cache giúp gì cho CI?'],
   },
@@ -619,14 +621,88 @@ function K8sTrafficFlow() {
   );
 }
 
+function HermesArchitectureTraffic() {
+  return (
+    <div className="hermesArchitecture" aria-label="Kiến trúc Hermes Agent với traffic chạy qua các lớp">
+      <div className="hermesArchHeader">
+        <span className="badge">Hermes architecture</span>
+        <strong>Request đi vào Hermes → orchestration/profile chọn vai trò → model suy luận → tool thực thi → verify output</strong>
+      </div>
+      <div className="hermesEntry">
+        <div className="archNode userNode"><strong>User / Minh Tân</strong><small>đưa mục tiêu hoặc câu hỏi</small></div>
+        <div className="archRail horizontal" aria-hidden="true"><span /><span /><span /></div>
+        <div className="surfaceCluster">
+          <span className="zoneLabel">Surfaces</span>
+          <div>Desktop GUI</div><div>CLI/TUI</div><div>Discord/Gateway</div><div>IDE/ACP</div>
+        </div>
+      </div>
+      <div className="archRail vertical" aria-hidden="true"><span /><span /><span /></div>
+      <div className="hermesCoreBox">
+        <span className="zoneLabel">Hermes core runtime</span>
+        <div className="coreGrid">
+          <div className="archNode profileRouter"><strong>Profile / orchestration layer</strong><small>có thể cấu hình default profile điều phối manager/specialist</small></div>
+          <div className="archNode promptBuilder"><strong>Prompt/context builder</strong><small>SOUL.md + project rules + session + memory + skills</small></div>
+          <div className="archNode modelRouter"><strong>Model/provider router</strong><small>OpenRouter, Anthropic, OpenAI, Gemini, local/custom...</small></div>
+          <div className="archNode toolDispatcher"><strong>Tool dispatcher</strong><small>terminal, browser, file, GitHub, Sheets, MCP, cron</small></div>
+        </div>
+        <div className="profileExplain">
+          <strong>Profile là gì?</strong>
+          <span>Một profile là một Hermes instance được tách riêng: có SOUL.md, config, sessions, memory, skills/plugins riêng. Vì vậy <code>engineering-manager</code>, <code>software-engineer</code>, <code>ui-ux-reviewer</code> có thể hoạt động như các agent khác vai trò thay vì chỉ đổi tên prompt.</span>
+        </div>
+      </div>
+      <div className="archRail vertical" aria-hidden="true"><span /><span /><span /></div>
+      <div className="runtimeLoop">
+        <section className="loopPanel thinkPanel">
+          <span className="zoneLabel">Reasoning loop</span>
+          <div className="archNode">LLM đề xuất bước tiếp theo</div>
+          <div className="miniRail" aria-hidden="true"><span /><span /></div>
+          <div className="archNode">Hermes thực thi tool thật</div>
+          <div className="miniRail" aria-hidden="true"><span /><span /></div>
+          <div className="archNode">Đọc output → sửa hướng → kết luận</div>
+        </section>
+        <section className="loopPanel statePanel">
+          <span className="zoneLabel">Durable state</span>
+          <div className="stateGrid"><div>Memory</div><div>Skills</div><div>Sessions</div><div>Cron</div></div>
+          <p>Memory = facts/sở thích bền vững. Skills = quy trình tái dùng. Sessions = lịch sử. Cron/Gateway = automation và nhận việc đa nền tảng.</p>
+        </section>
+      </div>
+      <div className="archOutput">
+        <div className="archRail horizontal" aria-hidden="true"><span /><span /><span /></div>
+        <div className="archNode outputNode"><strong>Verified result</strong><small>build/lint/browser/tool output thật, không chỉ lời hứa</small></div>
+      </div>
+    </div>
+  );
+}
+
 function WeatherPipelineFlow() {
   return (
     <div className="animatedFlow" aria-label="Pipeline xử lý câu hỏi thời tiết">
       <div className="flowInput splitInput">
-        <span className="badge">Input</span>
+        <span className="badge">Input người dùng</span>
         <strong>“Thời tiết hôm nay thế nào?”</strong>
         <div className="tokenStream" aria-hidden="true"><span /><span /><span /><span /><span /></div>
       </div>
+      <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+      <section className="inputDecoder">
+        <div className="laneHeader"><span className="pulseDot" />Bước 1 — Model/runtime đọc input và rút ra tín hiệu</div>
+        <div className="signalGrid">
+          <div><span>“Thời tiết”</span><strong>Loại intent</strong><small>Người dùng hỏi về weather.</small></div>
+          <div><span>“hôm nay”</span><strong>Thời gian</strong><small>Cần dữ liệu hiện tại/realtime.</small></div>
+          <div><span>Không có thành phố</span><strong>Slot bị thiếu</strong><small>Chưa biết weather ở đâu.</small></div>
+          <div><span>Cần dữ liệu live</span><strong>Ràng buộc dữ liệu</strong><small>Model không tự có thời tiết hiện tại.</small></div>
+        </div>
+      </section>
+      <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
+      <section className="questionBuilder">
+        <span className="badge">Bước 2 — Từ tín hiệu sinh ra câu hỏi kiểm tra</span>
+        <p>Những ô “Đủ địa điểm?”, “Có nguồn live?” không tự nhiên xuất hiện. Chúng được suy ra từ các slot/ràng buộc ở trên.</p>
+        <div className="derivedQuestionGrid">
+          <div><strong>Slot địa điểm trống</strong><span>→ hỏi: “Đủ địa điểm chưa?”</span></div>
+          <div><strong>Weather là dữ liệu realtime</strong><span>→ hỏi: “Có tool/web/API không?”</span></div>
+          <div><strong>Runtime có thể thiếu quyền/nguồn</strong><span>→ hỏi: “Cần xin quyền hay yêu cầu nguồn không?”</span></div>
+          <div><strong>Tool có thể lỗi/sai</strong><span>→ hỏi: “Kết quả có đáng tin không?”</span></div>
+        </div>
+      </section>
       <div className="splitter" aria-hidden="true">
         <span />
         <span />
@@ -634,12 +710,12 @@ function WeatherPipelineFlow() {
       <div className="dualModelFlow">
         <section className="modelPath basePath">
           <div className="laneHeader"><span className="pulseDot" />Base / non-reasoning model</div>
-          <div className="verticalPipeline">
-            <div className="flowNode startNode">Nhận input</div>
+          <div className="verticalPipeline compactPipeline">
+            <div className="flowNode startNode">Nhận input + tín hiệu đã rút ra</div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="flowNode">Sinh phản hồi nhanh theo context</div>
+            <div className="flowNode">Đi đường ngắn: sinh câu trả lời theo context</div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
-            <div className="flowNode warnNode">Không có live weather → nói thiếu dữ liệu / hỏi địa điểm</div>
+            <div className="flowNode warnNode">Thấy thiếu địa điểm / nguồn live → dừng an toàn</div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
             <div className="flowNode outputNode">Output base: “Mình cần địa điểm hoặc quyền tra cứu thời tiết hiện tại.”</div>
           </div>
@@ -647,29 +723,32 @@ function WeatherPipelineFlow() {
         <section className="modelPath reasoningPath">
           <div className="laneHeader"><span className="pulseDot" />Reasoning model</div>
           <div className="reasoningDecisionFlow">
-            <div className="flowNode startNode">Nhận input</div>
+            <div className="flowNode startNode">Nhận input + lập checklist từ tín hiệu</div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
             <div className="decisionBlock">
+              <small className="sourceHint">Nguồn gốc: slot địa điểm đang trống</small>
               <div className="flowNode decisionNode">Đủ địa điểm?</div>
               <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Hỏi lại địa điểm</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div></div>
-                <div className="conditionBranch passBranch"><span>Yes</span><div className="flowNode">Đi tiếp: cần dữ liệu realtime</div></div>
+                <div className="conditionBranch failBranch"><span>Thiếu</span><div className="flowNode warnNode">Hỏi lại địa điểm</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div><small className="loopLabel">quay lại kiểm tra</small></div>
+                <div className="conditionBranch passBranch"><span>Đủ</span><div className="flowNode">Đi tiếp: cần dữ liệu realtime</div></div>
               </div>
             </div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
             <div className="decisionBlock">
+              <small className="sourceHint">Nguồn gốc: “hôm nay” = dữ liệu live</small>
               <div className="flowNode decisionNode">Có tool / nguồn live?</div>
               <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>No</span><div className="flowNode warnNode">Xin quyền tra cứu / yêu cầu nguồn</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div></div>
-                <div className="conditionBranch passBranch"><span>Yes</span><div className="flowNode">Gọi weather API / web</div></div>
+                <div className="conditionBranch failBranch"><span>Không có</span><div className="flowNode warnNode">Xin quyền tra cứu / yêu cầu nguồn</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div><small className="loopLabel">quay lại kiểm tra</small></div>
+                <div className="conditionBranch passBranch"><span>Có</span><div className="flowNode">Gọi weather API / web</div></div>
               </div>
             </div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
             <div className="decisionBlock">
-              <div className="flowNode decisionNode">Tool trả kết quả?</div>
+              <small className="sourceHint">Nguồn gốc: tool/web có thể lỗi hoặc trả dữ liệu cũ</small>
+              <div className="flowNode decisionNode">Kết quả đáng tin?</div>
               <div className="branchRow">
-                <div className="conditionBranch failBranch"><span>Fail</span><div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div></div>
-                <div className="conditionBranch passBranch"><span>Đúng</span><div className="flowNode checkNode">Kiểm tra độ tin cậy</div></div>
+                <div className="conditionBranch failBranch"><span>Không đạt</span><div className="flowNode warnNode">Thử nguồn khác hoặc hỏi người dùng</div><div className="returnArrow" aria-label="Quay lại điều kiện">↺</div><small className="loopLabel">thử lại</small></div>
+                <div className="conditionBranch passBranch"><span>Đúng</span><div className="flowNode checkNode">Tóm tắt + nêu độ chắc chắn</div></div>
               </div>
             </div>
             <div className="flowEdge vertical" aria-hidden="true"><span /><span /><span /></div>
@@ -699,19 +778,61 @@ function ModelTypesOverview() {
           </div>
         ))}
       </div>
+      <div className="modelMechanics">
+        <span className="badge">Mental model</span>
+        <h3>Model thật sự hoạt động như thế nào?</h3>
+        <p className="mechanicsLead">Cả non-reasoning và reasoning model đều không “suy nghĩ” như người. Chúng vẫn sinh token tuần tự. Khác biệt thực dụng là reasoning model thường được huấn luyện/cấu hình để dùng thêm compute và token trung gian nhằm <strong>phân rã bài toán, tự kiểm tra điều kiện, rồi mới kết luận</strong>. Đây là xu hướng, không phải bảo đảm tuyệt đối.</p>
+        <div className="inputTrace">
+          <span className="traceLabel">Input người dùng</span>
+          <strong>“Thời tiết hôm nay thế nào?”</strong>
+          <p>Các câu hỏi như “đủ địa điểm chưa?” không phải người dùng hỏi thêm. Đó là cách ta diễn giải những điều model/runtime cần tự kiểm tra từ input trước khi trả lời.</p>
+        </div>
+        <div className="questionLadder" aria-label="Các câu hỏi phát sinh từ input">
+          <div><span>1</span><strong>Người dùng đang hỏi gì?</strong><small>Muốn biết thời tiết hiện tại.</small></div>
+          <div><span>2</span><strong>Thiếu dữ kiện nào?</strong><small>Chưa có địa điểm; “hôm nay” là thời gian tương đối, còn phụ thuộc múi giờ.</small></div>
+          <div><span>3</span><strong>Có cần dữ liệu live không?</strong><small>Có, vì thời tiết thay đổi theo thời gian.</small></div>
+          <div><span>4</span><strong>Có tool/web/API không?</strong><small>Nếu có thì tra cứu; nếu không thì nói giới hạn.</small></div>
+        </div>
+        <div className="mechanicsGrid">
+          <div className="mechanicCard">
+            <h4>Non-reasoning: trả lời theo đường ngắn</h4>
+            <ol>
+              <li>Đọc prompt + context.</li>
+              <li>Sinh token tiếp theo theo hướng có xác suất cao.</li>
+              <li>Nếu thấy thiếu dữ liệu rõ ràng, có thể hỏi lại.</li>
+              <li>Ít dành token để giữ checklist nhiều bước, nên dễ bỏ sót điều kiện ẩn.</li>
+            </ol>
+            <p><strong>Hình dung:</strong> như người trả lời nhanh theo phản xạ.</p>
+          </div>
+          <div className="mechanicCard reasoningCard">
+            <h4>Reasoning: dựng checklist trước khi trả lời</h4>
+            <ol>
+              <li>Đọc input và tách thành các câu hỏi kiểm tra như bảng trên.</li>
+              <li>Có thể dùng token/trạng thái suy luận trung gian; phần này thường không hiện ra cho người dùng.</li>
+              <li>Đi từng điều kiện: thiếu gì, có nguồn không, tool lỗi thì làm gì.</li>
+              <li>Sau đó mới viết câu trả lời cuối ngắn gọn.</li>
+            </ol>
+            <p><strong>Hình dung:</strong> như người làm nháp và rà checklist trước khi nói.</p>
+          </div>
+        </div>
+        <div className="tokenExample">
+          <strong>Ví dụ luồng xử lý:</strong>
+          <span>Từ input “Thời tiết hôm nay thế nào?”, model không tự biết thời tiết. Luồng đúng là: nhận câu hỏi → thấy thiếu địa điểm → thấy cần dữ liệu realtime → kiểm tra có tool/web/API không → nếu có thì tra cứu, nếu không thì xin thêm dữ liệu hoặc nói rõ giới hạn.</span>
+        </div>
+      </div>
       <div className="exampleBox">
         <span className="badge">Ví dụ cùng một input</span>
         <h3>Input: “Thời tiết hôm nay thế nào?”</h3>
         <div className="exampleGrid">
           <div>
             <h4>Non-reasoning / chat model</h4>
-            <p>Thường trả lời trực tiếp theo thông tin đang có trong context. Nếu không được nối tool thời tiết/live web, câu trả lời đúng nên là: “Mình không có dữ liệu thời tiết thời gian thực; hãy cho mình địa điểm hoặc cho phép tra cứu.”</p>
-            <p><strong>Điểm chính:</strong> nhanh, ít bước, phù hợp nếu chỉ cần phản hồi đơn giản.</p>
+            <p>Thường đi theo đường ngắn: đọc câu hỏi → sinh câu trả lời trực tiếp từ context hiện có. Nếu không có dữ liệu live weather, câu trả lời an toàn là xin địa điểm hoặc nói thiếu dữ liệu.</p>
+            <p><strong>Điểm chính:</strong> nhanh, rẻ hơn, hợp câu hỏi đơn giản; nhưng nếu bài toán cần nhiều điều kiện, nó dễ bỏ sót bước kiểm tra.</p>
           </div>
           <div>
             <h4>Reasoning model</h4>
-            <p>Sẽ nhận ra câu hỏi thiếu địa điểm và cần dữ liệu thời gian thực. Nó có thể tự phân rã: cần biết vị trí → cần nguồn live weather → nếu có tool thì gọi tool → tóm tắt kết quả và cảnh báo độ tin cậy.</p>
-            <p><strong>Điểm chính:</strong> xử lý có kế hoạch hơn, nhưng vẫn không tự biết thời tiết nếu không có dữ liệu/tool.</p>
+            <p>Dùng nhiều bước inference hơn: nhận ra thiếu địa điểm, xác định cần dữ liệu thời gian thực, quyết định có gọi tool/web/API không, xử lý lỗi tool, rồi mới tóm tắt kết quả.</p>
+            <p><strong>Điểm chính:</strong> chậm/tốn hơn nhưng hợp bài toán nhiều ràng buộc; vẫn không tự biết sự thật hiện tại nếu không có nguồn dữ liệu.</p>
           </div>
         </div>
         <WeatherPipelineFlow />
@@ -750,8 +871,16 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
 }
 
 function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void }) {
+  const sidebarRef = React.useRef<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    const activeItem = sidebarRef.current?.querySelector('.sidebarArticle.current')
+      ?? sidebarRef.current?.querySelector('.sidebarTopic.active');
+    activeItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [activeArticleId, activeTopicId]);
+
   return (
-    <aside className="lessonSidebar" aria-label="Danh sách bài học">
+    <aside className="lessonSidebar" aria-label="Danh sách bài học" ref={sidebarRef}>
       <button className="sidebarHome" onClick={onHome} type="button">Anti Knowledge Outdate</button>
       {topics.map((topic) => {
         const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
@@ -845,7 +974,7 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
         <p className="question">Câu hỏi: {article.question}</p>
         <h1>{article.title}</h1>
         <p className="summary">{article.summary}</p>
-        {article.id === 'master-kubernetes' ? <K8sTrafficFlow /> : article.id === 'multi-container-trong-pod' ? <MultiContainerPodCircle /> : <MermaidDiagram chart={article.diagram} id={article.id} />}
+        {article.id === 'master-kubernetes' ? <K8sTrafficFlow /> : article.id === 'multi-container-trong-pod' ? <MultiContainerPodCircle /> : article.id === 'hermes-vs-copilot-chatgpt' ? <HermesArchitectureTraffic /> : <MermaidDiagram chart={article.diagram} id={article.id} />}
         <div className="grid2">
           <section>
             <h4>Ý chính</h4>
@@ -904,6 +1033,19 @@ function HomePage({ onOpenTopic }: { onOpenTopic: (topicId: string) => void }) {
   );
 }
 
+function NotFoundPage({ onHome }: { onHome: () => void }) {
+  return (
+    <main className="pageShell">
+      <PageActions onBack={onHome} onHome={onHome} backLabel="Quay lại trang chính" />
+      <section className="card emptyPage">
+        <div className="placeholderIcon"><Boxes /></div>
+        <h1>Không tìm thấy bài học</h1>
+        <p>URL này có thể đã được xoá hoặc đổi tên. Hãy quay lại trang chính để chọn bài đang có.</p>
+      </section>
+    </main>
+  );
+}
+
 function App() {
   const [view, setView] = React.useState<View>(() => viewFromHash());
 
@@ -937,7 +1079,8 @@ function App() {
   }
 
   if (view.type === 'article') {
-    const article = articles.find((item) => item.id === view.articleId) ?? articles[0];
+    const article = articles.find((item) => item.id === view.articleId);
+    if (!article) return <NotFoundPage onHome={openHome} />;
     const parentTopic = topics.find((topic) => topic.title === article.topic || (article.topic === 'AI' && topic.id === 'ai')) ?? topics[0];
     return <ArticlePage article={article} parentTopicId={parentTopic.id} onBack={() => openTopic(parentTopic.id)} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;
   }
