@@ -33,11 +33,44 @@ jobs:
             exit 1
           fi
 
-          for section in "WHAT CHANGED" "BENEFIT" "EVIDENCE"; do
-            if ! grep -qiE "(^|[[:space:]])${section}([[:space:]]|$)" <<< "${PR_BODY}"; then
-              echo "::error::PR body must include section: ${section}"
-              exit 1
-            fi
-          done
+          python3 - <<'PY'
+          import os, re, sys
+
+          body = os.environ.get("PR_BODY") or ""
+          required = [
+              ("🧩", "WHAT CHANGED"),
+              ("🚀", "BENEFIT"),
+              ("✅", "EVIDENCE"),
+          ]
+          headings = list(re.finditer(r"^##\s+(.+?)\s*$", body, re.MULTILINE))
+          heading_texts = [h.group(1).strip() for h in headings]
+
+          def fail(message: str) -> None:
+              print(f"::error::{message}")
+              sys.exit(1)
+
+          for icon, title in required:
+              expected = f"{icon} {title}"
+              if expected not in heading_texts:
+                  fail(f"PR body must include exact heading: ## {expected}")
+
+              idx = heading_texts.index(expected)
+              start = headings[idx].end()
+              end = headings[idx + 1].start() if idx + 1 < len(headings) else len(body)
+              content = body[start:end]
+              meaningful = []
+              for line in content.splitlines():
+                  stripped = line.strip()
+                  if not stripped or stripped == "-" or stripped.startswith("<!--") or stripped.endswith("-->"):
+                      continue
+                  meaningful.append(stripped)
+              if not meaningful:
+                  fail(f"Section {title} must contain real content, not only placeholder text")
+
+          if "Profile reviewer đã review và OK" not in body:
+              fail("EVIDENCE must include profile reviewer confirmation line")
+
+          print("PR body policy passed.")
+          PY
 
           echo "PR policy passed."
