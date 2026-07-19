@@ -88,7 +88,7 @@ type DecisionRow = {
 
 function DecisionTable({ rows, label }: { rows: DecisionRow[]; label: string }) {
   return (
-    <div className="k8sDecisionTableWrap">
+    <div className="k8sDecisionTableWrap" role="region" aria-label={`${label} — cuộn ngang khi cần`} tabIndex={0}>
       <table className="k8sDecisionTable" aria-label={label}>
         <thead><tr><th>Cấu hình</th><th>Tại sao cần?</th><th>Lấy số liệu ở đâu?</th><th>Cách đặt value</th></tr></thead>
         <tbody>
@@ -118,7 +118,7 @@ export function KubernetesConfigurationGuide() {
       setting: 'Memory request / limit',
       purpose: 'Request phục vụ scheduling/eviction; vượt memory limit khiến container bị OOMKilled. Memory không throttling mềm như CPU.',
       evidence: 'Đo working set, startup peak, heap sau GC, p95/p99 và leak trend trong load test dài đủ lâu.',
-      decision: 'Request ≈ max(p95 working set, startup peak) + 10–30% headroom. Limit phải cao hơn peak hợp lệ nhưng vẫn bảo vệ node; xác nhận bằng OOM/restart và load canary.',
+      decision: 'Dùng high-watermark theo cửa sổ đủ dài, bao gồm startup/traffic peak, hành vi GC/leak và uncertainty đã đo. Headroom 10–30% chỉ là baseline minh họa để canary, không phải mặc định; limit phải chứa peak hợp lệ nhưng vẫn bảo vệ node.',
     },
     {
       setting: 'CPU limit',
@@ -204,7 +204,7 @@ export function KubernetesObservabilityGuide() {
     {
       setting: 'Startup probe',
       purpose: 'Chặn readiness/liveness cho đến khi app khởi động xong, tránh liveness giết nhầm service khởi động chậm.',
-      evidence: 'Đo p99 cold start gồm image init, migration an toàn, cache warm-up và JIT.',
+      evidence: 'Đo p99 cold start gồm image init, app init, cache warm-up và JIT. Schema migration dùng Job hoặc bước deploy có coordination; không để mỗi replica tự migrate trừ khi thao tác cục bộ thật sự idempotent.',
       decision: 'failureThreshold × periodSeconds phải lớn hơn p99 startup + margin. Sau khi startup thành công, readiness/liveness mới bắt đầu điều khiển.',
     },
     {

@@ -79,10 +79,16 @@ const modelTypes: ModelType[] = [
     useCases: ['Semantic search', 'RAG', 'Dedup/gợi ý tài liệu'],
   },
   {
-    name: 'Multimodal / tool-capable model',
-    shortName: 'Multimodal / tool',
-    description: 'Có thể xử lý thêm ảnh/âm thanh/file hoặc gọi tool qua runtime. Khả năng này thường đến từ cả model lẫn hệ thống bao quanh, không chỉ từ model đơn lẻ.',
-    useCases: ['Đọc ảnh/screenshot', 'Phân tích file', 'Agent gọi tool'],
+    name: 'Multimodal model',
+    shortName: 'Multimodal',
+    description: 'Nhận thêm modality như ảnh, âm thanh hoặc video bên cạnh text. Phải benchmark riêng khả năng hiểu từng modality, context và chi phí xử lý.',
+    useCases: ['Đọc ảnh/screenshot', 'OCR và tài liệu', 'Phân tích audio/video'],
+  },
+  {
+    name: 'Tool-capable model + runtime',
+    shortName: 'Tool calling',
+    description: 'Model có thể đề xuất structured tool call, nhưng runtime mới thực thi quyền, validation, retry và audit. Đây là capability độc lập với multimodal dù hai nhóm có thể giao nhau.',
+    useCases: ['Agent gọi API', 'Workflow có permission', 'Automation cần audit'],
   },
 ];
 
@@ -915,7 +921,7 @@ function ModelSelectionGuide() {
         ))}
       </div>
 
-      <div className="modelDecisionTableWrap">
+      <div className="modelDecisionTableWrap" role="region" aria-label="Bảng chọn model — cuộn ngang khi cần" tabIndex={0}>
         <table className="modelDecisionTable">
           <thead><tr><th>Workload</th><th>Ứng viên nên benchmark</th><th>Khi phù hợp</th><th>Cần lưu ý</th></tr></thead>
           <tbody>

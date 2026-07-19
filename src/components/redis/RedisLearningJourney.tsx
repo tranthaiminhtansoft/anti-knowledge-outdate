@@ -103,6 +103,7 @@ export function RedisLearningJourney({ chapterId }: { chapterId: string }) {
   const [speed, setSpeed] = React.useState(1400);
   const [completed, setCompleted] = React.useState<Set<string>>(() => loadCompleted());
   const pendingStep = React.useRef<PendingStep>(null);
+  const chapterRailRef = React.useRef<HTMLElement>(null);
 
   const persistCompleted = React.useCallback((next: Set<string>) => {
     setCompleted(next);
@@ -130,6 +131,12 @@ export function RedisLearningJourney({ chapterId }: { chapterId: string }) {
     pendingStep.current = null;
     setStepIndex(target === 'last' ? chapter.steps.length - 1 : typeof target === 'number' ? target : 0);
   }, [chapter]);
+
+  React.useEffect(() => {
+    chapterRailRef.current
+      ?.querySelector<HTMLElement>('[aria-current="page"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [chapter.id]);
 
   const nextStep = React.useCallback((automatic = false) => {
     if (stepIndex < chapter.steps.length - 1) {
@@ -190,7 +197,7 @@ export function RedisLearningJourney({ chapterId }: { chapterId: string }) {
         <p>Đi từ cache đơn giản đến HA, sharding, multi-region và incident response. Mỗi bước nối requirement với data path, failure mode, metric và runbook.</p>
       </header>
 
-      <nav className="redisChapterRail" aria-label="Các chương Redis">
+      <nav ref={chapterRailRef} className="redisChapterRail" aria-label="Các chương Redis">
         {redisChapters.map((item, index) => (
           <button
             type="button"
