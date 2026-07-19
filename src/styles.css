@@ -351,7 +351,7 @@ th { color: #8cc7ff; }
 .dockerCoreNode.engine { border-color: #0ea5e988; box-shadow: 0 0 28px #0ea5e916; }
 .dockerCoreNode strong { display: block; color: #eef6ff; font-size: 1rem; }
 .dockerCoreNode small, .dockerPathSequence small, .dockerResourceGrid small { display: block; margin-top: 5px; color: #aebdd2; line-height: 1.45; }
-.dockerPathGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.dockerPathGrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: 16px; }
 .dockerPathGrid article { min-width: 0; padding: 16px; border-radius: 20px; border: 1px solid #31517c; background: #091426; }
 .pathLabel { display: inline-flex; padding: 5px 9px; border-radius: 999px; background: #062015; border: 1px solid #22c55e77; color: #86efac; font-size: .76rem; font-weight: 900; }
 .pathLabel.run { background: #0b1728; border-color: #60a5fa77; color: #bfdbfe; }
