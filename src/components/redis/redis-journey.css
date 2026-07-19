@@ -1,0 +1,157 @@
+.redisJourney {
+  --redis-panel: #0d1a2b;
+  --redis-panel-2: #102238;
+  --redis-text: #e8f0fb;
+  --redis-muted: #9db0c8;
+  --redis-line: #35506f;
+  --redis-active: #6dd5ff;
+  --redis-good: #37d39a;
+  --redis-warn: #ffc857;
+  --redis-bad: #ff5c7a;
+  color: var(--redis-text);
+  margin-top: 16px;
+  border: 1px solid #223b57;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 0%, #142c46 0, #07111f 46%);
+}
+
+.redisJourneyHeader { padding: 20px 22px 14px; border-bottom: 1px solid #20354d; }
+.redisJourneyHeader h2 { margin: 8px 0 6px; font-size: clamp(24px, 3vw, 34px); }
+.redisJourneyHeader p { margin: 0; max-width: 960px; color: var(--redis-muted); line-height: 1.6; }
+.redisChapterRail { display: flex; gap: 7px; padding: 11px 14px; overflow-x: auto; border-bottom: 1px solid #223b57; scrollbar-width: thin; }
+.redisChapterRail button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; border: 1px solid #355674; background: #10263d; color: var(--redis-text); border-radius: 999px; padding: 8px 11px; cursor: pointer; }
+.redisChapterRail button span { display: grid; place-items: center; min-width: 21px; height: 21px; border-radius: 50%; background: #071726; color: var(--redis-active); font-size: 11px; font-weight: 800; }
+.redisChapterRail button b { color: var(--redis-good); }
+.redisChapterRail button:hover, .redisChapterRail button.active { background: #183f5e; border-color: var(--redis-active); }
+
+.redisJourneyGuide { padding: 15px 17px; border-bottom: 1px solid #223b57; background: linear-gradient(135deg, #16405eb8, #0b1d30d6); }
+.redisJourneyTop { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.redisJourneyTop > div > span { color: var(--redis-active); font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.redisJourneyTop h3 { margin: 4px 0 0; font-size: clamp(20px, 2.4vw, 27px); }
+.redisJourneyTop > strong { flex: 0 0 auto; padding: 7px 10px; border: 1px solid #426684; border-radius: 999px; color: #c8d9ea; font-size: 12px; }
+.redisJourneyStory { margin: 13px 0; padding-left: 12px; border-left: 3px solid var(--redis-active); color: #d3e0ed; line-height: 1.55; }
+.redisJourneyContext { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.redisJourneyContext article { min-width: 0; min-height: 84px; border: 1px solid #31516e; border-radius: 12px; background: #071625a8; padding: 10px; }
+.redisJourneyContext b { display: block; margin-bottom: 6px; color: var(--redis-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .09em; }
+.redisJourneyContext span { color: #d9e6f2; font-size: 12px; line-height: 1.45; }
+.redisOverallProgress { height: 8px; margin-top: 13px; border-radius: 999px; overflow: hidden; background: #142b44; }
+.redisOverallProgress > div { height: 100%; transition: width .3s; background: linear-gradient(90deg, var(--redis-active), var(--redis-good)); }
+.redisJourneyGuide > small { display: block; margin-top: 6px; color: var(--redis-muted); text-align: right; }
+
+.redisControls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #223b57; }
+.redisControls button, .redisControls select { border: 1px solid #355674; background: #10263d; color: var(--redis-text); border-radius: 10px; padding: 9px 12px; cursor: pointer; font: inherit; }
+.redisControls button:hover:not(:disabled), .redisControls select:hover { background: #173550; }
+.redisControls button:disabled { opacity: .38; cursor: not-allowed; }
+.redisControls label { display: inline-flex; align-items: center; gap: 7px; color: var(--redis-muted); font-size: 12px; }
+.redisControls > span { margin-left: auto; padding: 8px 11px; border: 1px solid #294762; border-radius: 999px; color: var(--redis-muted); font-size: 13px; }
+.redisControls :focus-visible, .redisChapterRail button:focus-visible, .redisChapterNav button:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+
+.redisStage { min-width: 0; overflow-x: auto; background: linear-gradient(#456a8d14 1px, transparent 1px), linear-gradient(90deg, #456a8d14 1px, transparent 1px); background-size: 28px 28px; }
+.redisStage svg { display: block; width: 100%; min-width: 760px; min-height: 440px; }
+.redisArrowHead { fill: var(--redis-line); }
+.redisEdge { fill: none; stroke: var(--redis-line); stroke-width: 3; transition: stroke .25s, stroke-width .25s; }
+.redisEdge.active { stroke: var(--redis-active); stroke-width: 5; stroke-dasharray: 10 8; animation: redisDash .65s linear infinite; filter: drop-shadow(0 0 7px #6dd5ff99); }
+.redisNode rect { fill: #112942; stroke: #416384; stroke-width: 2; transition: fill .25s, stroke .25s, stroke-width .25s; }
+.redisNode text { fill: var(--redis-text); font-size: 15px; font-weight: 750; text-anchor: middle; }
+.redisNode .redisNodeSub { fill: var(--redis-muted); font-size: 11px; font-weight: 500; }
+.redisNode.active rect { fill: #16405e; stroke: var(--redis-active); stroke-width: 4; filter: drop-shadow(0 0 10px #6dd5ff80); }
+.redisNode.good rect { stroke: var(--redis-good); }
+.redisNode.warn rect { stroke: var(--redis-warn); }
+.redisNode.bad rect { stroke: var(--redis-bad); }
+.redisPulse { fill: var(--redis-active); filter: drop-shadow(0 0 6px #6dd5ffe6); }
+@keyframes redisDash { to { stroke-dashoffset: -18; } }
+
+.redisStepCaption { padding: 14px 17px; border-top: 1px solid #223b57; border-bottom: 1px solid #223b57; }
+.redisStepCaption > strong { font-size: 19px; }
+.redisStepCaption p { margin: 7px 0 10px; color: #c1d0e1; line-height: 1.55; }
+.redisStepCaption > div { height: 7px; border-radius: 999px; overflow: hidden; background: #172d46; }
+.redisStepCaption > div span { display: block; height: 100%; transition: width .25s; background: linear-gradient(90deg, #5cc8ff, var(--redis-good)); }
+
+.redisOpsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px; }
+.redisOpsGrid article { min-width: 0; border: 1px solid #29455f; border-radius: 12px; background: #081625b3; padding: 13px; }
+.redisOpsGrid h3 { margin: 0 0 8px; font-size: 15px; }
+.redisOpsGrid p, .redisOpsGrid li { color: #bacbdd; line-height: 1.5; font-size: 13px; }
+.redisOpsGrid ul { margin: 0; padding-left: 20px; }
+.redisOutcome { border-left: 3px solid var(--redis-good) !important; }
+.redisCheckpoint { border-left: 3px solid var(--redis-warn) !important; }
+.redisOpsGrid dl { margin: 0; }
+.redisOpsGrid dl div { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 6px 0; border-bottom: 1px solid #20354d; font-size: 13px; }
+.redisOpsGrid dl div:last-child { border-bottom: 0; }
+.redisOpsGrid dt { color: var(--redis-muted); }
+.redisOpsGrid dd { margin: 0; color: var(--redis-text); font-weight: 750; font-variant-numeric: tabular-nums; }
+.redisLogCard { grid-column: 1 / -1; }
+.redisLogCard pre { max-width: 100%; margin: 0; overflow-x: auto; border: 1px solid #20354d; border-radius: 10px; background: #030e19; padding: 12px; }
+.redisLogCard code { color: #9be7c4; font-size: 12px; white-space: pre-wrap; }
+.redisChapterNav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 14px 15px; border-top: 1px solid #223b57; }
+.redisChapterNav button { border: 1px solid #355674; background: #10263d; color: var(--redis-text); border-radius: 11px; padding: 11px 13px; cursor: pointer; text-align: left; }
+.redisChapterNav button:last-child { text-align: right; }
+.redisChapterNav button:disabled { opacity: .35; cursor: not-allowed; }
+.redisChapterNav small { display: block; margin-bottom: 4px; color: var(--redis-muted); }
+.redisChapterNav span { line-height: 1.4; }
+
+:root[data-theme='light'] .redisJourney {
+  --redis-text: #16243a;
+  --redis-muted: #40536d;
+  --redis-line: #7990aa;
+  --redis-active: #075985;
+  --redis-good: #047857;
+  --redis-warn: #92400e;
+  --redis-bad: #be123c;
+  border-color: #b7cbe4;
+  background: radial-gradient(circle at 20% 0%, #e7f3ff 0, #f8fbff 48%);
+}
+:root[data-theme='light'] .redisJourneyHeader,
+:root[data-theme='light'] .redisChapterRail,
+:root[data-theme='light'] .redisControls,
+:root[data-theme='light'] .redisStepCaption,
+:root[data-theme='light'] .redisChapterNav { border-color: #bfd0e5; }
+:root[data-theme='light'] .redisJourneyHeader p,
+:root[data-theme='light'] .redisJourneyStory,
+:root[data-theme='light'] .redisStepCaption p,
+:root[data-theme='light'] .redisOpsGrid p,
+:root[data-theme='light'] .redisOpsGrid li { color: #40536d; }
+:root[data-theme='light'] .redisChapterRail button,
+:root[data-theme='light'] .redisControls button,
+:root[data-theme='light'] .redisControls select,
+:root[data-theme='light'] .redisChapterNav button { color: #16243a; border-color: #9eb6d0; background: #eef5ff; }
+:root[data-theme='light'] .redisChapterRail button span { color: #075985; background: #dcecff; }
+:root[data-theme='light'] .redisChapterRail button:hover,
+:root[data-theme='light'] .redisChapterRail button.active,
+:root[data-theme='light'] .redisControls button:hover:not(:disabled) { background: #dcecff; border-color: #075985; }
+:root[data-theme='light'] .redisJourneyGuide { border-color: #bfd0e5; background: linear-gradient(135deg, #e2f1ff, #f4f8ff); }
+:root[data-theme='light'] .redisJourneyTop > strong { color: #334155; border-color: #9eb6d0; }
+:root[data-theme='light'] .redisJourneyContext article,
+:root[data-theme='light'] .redisOpsGrid article { border-color: #b7cbe4; background: #fff; }
+:root[data-theme='light'] .redisJourneyContext span,
+:root[data-theme='light'] .redisOpsGrid dd { color: #16243a; }
+:root[data-theme='light'] .redisStage { background-color: #f7fbff; }
+:root[data-theme='light'] .redisNode rect { fill: #fff; stroke: #7089a6; }
+:root[data-theme='light'] .redisNode.active rect { fill: #dceeff; stroke: #075985; filter: drop-shadow(0 0 8px #07598555); }
+:root[data-theme='light'] .redisNode text { fill: #16243a; }
+:root[data-theme='light'] .redisNode .redisNodeSub { fill: #40536d; }
+:root[data-theme='light'] .redisStepCaption > div,
+:root[data-theme='light'] .redisOverallProgress { background: #d8e5f3; }
+:root[data-theme='light'] .redisOpsGrid dl div { border-color: #d7e2ef; }
+
+@media (max-width: 820px) {
+  .redisJourneyContext, .redisOpsGrid { grid-template-columns: 1fr; }
+  .redisLogCard { grid-column: auto; }
+  .redisJourneyTop { flex-direction: column; }
+  .redisControls > span { margin-left: 0; width: 100%; text-align: center; }
+}
+
+@media (max-width: 560px) {
+  .redisJourneyHeader, .redisJourneyGuide, .redisStepCaption { padding-left: 12px; padding-right: 12px; }
+  .redisControls button, .redisControls label { width: 100%; justify-content: center; }
+  .redisControls select { flex: 1; }
+  .redisChapterNav { grid-template-columns: 1fr; }
+  .redisChapterNav button:last-child { text-align: left; }
+  .redisStage svg { min-width: 700px; min-height: 398px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .redisEdge.active { animation: none; stroke-dasharray: none; }
+  .redisPulse { display: none; }
+  .redisOverallProgress > div, .redisStepCaption > div span { transition: none; }
+}
