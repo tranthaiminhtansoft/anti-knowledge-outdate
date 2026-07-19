@@ -9,11 +9,15 @@ import {
   BrainCircuit,
   Boxes,
   Container,
+  Database,
   Network,
 } from 'lucide-react';
 import mermaid from 'mermaid';
 import { AIApplicationDiagram, AgentArchitectureDiagram, LessonQA } from './components/AIFundamentalsDiagrams';
 import { DockerCoreDiagram, DockerLessonDetails } from './components/DockerLearning';
+import { KubernetesConfigurationGuide, KubernetesObservabilityGuide } from './components/KubernetesOperationsLearning';
+import { RedisLearningJourney } from './components/redis/RedisLearningJourney';
+import { redisChapters } from './components/redis/redisJourneyData';
 import { ModelAgentSimulator } from './components/ModelAgentSimulator';
 import './styles.css';
 
@@ -25,7 +29,7 @@ type View = { type: 'home' } | { type: 'topic'; topicId: string } | { type: 'art
 
 type Article = {
   id: string;
-  topic: 'AI' | 'Kubernetes' | 'Docker' | 'DevOps';
+  topic: 'AI' | 'Kubernetes' | 'Docker' | 'Redis' | 'DevOps';
   title: string;
   navLabel?: string;
   question: string;
@@ -102,6 +106,34 @@ const lessonQAs: Record<string, { question: string; answer: string }[]> = {
       question: 'Tại sao lại cần model?',
       answer: 'Model chứa khả năng đã học từ dữ liệu. Nếu chỉ có runtime và code thông thường, hệ thống chỉ làm được rule do lập trình viên viết sẵn; nó không tự phân loại ảnh, sinh ngôn ngữ hoặc nhận ra pattern phức tạp từ dữ liệu.',
     },
+    {
+      question: 'Reasoning model nên chọn DeepSeek hay GPT?',
+      answer: 'Không chọn chỉ theo tên hãng. Hãy lấy 2–3 ứng viên như OpenAI reasoning/GPT, DeepSeek-R1, Claude extended thinking hoặc Gemini thinking-capable, rồi chạy cùng bộ bài thật của bạn. Chọn model đạt ngưỡng chất lượng với latency, chi phí, privacy và tool calling phù hợp nhất.',
+    },
+    {
+      question: 'Có nên dùng reasoning model cho mọi request?',
+      answer: 'Không. Tóm tắt, phân loại, extraction và chat trực tiếp thường hợp model general/fast hơn. Một router thực dụng có thể dùng model nhanh trước, chỉ chuyển sang reasoning model khi task nhiều bước, độ rủi ro cao hoặc lần đầu không đạt tiêu chí.',
+    },
+  ],
+  'k8s-workload-configuration': [
+    {
+      question: 'Có thể copy requests/limits từ một service tương tự không?',
+      answer: 'Chỉ dùng làm baseline tạm thời. Phải chạy load gần traffic mục tiêu, đo CPU, memory working set, startup peak, throttling và OOM rồi canary. Hai service cùng framework vẫn có object graph, concurrency và request profile khác nhau.',
+    },
+    {
+      question: 'Taint/Toleration khác Node Affinity thế nào?',
+      answer: 'Taint repels Pod; toleration cho Pod quyền đi qua rào cản đó. Node affinity thu hút hoặc bắt buộc Pod chọn node có label phù hợp. Dedicated node pool thường dùng cả taint+toleration và affinity.',
+    },
+  ],
+  'k8s-observability-probes': [
+    {
+      question: 'Readiness fail có restart container không?',
+      answer: 'Không. Kubelet đánh dấu Pod chưa Ready và controller endpoints rút Pod khỏi traffic. Restart là hành động của liveness hoặc startup probe khi chúng fail đủ threshold.',
+    },
+    {
+      question: 'Tại sao không dùng cùng endpoint kiểm tra database cho liveness?',
+      answer: 'Vì database outage không được chữa bằng cách restart mọi application Pod. Điều đó dễ tạo restart storm. Liveness nên kiểm tra process có tự hồi phục được không; readiness mới cân nhắc dependency thiết yếu để quyết định nhận traffic.',
+    },
   ],
   agent: [
     {
@@ -136,9 +168,9 @@ const topics: Topic[] = [
     title: 'Kubernetes',
     description: 'Master Kubernetes từ mental model: control plane, node, pod, service, ingress, rollout và cách debug.',
     status: 'available',
-    articleCount: 2,
+    articleCount: 4,
     icon: <Network />,
-    bullets: ['Master Kubernetes', 'Control plane vs worker node', 'Pod/Deployment/Service/Ingress', 'Multi-container Pod patterns'],
+    bullets: ['Kubernetes cốt lõi', 'Multi-container Pod', 'Configuration', 'Observability'],
   },
   {
     id: 'docker',
@@ -148,6 +180,15 @@ const topics: Topic[] = [
     articleCount: 6,
     icon: <Container />,
     bullets: ['Core', 'Multi-stages', 'Build Cache', 'Volume', 'Docker Compose', 'Network'],
+  },
+  {
+    id: 'redis',
+    title: 'Redis',
+    description: 'Redis từ cache request flow tới persistence, HA, sharding, multi-region, deployment và incident response.',
+    status: 'available',
+    articleCount: redisChapters.length,
+    icon: <Database />,
+    bullets: ['Cache & memory', 'HA & Sentinel', 'Cluster & multi-region', 'Production operations'],
   },
   {
     id: 'devops',
@@ -199,6 +240,9 @@ const articles: Article[] = [
       'Model học các tham số/trọng số từ dữ liệu huấn luyện. Inference dùng những trọng số đó và input hiện tại để tạo prediction, vector, label hoặc token tiếp theo.',
       'Theo output có classification model, regression model, generative model/LLM và embedding model. Theo modality có text, vision, audio và multimodal model.',
       'Reasoning/non-reasoning mô tả cách model được huấn luyện và vận hành cho bài nhiều bước; không có nghĩa một bên có ý thức còn bên kia không suy nghĩ.',
+      'Chọn model theo quality gate trên workload thật, latency, chi phí, context, tool/structured-output reliability, modality, privacy và cách deploy — không chọn chỉ theo benchmark hay tên hãng.',
+      'DeepSeek-R1, OpenAI reasoning/GPT, Claude extended thinking và Gemini thinking-capable là các nhóm ứng viên reasoning để benchmark; model nhanh/general phù hợp hơn cho tóm tắt, extraction và chat trực tiếp.',
+      'Một chiến lược tiết kiệm là dùng model nhanh làm mặc định rồi route sang reasoning model cho task nhiều bước, rủi ro cao hoặc case không đạt quality gate.',
       'Model chạy một mình chỉ thấy context và tool schemas được cung cấp. Nó không tự có Internet, quyền file hay API nếu application/agent runtime không cấp.',
       'AI cần model vì runtime và logic chính không tự mang khả năng đã học. Không có model, hệ thống chỉ còn code/rule do con người viết sẵn.',
     ],
@@ -207,6 +251,8 @@ const articles: Article[] = [
       '“Reasoning model tự có Internet và tool” — sai. Tool access đến từ runtime và permission bên ngoài model.',
       '“Mỗi model chỉ thuộc đúng một loại” — sai. Một multimodal LLM có thể vừa generative, reasoning và tool-capable.',
       '“Model càng lớn thì luôn phù hợp hơn” — sai. Latency, chi phí, dữ liệu, task và khả năng kiểm chứng đều quan trọng.',
+      '“DeepSeek hay GPT luôn tốt hơn cho mọi tình huống” — sai. Cùng một model có thể thắng benchmark này nhưng thua workload, ngôn ngữ, tool schema hoặc hạ tầng cụ thể của bạn.',
+      '“Reasoning model nên xử lý mọi request” — lãng phí. Model general/fast thường đủ tốt và nhanh hơn cho task trực tiếp; reasoning tier nên được route theo độ khó và impact.',
     ],
     nextQuestions: ['Model được train như thế nào?', 'Embedding khác generation ra sao?', 'Reasoning model có thêm gì ở runtime?'],
   },
@@ -317,6 +363,58 @@ const articles: Article[] = [
       '“Multi-container Pod phù hợp để gom frontend + backend + database” — sai với production; đó là nhiều workload độc lập, nên tách deployment.',
     ],
     nextQuestions: ['Sidecar native trong Kubernetes mới khác gì?', 'Resource limit chia cho từng container ra sao?', 'Khi nào nên tách thành service riêng?'],
+  },
+  {
+    id: 'k8s-workload-configuration',
+    topic: 'Kubernetes',
+    title: 'Configuration: resource, scheduling và shutdown',
+    navLabel: 'Configuration',
+    question: 'Tại sao cần resources/limits, taint/toleration, node affinity và termination grace; chọn value bằng cách nào?',
+    summary: 'Configuration của workload biến dữ liệu vận hành thành quyết định cho scheduler và kubelet: request giúp đặt Pod vào node đủ sức, limit tạo safety boundary, taint/affinity kiểm soát vị trí, còn termination grace cho app thời gian dừng an toàn. Không có một bộ số dùng chung; phải đo load, p95/p99, failure budget và kiểm chứng bằng canary.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Custom Kubernetes configuration decision guide`,
+    points: [
+      'CPU request phục vụ scheduling và chia CPU khi tranh chấp; memory request phục vụ scheduling/eviction. Memory vượt limit gây OOMKilled, còn CPU limit có thể gây throttling.',
+      'Request nên xuất phát từ usage ở traffic mục tiêu; memory cần quan sát working set, startup peak, heap sau GC và leak trend thay vì snapshot ngắn.',
+      'Taint tác động theo effect: NoSchedule chặn scheduling mới, PreferNoSchedule là ưu tiên mềm, NoExecute còn có thể evict Pod đang chạy. Toleration chỉ cấp phép; thường kết hợp node affinity để chọn đúng pool.',
+      'Node affinity required là constraint cứng; preferred là tối ưu mềm. Weight 1–100 là điểm tương đối của scheduler, không phải phần trăm traffic.',
+      'terminationGracePeriodSeconds phải đủ cho preStop, rút traffic, request đang chạy, flush state và graceful shutdown trước SIGKILL.',
+      'Quy trình chọn value: instrument → load test → lấy p95/p99/peak → thêm headroom có lý do → canary → điều chỉnh theo throttling, OOM, Pending, eviction và rollout time.',
+    ],
+    misconceptions: [
+      '“Requests và limits nên bằng nhau cho mọi service” — sai. Chính sách phụ thuộc workload, QoS, burst và mục tiêu latency.',
+      '“CPU limit luôn bảo vệ app” — chưa đủ. Limit thấp có thể throttle và làm p99 latency xấu hơn dù node còn CPU.',
+      '“Có toleration là Pod chắc chắn vào tainted node” — sai. Cần affinity/nodeSelector nếu muốn thu hút hoặc ép Pod vào pool đó.',
+      '“preStop sleep chính là graceful shutdown” — sai. App vẫn phải bắt SIGTERM, ngừng nhận việc mới và tự flush/close đúng cách.',
+    ],
+    nextQuestions: ['Vertical Pod Autoscaler lấy recommendation thế nào?', 'QoS class ảnh hưởng eviction ra sao?', 'Topology spread khác node affinity ở đâu?'],
+  },
+  {
+    id: 'k8s-observability-probes',
+    topic: 'Kubernetes',
+    title: 'Observability: Readiness và Liveness Probe',
+    navLabel: 'Observability',
+    question: 'Readiness/Liveness nhằm mục đích gì và chọn period, timeout, threshold dựa trên số liệu nào?',
+    summary: 'Readiness trả lời Pod có nên nhận traffic mới; Liveness trả lời process có mắc kẹt và cần restart hay không. Startup probe bảo vệ cold start chậm. Giá trị probe phải bám p99 startup/probe latency, transient failure duration, SLO/RTO và failure injection — không copy một mẫu YAML rồi coi là xong observability.',
+    lastVerified: '2026-07-18',
+    status: 'review-needed',
+    diagram: `Custom Kubernetes probe traffic and restart guide`,
+    points: [
+      'Readiness fail đánh dấu endpoint không Ready và loại Pod khỏi backend được route nhưng không restart container; dùng nó để bảo vệ traffic trong startup, overload hoặc dependency thiết yếu bị mất.',
+      'Liveness fail liên tiếp khiến kubelet restart container; endpoint phải kiểm tra khả năng tự hồi phục nội tại, không phụ thuộc database/API bên ngoài để tránh restart storm.',
+      'Startup probe trì hoãn readiness/liveness đến khi app khởi động xong; startup budget gần bằng periodSeconds × failureThreshold.',
+      'Detection window xấp xỉ failureThreshold × periodSeconds; timeout phải lớn hơn p99 probe latency cộng margin nhỏ nhưng đủ ngắn để không treo worker probe.',
+      'Chọn value từ histogram latency, p99 cold start, thời gian lỗi transient và recovery objective; kiểm chứng bằng dependency outage, deadlock, CPU pressure, kill process và rollout.',
+      'Probe là health management, không thay thế observability đầy đủ. Vẫn cần metrics, logs, traces, Kubernetes Events, endpoint state và restart count.',
+    ],
+    misconceptions: [
+      '“Readiness fail sẽ restart Pod” — sai. Nó chủ yếu dừng route traffic vào Pod.',
+      '“Liveness nên kiểm tra database” — nguy hiểm. Database outage có thể làm toàn bộ app restart đồng loạt mà không chữa được nguyên nhân.',
+      '“initialDelaySeconds càng lớn càng an toàn” — dễ che startup regression. Startup probe mô tả startup budget rõ hơn.',
+      '“Probe trả HTTP 200 là đã có observability” — sai. Probe không giải thích nguyên nhân, xu hướng và impact như metrics/logs/traces.',
+    ],
+    nextQuestions: ['Startup probe khác initialDelaySeconds thế nào?', 'Readiness gate dùng khi nào?', 'Probe failure xuất hiện ở Events và metrics nào?'],
   },
   {
     id: 'docker-build-trong-vs-ngoai',
@@ -506,6 +604,20 @@ Network --> DB`,
     ],
     nextQuestions: ['Bridge network là gì?', 'EXPOSE khác ports?', 'host.docker.internal dùng khi nào?'],
   },
+  ...redisChapters.map((chapter): Article => ({
+    id: `redis-${chapter.id}`,
+    topic: 'Redis',
+    title: chapter.title,
+    navLabel: chapter.navLabel,
+    question: chapter.question,
+    summary: chapter.summary,
+    lastVerified: '2026-07-19',
+    status: 'review-needed',
+    diagram: 'Interactive RedisLearningJourney component',
+    points: chapter.keyPoints,
+    misconceptions: chapter.misconceptions,
+    nextQuestions: chapter.questions,
+  })),
 ];
 
 function scrollTop() {
@@ -738,6 +850,102 @@ function ModelTypesOverview() {
   );
 }
 
+function ModelSelectionGuide() {
+  const criteria = [
+    ['Chất lượng task thật', 'Pass rate trên prompt, code và dữ liệu của chính bạn — không chỉ benchmark công khai.'],
+    ['Latency', 'Time-to-first-token và tổng thời gian; reasoning sâu thường chậm hơn.'],
+    ['Chi phí', 'Giá input/output, token reasoning, cache và số lần retry/tool call.'],
+    ['Context', 'Độ dài context hữu ích và khả năng giữ đúng chi tiết trong tài liệu dài.'],
+    ['Tools / output', 'Độ ổn định của function calling, JSON schema, citation và instruction following.'],
+    ['Privacy / hosting', 'Cloud API hay self-host; data retention, region, license và yêu cầu compliance.'],
+  ];
+  const choices = [
+    {
+      workload: 'Lập luận nhiều bước',
+      examples: 'OpenAI reasoning/GPT · DeepSeek-R1 · Claude extended thinking · Gemini thinking-capable',
+      fit: 'Kiến trúc, debug khó, toán/logic, lập kế hoạch có ràng buộc, review rủi ro cao.',
+      caution: 'Chậm và đắt hơn; phải so sánh bằng eval vì không có model thắng mọi bài.',
+    },
+    {
+      workload: 'Chat / tác vụ trực tiếp',
+      examples: 'GPT general/mini tiers · DeepSeek-V3/Chat · Claude/Gemini fast tiers',
+      fit: 'Tóm tắt, viết lại, extraction, phân loại, hỏi đáp khi input và output đã rõ.',
+      caution: 'Đừng trả chi phí reasoning cho request đơn giản; ưu tiên latency và throughput.',
+    },
+    {
+      workload: 'Local / dữ liệu riêng tư',
+      examples: 'DeepSeek-R1 distilled · Qwen · Llama và các open-weight model phù hợp phần cứng',
+      fit: 'Offline, lab nội bộ, dữ liệu không được gửi ra ngoài hoặc cần kiểm soát hạ tầng.',
+      caution: 'Một model 8B local hữu ích cho draft/tác vụ hẹp nhưng không mặc nhiên ngang frontier reasoning.',
+    },
+    {
+      workload: 'Ảnh, PDF, audio',
+      examples: 'GPT multimodal · Gemini multimodal · Claude vision hoặc model chuyên modality',
+      fit: 'Screenshot, biểu đồ, tài liệu scan, hình ảnh sản phẩm và input đa phương thức.',
+      caution: 'Kiểm tra modality thực sự hỗ trợ, giới hạn file, OCR và độ chính xác trên ảnh của bạn.',
+    },
+    {
+      workload: 'RAG / semantic search',
+      examples: 'Keyword/BM25, embedding/vector hoặc hybrid retrieval + model general/reasoning',
+      fit: 'Tìm tài liệu liên quan, hỏi đáp knowledge base, dedup và recommendation.',
+      caution: 'RAG không bắt buộc dùng dense embedding; retrieval kém thì model mạnh vẫn trả lời kém.',
+    },
+    {
+      workload: 'Agent gọi tools',
+      examples: 'Model có tool calling + structured output ổn định; reasoning tier cho plan khó',
+      fit: 'Terminal, browser, API, workflow nhiều bước và tác vụ có state.',
+      caution: 'Ưu tiên độ tin cậy schema, permission, retry và verification hơn điểm chat thuần túy.',
+    },
+  ];
+
+  return (
+    <section className="card compact modelSelectionGuide" aria-labelledby="model-selection-title">
+      <div className="sectionIntro">
+        <span className="badge">Model selection</span>
+        <h2 id="model-selection-title">Chọn model theo workload, không theo “hype”</h2>
+        <p>Tên DeepSeek, GPT, Claude hay Gemini chỉ là danh sách ứng viên. Quyết định cuối phải dựa trên bài test thật, ngân sách, latency, dữ liệu và cách model tích hợp vào hệ thống.</p>
+      </div>
+
+      <div className="selectionCriteriaGrid" role="list" aria-label="Các tiêu chí chọn model">
+        {criteria.map(([title, description], index) => (
+          <article role="listitem" key={title}>
+            <span>{index + 1}</span>
+            <div><strong>{title}</strong><small>{description}</small></div>
+          </article>
+        ))}
+      </div>
+
+      <div className="modelDecisionTableWrap">
+        <table className="modelDecisionTable">
+          <thead><tr><th>Workload</th><th>Ứng viên nên benchmark</th><th>Khi phù hợp</th><th>Cần lưu ý</th></tr></thead>
+          <tbody>
+            {choices.map((choice) => (
+              <tr key={choice.workload}>
+                <th scope="row">{choice.workload}</th>
+                <td>{choice.examples}</td>
+                <td>{choice.fit}</td>
+                <td>{choice.caution}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="modelRoutingFlow" aria-label="Quy trình chọn và route model">
+        <div><span>1</span><strong>Định nghĩa eval</strong><small>20–100 task đại diện + tiêu chí pass/fail.</small></div>
+        <b>→</b>
+        <div><span>2</span><strong>Baseline model nhanh</strong><small>Đo quality, latency và cost trước.</small></div>
+        <b>→</b>
+        <div><span>3</span><strong>So 2–3 ứng viên</strong><small>Chạy cùng prompt, tools và dữ liệu.</small></div>
+        <b>→</b>
+        <div><span>4</span><strong>Route theo độ khó</strong><small>Fast model mặc định; reasoning fallback cho case khó/rủi ro.</small></div>
+      </div>
+
+      <div className="keyConcept"><strong>Quy tắc thực dụng:</strong> chọn model nhỏ/nhanh nhất vẫn đạt quality gate. Chỉ nâng lên reasoning tier khi task nhiều bước, sai sót có impact lớn hoặc eval chứng minh model nhanh chưa đủ.</div>
+    </section>
+  );
+}
+
 function TopicCard({ topic, onOpen }: { topic: Topic; onOpen: () => void }) {
   const isAvailable = topic.status === 'available';
   return (
@@ -925,13 +1133,16 @@ function TopicPage({ topic, onBack, onHome, onOpenTopic, onOpenArticle }: { topi
 
 function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
-  if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelAgentSimulator /></>;
+  if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelSelectionGuide /><ModelAgentSimulator /></>;
   if (article.id === 'agent') return <AgentArchitectureDiagram />;
   if (article.id === 'hermes-vs-copilot-chatgpt') return <HermesArchitectureTraffic />;
   if (article.id === 'docker-build-trong-vs-ngoai') return <DockerCoreDiagram />;
   if (article.topic === 'Docker') return <DockerLessonDetails articleId={article.id} />;
   if (article.id === 'master-kubernetes') return <KubernetesCoreArchitectureLab />;
   if (article.id === 'multi-container-trong-pod') return <MultiContainerPodPatternLab />;
+  if (article.id === 'k8s-workload-configuration') return <KubernetesConfigurationGuide />;
+  if (article.id === 'k8s-observability-probes') return <KubernetesObservabilityGuide />;
+  if (article.topic === 'Redis') return <RedisLearningJourney chapterId={article.id.replace(/^redis-/, '')} />;
   return <MermaidDiagram chart={article.diagram} id={article.id} />;
 }
 
