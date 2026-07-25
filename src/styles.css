@@ -201,7 +201,14 @@ th { color: #8cc7ff; }
 .checkNode { border-color: #f59e0b88; }
 .flowOutput { margin-top: 14px; border-color: #22c55e66; background: #062015; color: #d8ffe7; }
 .flowOutput span { font-weight: 900; color: #86efac; }
-.hermesArchitecture { margin: 22px 0; padding: 20px; border-radius: 28px; border: 1px solid #22d3ee88; background: radial-gradient(circle at 8% 0%, #22d3ee33, transparent 24%), radial-gradient(circle at 88% 12%, #22c55e22, transparent 28%), #06111f; overflow: hidden; }
+.hermesHumanBody { margin: 22px 0; padding: 18px; border-radius: 28px; border: 1px solid #22d3ee88; background: radial-gradient(circle at 8% 0%, #22d3ee33, transparent 24%), #06111f; overflow: hidden; }
+.hermesHumanBodyHeader { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 16px; }
+.hermesHumanBodyHeader h2 { margin: 12px 0 8px; }
+.hermesHumanBodyHeader p, .hermesHumanBodyHint { color: #aebdd2; line-height: 1.6; }
+.hermesHumanBodyHeader a { flex: 0 0 auto; padding: 10px 14px; border-radius: 999px; border: 1px solid #22d3ee88; color: #a5f3fc; background: #083044; font-weight: 900; text-decoration: none; }
+.hermesHumanBodyHeader a:hover, .hermesHumanBodyHeader a:focus-visible { border-color: #fbbf24; color: #fef3c7; outline: none; }
+.hermesHumanBodyFrame { display: block; width: 100%; height: min(1120px, 82vh); min-height: 720px; border: 1px solid #263a58; border-radius: 20px; background: #020817; }
+.hermesHumanBodyHint { margin: 12px 2px 0; font-size: .9rem; }
 .hermesArchHeader, .hermesEntry, .archOutput { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; color: #dbeafe; }
 .hermesArchHeader { margin-bottom: 18px; }
 .archNode, .surfaceCluster, .hermesCoreBox, .loopPanel { border: 1px solid #31517c; background: #0b1728; color: #e7edf7; border-radius: 20px; padding: 14px; }
@@ -392,7 +399,10 @@ th { color: #8cc7ff; }
   .sidebarBackdrop { position: fixed; inset: 0; z-index: 20; background: #0008; }
   .lessonLayout.sidebarOpen .sidebarBackdrop { display: block; }
   .componentTree { grid-template-columns: 1fr; }
-  .detailArticle, .articleCard, .lessonContent, .staticLearningDiagram, .modelAgentSimulator, .dockerCoreDiagram, .dockerLessonDetails { width: 100%; max-width: 100%; min-width: 0; }
+  .detailArticle, .articleCard, .lessonContent, .staticLearningDiagram, .modelAgentSimulator, .dockerCoreDiagram, .dockerLessonDetails, .hermesHumanBody { width: 100%; max-width: 100%; min-width: 0; }
+  .hermesHumanBodyHeader { display: grid; }
+  .hermesHumanBodyHeader a { width: fit-content; }
+  .hermesHumanBodyFrame { height: 76vh; min-height: 620px; }
   .detailArticle p, .detailArticle li, .detailArticle h1, .detailArticle h2, .detailArticle h3, .cardHeader .status { overflow-wrap: anywhere; }
   .hero, .principles, .grid2, .articleListItem, .modelTypeGrid, .selectionCriteriaGrid, .questionLadder, .mechanicsGrid, .signalGrid, .derivedQuestionGrid, .exampleGrid, .dualModelFlow, .branchRow, .splitter, .coreGrid, .runtimeLoop, .stateGrid, .diagramExamples, .agentLoopStatic, .k8sCity, .trafficStages, .podPool, .k8sAnalogyGrid, .podPatternCards { grid-template-columns: 1fr; }
   .agentLoopStatic > b { text-align: center; transform: rotate(90deg); }
@@ -626,7 +636,7 @@ th { color: #8cc7ff; }
 :root[data-theme='light'] .status.draft { color: #92400e; }
 :root[data-theme='light'] .status.review-needed { color: #b91c1c; }
 :root[data-theme='light'] .status.ready { color: #047857; }
-:root[data-theme='light'] :is(.diagram, .staticLearningDiagram, .dockerCoreDiagram, .dockerLessonDetails, .hermesArchitecture, .k8sCoreLab, .multiPodLab, .podCircleViz, .k8sOpsGuide) {
+:root[data-theme='light'] :is(.diagram, .staticLearningDiagram, .dockerCoreDiagram, .dockerLessonDetails, .hermesHumanBody, .k8sCoreLab, .multiPodLab, .podCircleViz, .k8sOpsGuide) {
   color: #17243a; border-color: #b7cbe4; background: radial-gradient(circle at 12% 0%, #bfdbfe88, transparent 30%), #f8fbff;
 }
 :root[data-theme='light'] :is(.componentLeaf, .diagramRoot, .flowExample, .agentPart, .agentLoopStatic > div, .qaList details, .modelTypeCard, .modelMechanics, .inputTrace, .mechanicCard, .exampleBox, .exampleGrid > div, .inputDecoder, .questionBuilder, .flowInput, .flowOutput, .flowLane, .modelPath, .decisionBlock, .conditionBranch, .flowNode, .cycleHint, .profileExplain, .archNode, .archLegend, .selectionCriteriaGrid article, .modelDecisionTableWrap, .modelRoutingFlow > div, .configurationPurposeFlow > div, .k8sDecisionTableWrap, .k8sOpsExampleGrid > article, .measurementLoop, .probeSource, .probeBranch, .probeFormulaGrid article, .dockerNode, .dockerPathCard, .dockerResourceGrid article, .dockerBuildChoices article, .dockerLessonGrid article, .dockerLessonIntro, .keyConcept) {

@@ -293,7 +293,7 @@ const articles: Article[] = [
     navLabel: 'Hermes Agent',
     question: 'Hermes là model, chatbot, hay agent runtime? Profile trong Hermes là gì?',
     summary: 'Hermes không phải một model riêng. Hermes là agent runtime: nhận yêu cầu từ CLI/Desktop/Gateway, nạp profile/cấu hình phù hợp, gọi model/provider, dùng tool thật, ghi nhớ memory/skills/session và kiểm chứng bằng output thật. ChatGPT/Copilot chủ yếu là sản phẩm trợ lý; Hermes là runtime mở, đa provider, có tool loop, state và profile isolation. Profile là một “nhân cách + cấu hình + kho nhớ + skill/tool riêng” để tách manager, developer, reviewer hoặc travel agent thành các agent độc lập.',
-    lastVerified: '2026-07-17',
+    lastVerified: '2026-07-25',
     status: 'review-needed',
     diagram: `Hermes architecture is rendered by HermesArchitectureTraffic component`,
     points: [
@@ -780,56 +780,28 @@ function MultiContainerPodPatternLab() {
   );
 }
 
-function HermesArchitectureTraffic() {
+function HermesHumanBodyEmbed() {
+  const artifactUrl = `${import.meta.env.BASE_URL}hermes-agent-human-body.html`;
+
   return (
-    <div className="hermesArchitecture" aria-label="Kiến trúc Hermes Agent với traffic chạy qua các lớp">
-      <div className="hermesArchHeader">
-        <span className="badge">Hermes architecture</span>
-        <strong>Request đi vào Hermes → orchestration/profile chọn vai trò → model suy luận → tool thực thi → verify output</strong>
-      </div>
-      <div className="hermesEntry">
-        <div className="archNode userNode"><strong>Người dùng / Minh Tân</strong><small>đưa mục tiêu hoặc câu hỏi</small></div>
-        <div className="archRail horizontal" aria-hidden="true"><span /><span /><span /></div>
-        <div className="surfaceCluster">
-          <span className="zoneLabel">Surfaces</span>
-          <div>Desktop GUI</div><div>CLI/TUI</div><div>Discord/Gateway</div><div>IDE/ACP</div>
+    <section className="hermesHumanBody" aria-labelledby="hermes-human-body-title">
+      <header className="hermesHumanBodyHeader">
+        <div>
+          <span className="badge">Hermes Agent · mô hình cơ thể người</span>
+          <h2 id="hermes-human-body-title">Khám phá sáu use case bằng luồng dữ liệu động</h2>
+          <p>Chọn từng use case trong mô phỏng để theo dõi Prompt, SOUL, Memory, Profile, Skill, Model và Tools phối hợp theo đúng thứ tự xử lý.</p>
         </div>
-      </div>
-      <div className="archRail vertical" aria-hidden="true"><span /><span /><span /></div>
-      <div className="hermesCoreBox">
-        <span className="zoneLabel">Hermes core runtime</span>
-        <div className="coreGrid">
-          <div className="archNode profileRouter"><strong>Profile / orchestration layer</strong><small>có thể cấu hình default profile điều phối manager/specialist</small></div>
-          <div className="archNode promptBuilder"><strong>Prompt/context builder</strong><small>SOUL.md khi có + project rules + session + memory phù hợp; skills được preload/tải khi cần</small></div>
-          <div className="archNode modelRouter"><strong>Model/provider router</strong><small>OpenRouter, Anthropic, OpenAI, Gemini, local/custom...</small></div>
-          <div className="archNode toolDispatcher"><strong>Tool dispatcher</strong><small>terminal, browser, file, GitHub, Sheets, MCP, cron</small></div>
-        </div>
-        <div className="profileExplain">
-          <strong>Profile là gì?</strong>
-          <span>Profile là gói cấu hình và data home riêng — gồm SOUL.md, config, sessions, memory, skills/plugins. Hermes runtime nạp profile khi bắt đầu phiên; khi được chạy, <code>engineering-manager</code>, <code>software-engineer</code> hay <code>ui-ux-reviewer</code> hoạt động như các instance cô lập theo vai trò.</span>
-        </div>
-      </div>
-      <div className="archRail vertical" aria-hidden="true"><span /><span /><span /></div>
-      <div className="runtimeLoop">
-        <section className="loopPanel thinkPanel">
-          <span className="zoneLabel">Reasoning loop</span>
-          <div className="archNode">LLM đề xuất bước tiếp theo</div>
-          <div className="miniRail" aria-hidden="true"><span /><span /></div>
-          <div className="archNode">Hermes thực thi tool thật</div>
-          <div className="miniRail" aria-hidden="true"><span /><span /></div>
-          <div className="archNode">Đọc output → sửa hướng → kết luận</div>
-        </section>
-        <section className="loopPanel statePanel">
-          <span className="zoneLabel">Durable state</span>
-          <div className="stateGrid"><div>Memory</div><div>Skills</div><div>Sessions</div><div>Cron</div></div>
-          <p>Memory = facts/sở thích bền vững. Skills = quy trình tái dùng. Sessions = lịch sử. Cron/Gateway = automation và nhận việc đa nền tảng.</p>
-        </section>
-      </div>
-      <div className="archOutput">
-        <div className="archRail horizontal" aria-hidden="true"><span /><span /><span /></div>
-        <div className="archNode outputNode"><strong>Verified result</strong><small>build/lint/browser/tool output thật, không chỉ lời hứa</small></div>
-      </div>
-    </div>
+        <a href={artifactUrl} target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a>
+      </header>
+      <iframe
+        className="hermesHumanBodyFrame"
+        src={artifactUrl}
+        title="Mô phỏng tương tác Hermes Agent dưới hình thái cơ thể người"
+        loading="lazy"
+        sandbox="allow-scripts"
+      />
+      <p className="hermesHumanBodyHint">Mô phỏng là HTML/SVG/JS độc lập, không tải dependency ngoài và hỗ trợ reduced motion.</p>
+    </section>
   );
 }
 
@@ -1141,7 +1113,7 @@ function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
   if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelSelectionGuide /><ModelAgentSimulator /></>;
   if (article.id === 'agent') return <AgentArchitectureDiagram />;
-  if (article.id === 'hermes-vs-copilot-chatgpt') return <HermesArchitectureTraffic />;
+  if (article.id === 'hermes-vs-copilot-chatgpt') return <HermesHumanBodyEmbed />;
   if (article.id === 'docker-build-trong-vs-ngoai') return <DockerCoreDiagram />;
   if (article.topic === 'Docker') return <DockerLessonDetails articleId={article.id} />;
   if (article.id === 'master-kubernetes') return <KubernetesCoreArchitectureLab />;
