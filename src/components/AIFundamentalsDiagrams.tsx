@@ -5,7 +5,7 @@ type QA = { question: string; answer: string };
 export function LessonQA({ items }: { items: QA[] }) {
   return (
     <section className="lessonQA" aria-labelledby="lesson-qa-title">
-      <h3 id="lesson-qa-title">Câu hỏi thường gặp</h3>
+      <h3 id="lesson-qa-title">Q&A thường gặp</h3>
       <div className="qaList">
         {items.map((item) => (
           <details key={item.question}>

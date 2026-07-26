@@ -50,8 +50,8 @@
 .redisStage { min-width: 0; overflow-x: auto; background: linear-gradient(#456a8d14 1px, transparent 1px), linear-gradient(90deg, #456a8d14 1px, transparent 1px); background-size: 28px 28px; }
 .redisStage svg { display: block; width: 100%; min-width: 760px; min-height: 440px; }
 .redisArrowHead { fill: var(--redis-line); }
-.redisEdge { fill: none; stroke: var(--redis-line); stroke-width: 3; transition: stroke .25s, stroke-width .25s; }
-.redisEdge.active { stroke: var(--redis-active); stroke-width: 5; stroke-dasharray: 10 8; animation: redisDash .65s linear infinite; filter: drop-shadow(0 0 7px #6dd5ff99); }
+.redisEdge { fill: none; stroke: var(--redis-line); stroke-width: 2; stroke-linecap: round; transition: stroke .25s, stroke-width .25s; }
+.redisEdge.active { stroke: var(--redis-active); stroke-width: 3; stroke-dasharray: 9 7; animation: redisDash .65s linear infinite; filter: drop-shadow(0 0 3px #6dd5ff66); }
 .redisNode rect { fill: #112942; stroke: #416384; stroke-width: 2; transition: fill .25s, stroke .25s, stroke-width .25s; }
 .redisNode text { fill: var(--redis-text); font-size: 15px; font-weight: 750; text-anchor: middle; }
 .redisNode .redisNodeSub { fill: var(--redis-muted); font-size: 11px; font-weight: 500; }
