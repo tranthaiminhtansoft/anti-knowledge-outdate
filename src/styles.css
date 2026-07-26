@@ -209,6 +209,40 @@ th { color: #8cc7ff; }
 .hermesHumanBodyHeader a:hover, .hermesHumanBodyHeader a:focus-visible { border-color: #fbbf24; color: #fef3c7; outline: none; }
 .hermesHumanBodyFrame { display: block; width: 100%; height: min(1120px, 82vh); min-height: 720px; border: 1px solid #263a58; border-radius: 20px; background: #020817; }
 .hermesHumanBodyHint { margin: 12px 2px 0; font-size: .9rem; }
+.hermesTuningGuide { margin: 22px 0; padding: 22px; border-radius: 28px; border: 1px solid #8b5cf688; background: radial-gradient(circle at 92% 0%, #8b5cf633, transparent 26%), #080d1b; overflow: hidden; }
+.hermesTuningHeader h2 { margin: 12px 0 8px; }
+.hermesTuningHeader p, .hermesTuningGuide p { color: #b9c5d8; line-height: 1.65; }
+.hermesTuningGuide code { color: #fde68a; background: #251d0c; border: 1px solid #a1620766; border-radius: 7px; padding: 2px 6px; }
+.hermesDecisionFlow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: stretch; margin: 20px 0; }
+.hermesDecisionFlow > div { min-width: 0; padding: 14px; border-radius: 16px; border: 1px solid #334566; background: #101a2d; }
+.hermesDecisionFlow span { display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 9px; border-radius: 999px; background: #7c3aed; color: #fff; font-weight: 900; }
+.hermesDecisionFlow strong, .hermesDecisionFlow small { display: block; }
+.hermesDecisionFlow small { margin-top: 7px; color: #9eacc1; line-height: 1.45; }
+.hermesDecisionFlow b { align-self: center; color: #a78bfa; font-size: 1.3rem; }
+.hermesEffortGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.hermesEffortGrid article { min-width: 0; padding: 16px; border-radius: 18px; border: 1px solid #334566; background: #0d1728; }
+.hermesEffortGrid h3 { margin: 0 0 10px; }
+.hermesEffortGrid p { margin: 8px 0 0; }
+.hermesFastRule { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(240px, .75fr); gap: 16px; margin: 16px 0; padding: 17px; border-radius: 18px; border: 1px solid #22d3ee55; background: #071a25; }
+.hermesFastRule h3 { margin: 0 0 8px; }
+.hermesFastRule p { margin: 7px 0; }
+.hermesCommandBox { display: grid; align-content: center; gap: 8px; }
+.hermesCommandBox code { display: block; padding: 8px 10px; white-space: nowrap; }
+.hermesCombinationTable { overflow-x: auto; border: 1px solid #334566; border-radius: 16px; }
+.hermesCombinationTable table { width: 100%; min-width: 650px; border-collapse: collapse; }
+.hermesCombinationTable th, .hermesCombinationTable td { padding: 12px 14px; border-bottom: 1px solid #273751; text-align: left; vertical-align: top; }
+.hermesCombinationTable thead { color: #ddd6fe; background: #20133b; }
+.hermesCombinationTable tbody th { color: #c4b5fd; }
+.hermesCombinationTable tbody tr:last-child th, .hermesCombinationTable tbody tr:last-child td { border-bottom: 0; }
+.hermesTuningNote { margin: 16px 2px 0; padding: 14px 16px; border-left: 4px solid #f59e0b; background: #201605; border-radius: 10px; }
+@media (max-width: 900px) {
+  .hermesTuningGuide, .hermesDecisionFlow, .hermesEffortGrid, .hermesFastRule { min-width: 0; max-width: 100%; }
+  .hermesTuningGuide h2, .hermesDecisionFlow strong, .hermesEffortGrid code { overflow-wrap: anywhere; }
+  .hermesDecisionFlow { grid-template-columns: minmax(0, 1fr); }
+  .hermesDecisionFlow b { transform: rotate(90deg); justify-self: center; }
+  .hermesEffortGrid { grid-template-columns: minmax(0, 1fr); }
+  .hermesFastRule { grid-template-columns: minmax(0, 1fr); }
+}
 .hermesArchHeader, .hermesEntry, .archOutput { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; color: #dbeafe; }
 .hermesArchHeader { margin-bottom: 18px; }
 .archNode, .surfaceCluster, .hermesCoreBox, .loopPanel { border: 1px solid #31517c; background: #0b1728; color: #e7edf7; border-radius: 20px; padding: 14px; }

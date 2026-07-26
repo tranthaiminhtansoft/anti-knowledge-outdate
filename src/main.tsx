@@ -156,6 +156,14 @@ const lessonQAs: Record<string, { question: string; answer: string }[]> = {
       question: 'Profile khác một system prompt thế nào?',
       answer: 'System prompt chỉ là một phần. Profile là gói cấu hình/data home tách riêng, có thể gồm config, SOUL.md, sessions, memory, skills và plugins; Hermes runtime nạp profile khi bắt đầu một phiên.',
     },
+    {
+      question: 'Nên chọn reasoning effort nào?',
+      answer: 'Dùng mức thấp nhất vẫn đạt pass rate trên task thật: none/minimal cho thao tác gần xác định; low/medium làm baseline hằng ngày; high/xhigh/max cho bài toán nhiều bước, mơ hồ hoặc rủi ro cao. Luôn đo lại latency, token/cost và số vòng retry/tool call.',
+    },
+    {
+      question: 'Fast Mode có làm model suy luận kém hơn không?',
+      answer: 'Không phải theo thiết kế. /fast chọn priority processing hoặc Fast Mode ở model/provider được Hermes hỗ trợ; /reasoning mới là trục effort. Chỉ bật Fast khi latency đáng giá hơn premium cost, và kiểm tra hỗ trợ bằng /fast status.',
+    },
   ],
 };
 
@@ -291,9 +299,9 @@ const articles: Article[] = [
     topic: 'AI',
     title: 'Hermes Agent hoạt động như thế nào?',
     navLabel: 'Hermes Agent',
-    question: 'Hermes là model, chatbot, hay agent runtime? Profile trong Hermes là gì?',
+    question: 'Hermes là model, chatbot, hay agent runtime? Profile, reasoning effort và Fast Mode dùng khi nào?',
     summary: 'Hermes không phải một model riêng. Hermes là agent runtime: nhận yêu cầu từ CLI/Desktop/Gateway, nạp profile/cấu hình phù hợp, gọi model/provider, dùng tool thật, ghi nhớ memory/skills/session và kiểm chứng bằng output thật. ChatGPT/Copilot chủ yếu là sản phẩm trợ lý; Hermes là runtime mở, đa provider, có tool loop, state và profile isolation. Profile là một “nhân cách + cấu hình + kho nhớ + skill/tool riêng” để tách manager, developer, reviewer hoặc travel agent thành các agent độc lập.',
-    lastVerified: '2026-07-25',
+    lastVerified: '2026-07-26',
     status: 'review-needed',
     diagram: `Hermes architecture is rendered by HermesArchitectureTraffic component`,
     points: [
@@ -805,6 +813,84 @@ function HermesHumanBodyEmbed() {
   );
 }
 
+function HermesRuntimeTuningGuide() {
+  const effortLevels = [
+    {
+      level: 'none / minimal',
+      use: 'Tra cứu, phân loại, đổi format, tóm tắt ngắn hoặc thao tác gần như xác định.',
+      avoid: 'Không phù hợp khi bài toán mơ hồ, nhiều ràng buộc hoặc cần kiểm chứng chéo.',
+    },
+    {
+      level: 'low / medium',
+      use: 'Mặc định tốt cho coding thường ngày, phân tích vừa phải và workflow vài bước.',
+      avoid: 'Tăng effort nếu agent bỏ sót dependency, edge case hoặc liên tục phải sửa hướng.',
+    },
+    {
+      level: 'high / xhigh / max',
+      use: 'Kiến trúc, debug khó, migration, security review hoặc quyết định có blast radius lớn.',
+      avoid: 'Không bật cho mọi request: latency, reasoning token và chi phí có thể tăng đáng kể.',
+    },
+  ];
+
+  const combinations = [
+    ['Normal + low/medium', 'Baseline hằng ngày', 'Ưu tiên cân bằng chất lượng, latency và chi phí.'],
+    ['Fast + low/medium', 'Tương tác cần phản hồi nhanh', 'Pairing, chat trực tiếp, triage hoặc vòng feedback ngắn.'],
+    ['Normal + high', 'Bài khó nhưng không gấp', 'Cho phép suy luận sâu mà không trả premium cho priority serving.'],
+    ['Fast + high', 'Bài khó và thật sự khẩn cấp', 'Incident hoặc deadline ngắn; theo dõi cả latency lẫn chi phí.'],
+  ];
+
+  return (
+    <section className="hermesTuningGuide" aria-labelledby="hermes-tuning-title">
+      <div className="hermesTuningHeader">
+        <span className="badge">Best practices · Effort & Fast</span>
+        <h2 id="hermes-tuning-title">Chọn độ sâu suy luận và tốc độ phục vụ theo hai trục riêng</h2>
+        <p><code>/reasoning</code> điều chỉnh effort; <code>/fast</code> chọn priority processing/Fast Mode trên model được Hermes hỗ trợ. Fast không tự làm reasoning nông hơn, và effort cao không đảm bảo câu trả lời đúng nếu thiếu dữ liệu hoặc verification.</p>
+      </div>
+
+      <div className="hermesDecisionFlow" aria-label="Quy trình chọn effort và fast">
+        <div><span>1</span><strong>Đánh giá task</strong><small>Độ mơ hồ, số bước, rủi ro và khả năng verify.</small></div><b>→</b>
+        <div><span>2</span><strong>Chọn effort thấp nhất đủ dùng</strong><small>Bắt đầu low/medium; chỉ tăng khi có bằng chứng cần suy luận sâu.</small></div><b>→</b>
+        <div><span>3</span><strong>Chọn Fast theo SLA</strong><small>Bật khi latency có giá trị kinh doanh lớn hơn premium cost.</small></div><b>→</b>
+        <div><span>4</span><strong>Đo và hiệu chỉnh</strong><small>So pass rate, latency, token/cost và số vòng retry/tool call.</small></div>
+      </div>
+
+      <div className="hermesEffortGrid">
+        {effortLevels.map((item) => (
+          <article key={item.level}>
+            <h3><code>{item.level}</code></h3>
+            <p><strong>Nên dùng:</strong> {item.use}</p>
+            <p><strong>Cẩn trọng:</strong> {item.avoid}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="hermesFastRule">
+        <div>
+          <h3>Khi nào bật Fast?</h3>
+          <p><strong>Bật:</strong> hội thoại tương tác, incident response, live pairing hoặc luồng có SLA latency rõ ràng.</p>
+          <p><strong>Giữ Normal:</strong> batch/background, research không gấp, cron hoặc workload nhạy chi phí.</p>
+        </div>
+        <div className="hermesCommandBox" aria-label="Lệnh Hermes cho reasoning và fast">
+          <code>/reasoning medium</code>
+          <code>/reasoning high</code>
+          <code>/fast status</code>
+          <code>/fast fast</code>
+          <code>/fast normal</code>
+        </div>
+      </div>
+
+      <div className="hermesCombinationTable" role="region" aria-label="Ma trận Effort và Fast" tabIndex={0}>
+        <table>
+          <thead><tr><th>Cấu hình</th><th>Phù hợp</th><th>Quy tắc vận hành</th></tr></thead>
+          <tbody>{combinations.map(([mode, fit, rule]) => <tr key={mode}><th scope="row">{mode}</th><td>{fit}</td><td>{rule}</td></tr>)}</tbody>
+        </table>
+      </div>
+
+      <p className="hermesTuningNote"><strong>Verification loop:</strong> tạo một bộ task đại diện, chạy cùng model/provider với các mức effort và Fast/Normal, rồi chọn cấu hình thấp nhất vẫn đạt tiêu chí chất lượng. Khả năng hỗ trợ và billing của Fast phụ thuộc model/provider; dùng <code>/fast status</code> trước khi chuẩn hóa workflow.</p>
+    </section>
+  );
+}
+
 function ModelTypesOverview() {
   return (
     <section className="card compact modelCatalog">
@@ -1113,7 +1199,7 @@ function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
   if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelSelectionGuide /><ModelAgentSimulator /></>;
   if (article.id === 'agent') return <AgentArchitectureDiagram />;
-  if (article.id === 'hermes-vs-copilot-chatgpt') return <HermesHumanBodyEmbed />;
+  if (article.id === 'hermes-vs-copilot-chatgpt') return <><HermesHumanBodyEmbed /><HermesRuntimeTuningGuide /></>;
   if (article.id === 'docker-build-trong-vs-ngoai') return <DockerCoreDiagram />;
   if (article.topic === 'Docker') return <DockerLessonDetails articleId={article.id} />;
   if (article.id === 'master-kubernetes') return <KubernetesCoreArchitectureLab />;
