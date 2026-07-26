@@ -2,8 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   ArrowLeft,
-  Menu,
-  X,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Sun,
   Moon,
   BrainCircuit,
@@ -19,6 +20,7 @@ import { KubernetesConfigurationGuide, KubernetesObservabilityGuide } from './co
 import { RedisLearningJourney } from './components/redis/RedisLearningJourney';
 import { redisChapters } from './components/redis/redisJourneyData';
 import { ModelAgentSimulator } from './components/ModelAgentSimulator';
+import { HermesUseCases } from './HermesUseCases';
 import './styles.css';
 
 mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'strict' });
@@ -789,28 +791,7 @@ function MultiContainerPodPatternLab() {
 }
 
 function HermesHumanBodyEmbed() {
-  const artifactUrl = `${import.meta.env.BASE_URL}hermes-agent-human-body.html`;
-
-  return (
-    <section className="hermesHumanBody" aria-labelledby="hermes-human-body-title">
-      <header className="hermesHumanBodyHeader">
-        <div>
-          <span className="badge">Hermes Agent · mô hình cơ thể người</span>
-          <h2 id="hermes-human-body-title">Khám phá sáu use case bằng luồng dữ liệu động</h2>
-          <p>Chọn từng use case trong mô phỏng để theo dõi Prompt, SOUL, Memory, Profile, Skill, Model và Tools phối hợp theo đúng thứ tự xử lý.</p>
-        </div>
-        <a href={artifactUrl} target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a>
-      </header>
-      <iframe
-        className="hermesHumanBodyFrame"
-        src={artifactUrl}
-        title="Mô phỏng tương tác Hermes Agent dưới hình thái cơ thể người"
-        loading="lazy"
-        sandbox="allow-scripts"
-      />
-      <p className="hermesHumanBodyHint">Mô phỏng là HTML/SVG/JS độc lập, không tải dependency ngoài và hỗ trợ reduced motion.</p>
-    </section>
-  );
+  return <HermesUseCases />;
 }
 
 function HermesRuntimeTuningGuide() {
@@ -838,12 +819,20 @@ function HermesRuntimeTuningGuide() {
     ['Normal + high', 'Bài khó nhưng không gấp', 'Cho phép suy luận sâu mà không trả premium cho priority serving.'],
     ['Fast + high', 'Bài khó và thật sự khẩn cấp', 'Incident hoặc deadline ngắn; theo dõi cả latency lẫn chi phí.'],
   ];
+  const deliveryExamples = [
+    ['Làm rõ yêu cầu', 'medium · Normal', 'Tách use case, constraint và acceptance criteria mà chưa tăng latency quá sớm.'],
+    ['Code thay đổi nhỏ', 'low/medium · Normal', 'Implement, lint và unit test; tăng effort khi diff chạm nhiều module hoặc API contract.'],
+    ['Debug / refactor khó', 'high · Normal', 'Lần theo dependency, root cause và regression; ưu tiên độ sâu hơn tốc độ.'],
+    ['Pairing / incident', 'medium/high · Fast', 'Bật Fast khi mỗi phút phản hồi đều có giá trị; vẫn bắt buộc chạy lệnh và kiểm chứng thật.'],
+    ['PR review / security', 'high/xhigh · Normal', 'Đọc diff, threat model và test evidence; dùng reviewer độc lập cho thay đổi rủi ro cao.'],
+    ['Release gate', 'high · Normal', 'Kiểm build, test, migration, rollback và observability; Fast chỉ khi có SLA rõ.'],
+  ];
 
   return (
     <section className="hermesTuningGuide" aria-labelledby="hermes-tuning-title">
       <div className="hermesTuningHeader">
-        <span className="badge">Best practices · Effort & Fast</span>
-        <h2 id="hermes-tuning-title">Chọn độ sâu suy luận và tốc độ phục vụ theo hai trục riêng</h2>
+        <span className="badge">Effort & Fast</span>
+        <h2 id="hermes-tuning-title">Chọn Fast và Effort tối ưu</h2>
         <p><code>/reasoning</code> điều chỉnh effort; <code>/fast</code> chọn priority processing/Fast Mode trên model được Hermes hỗ trợ. Fast không tự làm reasoning nông hơn, và effort cao không đảm bảo câu trả lời đúng nếu thiếu dữ liệu hoặc verification.</p>
       </div>
 
@@ -886,7 +875,68 @@ function HermesRuntimeTuningGuide() {
         </table>
       </div>
 
+      <h3 className="hermesWorkflowTitle">Ví dụ từ coding đến release</h3>
+      <div className="hermesCombinationTable" role="region" aria-label="Ví dụ chọn Effort và Fast trong vòng đời delivery" tabIndex={0}>
+        <table>
+          <thead><tr><th>Giai đoạn</th><th>Gợi ý ban đầu</th><th>Lý do</th></tr></thead>
+          <tbody>{deliveryExamples.map(([stage, setting, reason]) => <tr key={stage}><th scope="row">{stage}</th><td><code>{setting}</code></td><td>{reason}</td></tr>)}</tbody>
+        </table>
+      </div>
+
       <p className="hermesTuningNote"><strong>Verification loop:</strong> tạo một bộ task đại diện, chạy cùng model/provider với các mức effort và Fast/Normal, rồi chọn cấu hình thấp nhất vẫn đạt tiêu chí chất lượng. Khả năng hỗ trợ và billing của Fast phụ thuộc model/provider; dùng <code>/fast status</code> trước khi chuẩn hóa workflow.</p>
+    </section>
+  );
+}
+
+function HermesComponentsTable() {
+  const components = [
+    ['SOUL', 'Danh tính và nguyên tắc hành xử ổn định của agent.', 'Có', '~/.hermes/SOUL.md'],
+    ['Memory & User profile', 'Dữ kiện bền vững về môi trường và preference; được snapshot vào session.', 'Có', '~/.hermes/memories/MEMORY.md · USER.md'],
+    ['Profile', 'Tách config, model, memory, session, skill, plugin và gateway theo vai trò.', 'Có', '~/.hermes/profiles/<name>/'],
+    ['Model & provider', 'Sinh quyết định/câu trả lời; effort phụ thuộc khả năng của model.', 'Có', '~/.hermes/config.yaml · ~/.hermes/.env cho secrets'],
+    ['Prompt Builder & context', 'Ghép SOUL, tool guidance, skills, project context và memory theo thứ tự.', 'Một phần', 'Custom input qua SOUL, skills, memory và .hermes.md / AGENTS.md'],
+    ['Skills', 'Workflow tái sử dụng gồm hướng dẫn, pitfall, script, template và bước verify.', 'Có', '~/.hermes/skills/<skill>/SKILL.md'],
+    ['Tools / MCP', 'Thực thi hành động thật như terminal, file, browser hoặc dịch vụ ngoài.', 'Có', '~/.hermes/config.yaml · plugin ở ~/.hermes/plugins/'],
+    ['Gateway', 'Nhận/gửi tin nhắn qua Discord, Telegram và các channel đã cấu hình.', 'Có', '~/.hermes/config.yaml · secrets trong ~/.hermes/.env'],
+    ['Session & state', 'Giữ lịch sử hội thoại, checkpoint và dữ liệu vận hành.', 'Runtime quản lý', '~/.hermes/state.db và state của profile'],
+  ];
+
+  return (
+    <section className="hermesPageSection" aria-labelledby="hermes-components-title">
+      <div className="hermesSectionHeading">
+        <span className="badge">Kiến trúc</span>
+        <h2 id="hermes-components-title">Các thành phần của Hermes Agent</h2>
+        <p>Mỗi profile là một Hermes home độc lập. Với profile khác default, thay <code>~/.hermes/</code> bằng <code>~/.hermes/profiles/&lt;name&gt;/</code> cho các file thuộc profile đó.</p>
+      </div>
+      <div className="hermesComponentTable" role="region" aria-label="Bảng thành phần Hermes Agent và đường dẫn custom" tabIndex={0}>
+        <table>
+          <thead><tr><th>Thành phần</th><th>Vai trò</th><th>Custom?</th><th>Đường dẫn / điểm cấu hình</th></tr></thead>
+          <tbody>{components.map(([name, role, custom, path]) => <tr key={name}><th scope="row">{name}</th><td>{role}</td><td>{custom}</td><td><code>{path}</code></td></tr>)}</tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function HermesConclusion() {
+  const misconceptions = [
+    ['Hermes chính là model', 'Không. Model là bộ não suy luận; Hermes còn có runtime, context, profile, memory, skills, tools và gateway.'],
+    ['Memory là toàn bộ lịch sử chat', 'Không. Memory chỉ nên giữ dữ kiện bền vững; lịch sử session được lưu và tìm riêng.'],
+    ['Skill tự chạy mọi lúc', 'Không. Skill là tri thức/workflow được tải khi phù hợp; tool mới thực hiện hành động thật.'],
+    ['Fast làm câu trả lời kém thông minh hơn', 'Không mặc định. Fast là ưu tiên phục vụ; reasoning effort mới điều chỉnh độ sâu suy luận.'],
+    ['Effort càng cao luôn càng tốt', 'Không. Effort cao tăng latency/chi phí và vẫn có thể sai nếu thiếu dữ liệu hoặc không verify.'],
+  ];
+
+  return (
+    <section className="hermesPageSection hermesConclusion" aria-labelledby="hermes-conclusion-title">
+      <div className="hermesSectionHeading">
+        <span className="badge">Tóm tắt</span>
+        <h2 id="hermes-conclusion-title">Conclusion và hiểu lầm thường gặp</h2>
+        <p>Hãy hình dung Hermes như một con người làm việc có vai trò, trí nhớ, sách hướng dẫn và tay chân. Model quyết định; runtime thực thi; observation và verification khép kín vòng lặp.</p>
+      </div>
+      <div className="hermesMisconceptionGrid">
+        {misconceptions.map(([claim, correction]) => <article key={claim}><h3>{claim}</h3><p>{correction}</p></article>)}
+      </div>
     </section>
   );
 }
@@ -1034,13 +1084,17 @@ function ArticleListItem({ article, index, onOpen }: { article: Article; index: 
         <p className="question">{article.question}</p>
         <p>{article.summary}</p>
       </div>
-      <span className={`status ${article.status}`}>{article.status === 'review-needed' ? 'cần review' : article.status === 'ready' ? 'sẵn sàng' : 'bản nháp'}</span>
     </button>
   );
 }
 
-function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, onClose, isOpen }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; onClose: () => void; isOpen: boolean }) {
+function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticle, onHome, isOpen }: { activeTopicId?: string; activeArticleId?: string; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; onHome: () => void; isOpen: boolean }) {
   const sidebarRef = React.useRef<HTMLElement | null>(null);
+  const [expandedTopicId, setExpandedTopicId] = React.useState<string | null>(activeTopicId ?? null);
+
+  React.useEffect(() => {
+    if (activeTopicId) setExpandedTopicId(activeTopicId);
+  }, [activeArticleId, activeTopicId]);
 
   React.useEffect(() => {
     const activeItem = sidebarRef.current?.querySelector('.sidebarArticle.current')
@@ -1054,23 +1108,26 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
     if (!sidebar) return;
 
     const focusableSelector = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
-    const focusable = Array.from(sidebar.querySelectorAll<HTMLElement>(focusableSelector));
+    const getFocusable = () => Array.from(sidebar.querySelectorAll<HTMLElement>(focusableSelector))
+      .filter((element) => !element.closest('[hidden]'));
+    const focusable = getFocusable();
     const first = focusable[0];
-    const last = focusable.at(-1);
-    const closeButton = sidebar.querySelector<HTMLElement>('.sidebarClose');
-    const focusFrame = window.requestAnimationFrame(() => (closeButton ?? first)?.focus());
+    const focusFrame = window.requestAnimationFrame(() => first?.focus());
 
     const trapFocus = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab' || !first || !last) return;
+      const currentFocusable = getFocusable();
+      const currentFirst = currentFocusable[0];
+      const currentLast = currentFocusable.at(-1);
+      if (event.key !== 'Tab' || !currentFirst || !currentLast) return;
       if (!sidebar.contains(document.activeElement)) {
         event.preventDefault();
-        first.focus();
-      } else if (event.shiftKey && document.activeElement === first) {
+        currentFirst.focus();
+      } else if (event.shiftKey && document.activeElement === currentFirst) {
         event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+        currentLast.focus();
+      } else if (!event.shiftKey && document.activeElement === currentLast) {
         event.preventDefault();
-        first.focus();
+        currentFirst.focus();
       }
     };
 
@@ -1085,20 +1142,35 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
     <aside className="lessonSidebar" aria-label="Danh sách bài học" id="lesson-sidebar" ref={sidebarRef}>
       <div className="sidebarTopbar">
         <button className="sidebarHome" onClick={onHome} type="button">Anti Knowledge Outdate</button>
-        <button className="sidebarClose" onClick={onClose} type="button" aria-label="Thu gọn menu bài học"><X size={20} /></button>
       </div>
       {topics.map((topic) => {
         const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
         const isActiveTopic = activeTopicId === topic.id;
+        const isExpanded = expandedTopicId === topic.id && topicArticles.length > 0;
+        const articleListId = `sidebar-topic-${topic.id}`;
         return (
-          <section className={`sidebarTopic ${isActiveTopic ? 'active' : ''}`} key={topic.id}>
-            <button className="sidebarTopicButton" onClick={() => onOpenTopic(topic.id)} type="button">
-              <span className="sidebarIcon">{topic.icon}</span>
-              <span>{topic.title}</span>
-              <small>{topic.status === 'available' ? `${topic.articleCount} bài` : 'Đang cập nhật'}</small>
-            </button>
-            {topicArticles.length > 0 && (
-              <div className="sidebarArticleList">
+          <section className={`sidebarTopic ${isActiveTopic ? 'active' : ''} ${isExpanded ? 'expanded' : ''}`} key={topic.id}>
+            <div className="sidebarTopicRow">
+              <button className="sidebarTopicButton" onClick={() => onOpenTopic(topic.id)} type="button">
+                <span className="sidebarIcon">{topic.icon}</span>
+                <span>{topic.title}</span>
+                <small>{topic.status === 'available' ? `${topic.articleCount} bài` : 'Đang cập nhật'}</small>
+              </button>
+              {topicArticles.length > 0 && (
+                <button
+                  className="sidebarTopicExpand"
+                  type="button"
+                  aria-expanded={isExpanded}
+                  aria-controls={articleListId}
+                  aria-label={`${isExpanded ? 'Thu gọn' : 'Mở rộng'} mục ${topic.title}`}
+                  onClick={() => setExpandedTopicId((current) => current === topic.id ? null : topic.id)}
+                >
+                  <ChevronDown aria-hidden="true" size={18} />
+                </button>
+              )}
+            </div>
+            {isExpanded && (
+              <div className="sidebarArticleList" id={articleListId}>
                 {topicArticles.map((article) => (
                   <button className={`sidebarArticle ${activeArticleId === article.id ? 'current' : ''}`} key={article.id} onClick={() => onOpenArticle(article.id)} type="button">
                     {article.navLabel ?? article.title}
@@ -1151,8 +1223,19 @@ function LessonShell({ activeTopicId, activeArticleId, onOpenTopic, onOpenArticl
 
   return (
     <main className={`lessonLayout ${sidebarOpen ? 'sidebarOpen' : 'sidebarClosed'}`}>
-      <button className="sidebarToggle" onClick={() => setSidebarOpen((open) => !open)} type="button" aria-expanded={sidebarOpen} aria-controls="lesson-sidebar" aria-label={sidebarOpen ? 'Ẩn danh sách bài học' : 'Hiện danh sách bài học'} ref={toggleRef}><Menu size={18}/> {sidebarOpen ? 'Ẩn menu' : 'Hiện menu'}</button>
-      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} onClose={() => closeSidebar(true)} isOpen={sidebarOpen} />
+      <button
+        className="sidebarToggle"
+        onClick={() => setSidebarOpen((open) => !open)}
+        type="button"
+        aria-expanded={sidebarOpen}
+        aria-controls="lesson-sidebar"
+        aria-label={sidebarOpen ? 'Đóng menu bài học' : 'Mở menu bài học'}
+        data-tooltip={sidebarOpen ? 'Đóng menu' : 'Mở menu'}
+        ref={toggleRef}
+      >
+        {sidebarOpen ? <ChevronLeft aria-hidden="true" size={20} /> : <ChevronRight aria-hidden="true" size={20} />}
+      </button>
+      <LearningSidebar activeTopicId={activeTopicId} activeArticleId={activeArticleId} onOpenTopic={closeAndTopic} onOpenArticle={closeAndArticle} onHome={closeAndHome} isOpen={sidebarOpen} />
       <div className="sidebarBackdrop" onClick={() => closeSidebar(true)} aria-hidden="true" />
       <div className="lessonContent">{children}</div>
     </main>
@@ -1195,11 +1278,29 @@ function TopicPage({ topic, onBack, onHome, onOpenTopic, onOpenArticle }: { topi
   );
 }
 
+function HermesAgentLearningPage({ article }: { article: Article }) {
+  return (
+    <article className="hermesAgentPage">
+      <header className="hermesPageHero">
+        <span className="badge">Hermes Agent</span>
+        <h1>Hermes Agent hoạt động như thế nào?</h1>
+        <p>Hermes Agent nhận mục tiêu, ghép đúng vai trò và context, dùng model để quyết định bước tiếp theo, rồi gọi tool để hành động và kiểm chứng. Model là phần suy luận; Hermes là toàn bộ hệ thống giúp suy luận đó làm việc an toàn và có trạng thái.</p>
+      </header>
+
+      <HermesComponentsTable />
+      <HermesHumanBodyEmbed />
+      <HermesRuntimeTuningGuide />
+      <HermesConclusion />
+      {(lessonQAs[article.id]?.length ?? 0) > 0 && <LessonQA items={lessonQAs[article.id]} />}
+      <footer className="articleFooter"><span>Cập nhật lần cuối: {article.lastVerified}</span></footer>
+    </article>
+  );
+}
+
 function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
   if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelSelectionGuide /><ModelAgentSimulator /></>;
   if (article.id === 'agent') return <AgentArchitectureDiagram />;
-  if (article.id === 'hermes-vs-copilot-chatgpt') return <><HermesHumanBodyEmbed /><HermesRuntimeTuningGuide /></>;
   if (article.id === 'docker-build-trong-vs-ngoai') return <DockerCoreDiagram />;
   if (article.topic === 'Docker') return <DockerLessonDetails articleId={article.id} />;
   if (article.id === 'master-kubernetes') return <KubernetesCoreArchitectureLab />;
@@ -1211,6 +1312,17 @@ function ArticleVisual({ article }: { article: Article }) {
 }
 
 function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOpenArticle }: { article: Article; parentTopicId: string; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void }) {
+  if (article.id === 'hermes-vs-copilot-chatgpt') {
+    return (
+      <LessonShell activeTopicId={parentTopicId} activeArticleId={article.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
+        <div className="pageShell">
+          <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
+          <HermesAgentLearningPage article={article} />
+        </div>
+      </LessonShell>
+    );
+  }
+
   return (
     <LessonShell activeTopicId={parentTopicId} activeArticleId={article.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
       <div className="pageShell">
@@ -1218,7 +1330,6 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
       <article className="card articleCard detailArticle">
         <div className="cardHeader">
           <span className="badge">{article.topic}</span>
-          <span className={`status ${article.status}`}>{article.status === 'review-needed' ? 'cần review' : article.status === 'ready' ? 'sẵn sàng' : 'bản nháp'}</span>
         </div>
         <p className="question">Câu hỏi: {article.question}</p>
         <h1>{article.title}</h1>

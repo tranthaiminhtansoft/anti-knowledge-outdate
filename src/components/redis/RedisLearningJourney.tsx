@@ -26,16 +26,17 @@ function edgePath(from: RedisNode, to: RedisNode) {
   const b = center(to);
   const dx = b.x - a.x;
   const dy = b.y - a.y;
-  const ax = a.x + Math.sign(dx || 1) * from.w / 2;
-  const ay = a.y + (Math.abs(dx) > Math.abs(dy) ? 0 : Math.sign(dy || 1) * from.h / 2);
-  const bx = b.x - Math.sign(dx || 1) * to.w / 2;
-  const by = b.y - (Math.abs(dx) > Math.abs(dy) ? 0 : Math.sign(dy || 1) * to.h / 2);
-  if (Math.abs(dx) > Math.abs(dy)) {
-    const middleX = (ax + bx) / 2;
-    return `M ${ax} ${ay} C ${middleX} ${ay}, ${middleX} ${by}, ${bx} ${by}`;
-  }
-  const middleY = (ay + by) / 2;
-  return `M ${ax} ${ay} C ${ax} ${middleY}, ${bx} ${middleY}, ${bx} ${by}`;
+
+  // Intersect the centre-to-centre vector with both node boundaries so the
+  // connector and its arrowhead stay on the same straight line.
+  const fromScale = 1 / Math.max(Math.abs(dx) / (from.w / 2), Math.abs(dy) / (from.h / 2));
+  const toScale = 1 / Math.max(Math.abs(dx) / (to.w / 2), Math.abs(dy) / (to.h / 2));
+  const ax = a.x + dx * fromScale;
+  const ay = a.y + dy * fromScale;
+  const bx = b.x - dx * toScale;
+  const by = b.y - dy * toScale;
+
+  return `M ${ax} ${ay} L ${bx} ${by}`;
 }
 
 function chapterHash(chapterId: string) {
@@ -61,8 +62,8 @@ function RedisJourneyGraph({ chapter, stepIndex, speed }: { chapter: RedisChapte
       <svg viewBox="0 0 920 520" role="img">
         <title>{`${chapter.title} — ${step.title}`}</title>
         <defs>
-          <marker id={markerId} markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L9,3 z" className="redisArrowHead" />
+          <marker id={markerId} markerWidth="7" markerHeight="7" refX="6.5" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+            <path d="M0 0 L7 3.5 L0 7 Z" className="redisArrowHead" />
           </marker>
         </defs>
         <g className="redisEdges">
