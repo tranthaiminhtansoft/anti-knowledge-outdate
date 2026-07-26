@@ -158,7 +158,7 @@ const lessonQAs: Record<string, { question: string; answer: string }[]> = {
     },
     {
       question: 'Nên chọn reasoning effort nào?',
-      answer: 'Dùng mức thấp nhất vẫn đạt pass rate trên task thật: none/minimal cho thao tác gần xác định; low/medium làm baseline hằng ngày; high/xhigh/max cho bài toán nhiều bước, mơ hồ hoặc rủi ro cao. Luôn đo lại latency, token/cost và số vòng retry/tool call.',
+      answer: 'Dùng mức thấp nhất vẫn đạt pass rate trên task thật: none/minimal cho thao tác gần xác định; low/medium làm baseline hằng ngày; high/xhigh/max/ultra cho bài toán nhiều bước, mơ hồ hoặc rủi ro cao. Các mức khả dụng còn phụ thuộc model/provider; luôn đo lại latency, token/cost và số vòng retry/tool call.',
     },
     {
       question: 'Fast Mode có làm model suy luận kém hơn không?',
@@ -826,8 +826,8 @@ function HermesRuntimeTuningGuide() {
       avoid: 'Tăng effort nếu agent bỏ sót dependency, edge case hoặc liên tục phải sửa hướng.',
     },
     {
-      level: 'high / xhigh / max',
-      use: 'Kiến trúc, debug khó, migration, security review hoặc quyết định có blast radius lớn.',
+      level: 'high / xhigh / max / ultra',
+      use: 'Kiến trúc, debug khó, migration, security review hoặc quyết định có blast radius lớn; mức khả dụng tùy model/provider.',
       avoid: 'Không bật cho mọi request: latency, reasoning token và chi phí có thể tăng đáng kể.',
     },
   ];
