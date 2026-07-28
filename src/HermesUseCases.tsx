@@ -60,6 +60,14 @@ export function HermesUseCases() {
         sourceMain.querySelector('.hero')?.remove();
         sourceMain.querySelector('footer')?.remove();
         sourceMain.querySelectorAll('script').forEach((script) => script.remove());
+        sourceMain.querySelectorAll<SVGImageElement>('image[href]').forEach((image) => {
+          const href = image.getAttribute('href');
+          if (!href || /^(?:[a-z]+:|\/\/|#|data:)/i.test(href)) return;
+          image.setAttribute(
+            'href',
+            `${import.meta.env.BASE_URL}${href.replace(/^\.\//, '')}`,
+          );
+        });
         sourceMain.className = 'hermesUseCasesBody';
 
         const style = document.createElement('style');
@@ -80,7 +88,10 @@ export function HermesUseCases() {
         const diagramShell = runtime.querySelector<HTMLElement>('.diagram-shell');
         const timeline = runtime.querySelector<HTMLElement>('#timeline');
         const pause = runtime.querySelector<HTMLButtonElement>('#pause');
-        if (!active || !pulse || !stage || !caseHead || !diagramShell || !timeline || !pause) {
+        const responseTyping = runtime.querySelector<SVGElement>('#response-typing');
+        const responseDots = runtime.querySelector<SVGTextElement>('#response-dots');
+        const contextContract = runtime.querySelector<HTMLElement>('#context-contract');
+        if (!active || !pulse || !stage || !caseHead || !diagramShell || !timeline || !pause || !responseTyping || !responseDots || !contextContract) {
           throw new Error('Thiếu thành phần tương tác');
         }
 
@@ -91,7 +102,7 @@ export function HermesUseCases() {
         caseHead.before(tabPanel);
         tabPanel.append(caseHead, diagramShell, timeline);
         tabs.forEach((tab) => {
-          const caseId = tab.dataset.case ?? 'direct';
+          const caseId = tab.dataset.case ?? 'gateway';
           tab.id = `hermes-usecase-tab-${caseId}`;
           tab.setAttribute('aria-controls', tabPanel.id);
         });
@@ -101,7 +112,7 @@ export function HermesUseCases() {
         const holdMs = 350;
         runtime.style.setProperty('--edge', `${edgeMs}ms`);
 
-        let current = 'direct';
+        let current = 'gateway';
         let index = 0;
         let running = !reduced;
         let progress = 0;
@@ -109,6 +120,7 @@ export function HermesUseCases() {
         let inHold = false;
         let currentPath: SVGPathElement | null = null;
         let pathLength = 0;
+        let speaking = false;
 
         const actorGeometries = (actor: SVGElement) => [
           ...actor.querySelectorAll<SVGGeometryElement>('.surface, .channel-panel, .person-outline'),
@@ -213,14 +225,23 @@ export function HermesUseCases() {
             .join('');
         };
 
+        const setTyping = (visible: boolean) => {
+          speaking = visible;
+          responseTyping.classList.toggle('is-speaking', visible);
+          responseTyping.setAttribute('aria-hidden', String(!visible));
+          responseDots.textContent = visible ? '•' : '';
+        };
+
         const clearVisual = () => {
           actors.forEach((actor) => actor.classList.remove('active', 'lookup-active'));
+          contextContract.classList.remove('is-assembling', 'is-reassembling');
           active.setAttribute('d', '');
           active.style.strokeDasharray = '';
           active.style.strokeDashoffset = '';
           pulse.style.display = 'none';
           currentPath = null;
           pathLength = 0;
+          setTyping(false);
           runtime.querySelectorAll('.step').forEach((step) => step.classList.remove('current'));
         };
 
@@ -229,6 +250,10 @@ export function HermesUseCases() {
           const distance = pathLength * progress;
           const point = currentPath.getPointAtLength(distance);
           pulse.setAttribute('transform', `translate(${point.x} ${point.y})`);
+          if (speaking) {
+            const dotCount = 1 + (Math.floor((progress * edgeMs) / 420) % 3);
+            responseDots.textContent = Array(dotCount).fill('•').join('  ');
+          }
         };
 
         const next = () => {
@@ -246,6 +271,7 @@ export function HermesUseCases() {
           renderMotion();
           if (progress < 1) raf = window.requestAnimationFrame(tick);
           else {
+            setTyping(false);
             inHold = true;
             timer = window.setTimeout(next, holdMs);
           }
@@ -254,13 +280,27 @@ export function HermesUseCases() {
         const showEdge = () => {
           stopMotion();
           const edge = useCases[current].edges[index];
-          const path = runtime.querySelector<SVGPathElement>(`[data-edge="${edge[0]}"]`);
           clearVisual();
           progress = 0;
           lastTs = null;
           inHold = false;
           const edgeName = edge[0];
+          const path = runtime.querySelector<SVGPathElement>(`[data-edge="${edgeName}"]`);
+          setTyping(edgeName === 'mouth-prompt' || edgeName === 'mouth-channels');
           runtime.querySelectorAll('.step')[index]?.classList.add('current');
+
+          if (edgeName === 'context-assembly' || edgeName === 'context-reassembly') {
+            const reassembling = edgeName === 'context-reassembly';
+            contextContract.classList.add(reassembling ? 'is-reassembling' : 'is-assembling');
+            ['soul', 'profile', 'memory', 'skill-index', 'pfc', 'context'].forEach((id) => {
+              runtime.querySelector<SVGElement>(`#${id}`)?.classList.add('active');
+            });
+            active.dataset.edge = edgeName;
+            active.dataset.source = reassembling ? 'tool-result' : 'parallel-context-sources';
+            active.dataset.target = 'context';
+            if (running) raf = window.requestAnimationFrame(tick);
+            return;
+          }
 
           if (edgeName === 'skill-view-lookup') {
             const lookup = runtime.querySelector<SVGElement>('#skill-view');
@@ -346,14 +386,11 @@ export function HermesUseCases() {
               if (path.dataset.to) usedActors.add(path.dataset.to);
             }
           });
-          const bookActorIds = ['skill-index', 'skill-full', 'skill-view'];
-          const usesBook = bookActorIds.some((id) => usedActors.has(id));
-          const usesFullBook = usedActors.has('skill-full') || usedActors.has('skill-view');
-          if (usesFullBook) bookActorIds.forEach((id) => usedActors.add(id));
+          ['soul', 'profile', 'memory', 'context', 'pfc', 'model', 'skill-index', 'skill-full', 'skill-view']
+            .forEach((id) => usedActors.add(id));
           actors.forEach((actor) => actor.classList.toggle('hidden-for-case', !usedActors.has(actor.id)));
           const book = runtime.querySelector('#book');
-          book?.classList.toggle('hidden-for-case', !usesBook);
-          book?.classList.toggle('index-only', usesBook && !usesFullBook);
+          book?.classList.remove('hidden-for-case', 'index-only');
           showEdge();
         };
 
@@ -370,7 +407,7 @@ export function HermesUseCases() {
             event.preventDefault();
             const target = tabs[targetIndex];
             target.focus();
-            select(target.dataset.case ?? 'direct');
+            select(target.dataset.case ?? 'gateway');
           };
           tab.addEventListener('click', onClick);
           tab.addEventListener('keydown', onKeyDown);
@@ -403,7 +440,7 @@ export function HermesUseCases() {
           pause.disabled = true;
           pause.textContent = 'Chuyển động đã tắt';
         }
-        select('direct');
+        select('gateway');
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
@@ -426,7 +463,7 @@ export function HermesUseCases() {
         <div>
           <span className="badge">Hermes Agent · mô hình cơ thể người</span>
           <h2 id="hermes-human-body-title">Usecases</h2>
-          <p>Chọn từng use case để theo dõi Prompt, SOUL, Memory, Profile, Skill, Model và Tools phối hợp theo đúng thứ tự xử lý.</p>
+          <p>Mỗi user turn tạo một model request mới: Prompt Builder ghép các nguồn system độc lập theo tier cùng chat history và current prompt; Tool Schemas đi trong trường API riêng. Trong luồng on-demand minh hoạ, Full Skill, RAG hoặc payload ngoài xuất hiện sau tool call; preload, plugin hoặc external-memory overlay có thể chèn sớm hơn.</p>
         </div>
       </header>
       {loadError ? <p role="alert" className="hermesUseCasesError">Không thể tải mô phỏng Usecases.</p> : null}

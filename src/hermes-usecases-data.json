@@ -1,353 +1,241 @@
 {
-  "direct": {
-    "kicker": "USE CASE 1 · DIRECT PROMPT",
-    "title": "Một prompt đi vào toàn bộ con người",
-    "desc": "Không có Gateway bắt buộc ở giữa. Prompt chạm ranh giới Hermes Agent; SOUL, nhận thức kỹ năng và Memory lần lượt góp vào Context trước khi Prompt Builder dựng input cuối cho Model.",
-    "analogy": "Ví như bạn nói trực tiếp với một người: cả con người tiếp nhận câu nói, rồi não dùng tính cách, ký ức và điều đang chú ý để trả lời.",
-    "edges": [
-      [
-        "prompt-ear",
-        "Prompt → tai tiếp nhận"
-      ],
-      [
-        "ear-soul",
-        "Tai → tính cách"
-      ],
-      [
-        "soul-skill-index",
-        "Tính cách → nhận thức kỹ năng"
-      ],
-      [
-        "skill-index-memory",
-        "Mục lục kỹ năng → trí nhớ dài hạn"
-      ],
-      [
-        "memory-context",
-        "Trí nhớ dài hạn → trí nhớ làm việc"
-      ],
-      [
-        "context-pfc",
-        "Context → Prompt Builder"
-      ],
-      [
-        "pfc-model",
-        "Prompt Builder → Model"
-      ],
-      [
-        "model-response",
-        "Model → phản hồi"
-      ]
-    ]
-  },
   "gateway": {
-    "kicker": "USE CASE 2 · CHANNEL / BOT / GATEWAY",
-    "title": "Người gửi nhắn cho Hermes qua Discord",
-    "desc": "Kênh chuyển sự kiện qua Bot và Gateway. Sau khi SOUL định hướng và Context được tập hợp, Prompt Builder luôn dựng input hoàn chỉnh trước khi gọi Model.",
-    "analogy": "Ví như bạn gửi tin nhắn cho một tổng đài: Discord nhận lời nhắn, Bot chuyển vào Gateway, rồi người xử lý sắp xếp đủ thông tin trước khi suy nghĩ và gửi câu trả lời ngược lại.",
+    "kicker": "USE CASE 1 · PROMPT TỪ MESSAGING",
+    "title": "Prompt Messaging được ghép với context đã có",
+    "desc": "Messaging chuyển Current Prompt vào conversation. Prompt Builder ghép các nguồn system độc lập theo tier — SOUL, active Profile/USER.md, MEMORY.md snapshot và Skill Index — cùng Chat History và Current Prompt; Tool Schemas được gửi ở trường API riêng. Context hoàn chỉnh mới đi vào Model và câu trả lời quay lại Messaging.",
+    "analogy": "Tin nhắn tới tổng đài; người điều hành đặt nó cạnh bản sắc, ký ức, mục lục kỹ năng và cuộc trò chuyện hiện tại trước khi bộ não suy luận.",
     "edges": [
       [
         "prompt-channels",
-        "Người gửi → Prompt → Discord"
+        "Current Prompt → Messaging"
       ],
       [
-        "channels-bot",
-        "Discord → Bot"
+        "channels-context",
+        "Messaging append prompt vào conversation"
       ],
       [
-        "bot-gateway",
-        "Bot → Gateway"
+        "context-assembly",
+        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
       ],
       [
-        "gateway-ear",
-        "Gateway → tai tiếp nhận"
+        "pfc-context",
+        "Prompt Builder → Context Window hoàn chỉnh"
       ],
       [
-        "ear-soul",
-        "Tai → tính cách"
+        "context-model",
+        "Context Window → Model inference #1"
       ],
       [
-        "soul-context",
-        "Tính cách → trí nhớ làm việc"
+        "model-mouth",
+        "Model → miệng cô gái"
       ],
       [
-        "context-pfc",
-        "Context → Prompt Builder"
-      ],
-      [
-        "pfc-model",
-        "Prompt Builder → Model"
-      ],
-      [
-        "model-response",
-        "Model → câu trả lời"
-      ],
-      [
-        "response-gateway",
-        "Câu trả lời → Gateway"
-      ],
-      [
-        "gateway-bot",
-        "Gateway → Bot"
-      ],
-      [
-        "bot-channel",
-        "Bot → Discord"
-      ],
-      [
-        "channels-prompt",
-        "Discord → người gửi"
+        "mouth-channels",
+        "Miệng → Messaging"
       ]
     ]
   },
   "tool": {
-    "kicker": "USE CASE 3 · AGENT LOOP",
-    "title": "Bộ não ra lệnh; Tools/MCP gọi Internet rồi nhận kết quả",
-    "desc": "Tools/MCP gửi yêu cầu tới Internet/API và nhận payload trả về. Prompt Builder đưa kết quả đó vào input trước lượt Model kiểm chứng.",
-    "analogy": "Ví như não ra lệnh cho tay gọi một dịch vụ bên ngoài; kết quả quay lại chính bàn tay, rồi được chuyển lên vùng điều hành để bộ não kiểm chứng.",
+    "kicker": "USE CASE 2 · TOOL / MCP",
+    "title": "Model dùng Tool/MCP rồi đọc evidence trong lượt kế tiếp",
+    "desc": "Request đầu tiên được ghép từ các nguồn context độc lập. Tool Schemas được gửi qua trường API riêng. Nếu Model gọi tool, payload web/API chỉ trở thành context sau khi runtime append Tool Result; Prompt Builder dựng request kế tiếp để Model kiểm chứng.",
+    "analogy": "Người đó gom đủ lời nhắn và trí nhớ, suy nghĩ, dùng remote lấy dữ liệu bên ngoài, đặt kết quả mới vào trí nhớ làm việc rồi suy nghĩ lại.",
     "edges": [
       [
-        "prompt-ear",
-        "Prompt → tai tiếp nhận"
+        "prompt-context",
+        "Current Prompt → conversation messages"
       ],
       [
-        "ear-soul",
-        "Tai → tính cách"
+        "context-assembly",
+        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
       ],
       [
-        "soul-context",
-        "Tính cách → trí nhớ làm việc"
+        "pfc-context",
+        "Prompt Builder → Context Window hoàn chỉnh"
       ],
       [
-        "context-pfc",
-        "Context → Prompt Builder"
-      ],
-      [
-        "pfc-model",
-        "Prompt Builder → Model"
+        "context-model",
+        "Context Window → Model inference #1"
       ],
       [
         "model-tools",
-        "Model → Tools/MCP"
+        "Model phát Tool Call → Tools/MCP"
       ],
       [
         "tools-external",
-        "Tools → thế giới"
+        "Tools/MCP → Internet/API"
       ],
       [
         "external-tools",
         "Internet/API → Tools/MCP"
       ],
       [
-        "tools-pfc",
-        "Tools/MCP → Prompt Builder"
+        "tools-context",
+        "Tool Result / RAG → conversation context"
       ],
       [
-        "pfc-model",
-        "Prompt Builder → Model kiểm chứng"
+        "context-reassembly",
+        "ASSEMBLE LẠI · Context cũ + Tool Result"
       ],
       [
-        "model-response",
-        "Model → phản hồi cuối"
-      ]
-    ]
-  },
-  "profile": {
-    "kicker": "USE CASE 4 · PROFESSIONAL IDENTITY",
-    "title": "Cùng một bộ não, nhưng xử lý dưới đúng vai trò nghề nghiệp",
-    "desc": "Profile định hình vai trò nghề nghiệp. Prompt Builder ghép vai trò phù hợp cùng Context thành input trước khi Model suy luận.",
-    "analogy": "Cùng một người có thể đội “mũ DevOps” hoặc “mũ luật sư”; người đó sắp xếp câu hỏi theo đúng vai trò rồi mới suy nghĩ.",
-    "edges": [
-      [
-        "prompt-ear",
-        "Prompt → tai tiếp nhận"
+        "pfc-context",
+        "Prompt Builder → Context Window cập nhật"
       ],
       [
-        "ear-soul",
-        "Tai → tính cách"
+        "context-model",
+        "Context cập nhật → Model kiểm chứng"
       ],
       [
-        "soul-context",
-        "Tính cách → trí nhớ làm việc"
+        "model-mouth",
+        "Model → miệng cô gái"
       ],
       [
-        "context-profile",
-        "Nhận diện → vai trò phù hợp"
-      ],
-      [
-        "profile-pfc",
-        "Profile → Prompt Builder"
-      ],
-      [
-        "pfc-model",
-        "Prompt Builder → Model"
-      ],
-      [
-        "model-response",
-        "Model → phản hồi"
+        "mouth-prompt",
+        "Miệng → Người gửi"
       ]
     ]
   },
   "skill": {
-    "kicker": "USE CASE 5 · SKILL LOOKUP",
-    "title": "Skill là một cuốn sách hoàn chỉnh, không phải hai module rời",
-    "desc": "Prompt Builder dựng input để Model nhận diện nhu cầu tra cứu. skill_view nạp nội dung Full SKILL.md tại chỗ, rồi Prompt Builder dựng lại input với nội dung kỹ năng trước lượt Model tiếp theo.",
-    "analogy": "Bạn suy nghĩ để biết cần cẩm nang nào, mở đúng phần hướng dẫn, rồi sắp xếp thông tin mới vào điều đang chú ý trước khi quyết định.",
+    "kicker": "USE CASE 3 · FULL SKILL",
+    "title": "Model đọc Skill Index rồi gọi skill_view khi cần",
+    "desc": "Skill Index name + description đã nằm trong system prompt của session. Model đọc index ở inference #1 rồi phát tool call skill_view(name); runtime trả Full SKILL.md như Tool Result, append vào conversation context và dựng inference #2.",
+    "analogy": "Mục lục đã nằm trong trí nhớ làm việc; người đó chọn đúng sách, mở nội dung đầy đủ, đặt trang vừa đọc vào bàn làm việc rồi suy nghĩ tiếp.",
     "edges": [
       [
-        "prompt-ear",
-        "Prompt → tai tiếp nhận"
+        "prompt-context",
+        "Current Prompt → conversation messages"
       ],
       [
-        "ear-soul",
-        "Tai → tính cách"
+        "context-assembly",
+        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
       ],
       [
-        "soul-context",
-        "Tính cách → trí nhớ làm việc"
+        "pfc-context",
+        "Prompt Builder → Context Window hoàn chỉnh"
       ],
       [
-        "context-pfc",
-        "Context → Prompt Builder"
+        "context-model",
+        "Context Window → Model inference #1"
       ],
       [
-        "pfc-model",
-        "Prompt Builder → Model nhận diện nhu cầu"
-      ],
-      [
-        "model-skill-index",
-        "Model → mục lục kỹ năng"
-      ],
-      [
-        "skill-index-skill-view",
-        "Mục lục → skill_view"
+        "model-skill-view",
+        "Model phát Tool Call skill_view(name)"
       ],
       [
         "skill-view-lookup",
-        "skill_view đang tra cứu nội dung"
+        "Runtime mở Full SKILL.md"
       ],
       [
-        "skill-view-pfc",
-        "Kết quả tra cứu → Prompt Builder"
+        "skill-full-context",
+        "Full SKILL.md → conversation context"
       ],
       [
-        "pfc-model",
-        "Prompt Builder dựng lại input → Model"
+        "context-reassembly",
+        "ASSEMBLE LẠI · Context cũ + Full Skill"
       ],
       [
-        "model-response",
-        "Model → phản hồi"
+        "pfc-context",
+        "Prompt Builder → Context Window cập nhật"
+      ],
+      [
+        "context-model",
+        "Context cập nhật → Model inference #2"
+      ],
+      [
+        "model-mouth",
+        "Model → miệng cô gái"
+      ],
+      [
+        "mouth-prompt",
+        "Miệng → Người gửi"
       ]
     ]
   },
   "e2e": {
-    "kicker": "USE CASE 6 · E2E PHỨC HỢP",
-    "title": "Tổng đài nhận lời → chọn vai trò → tra cứu → hành động",
-    "desc": "Profile định hình vai trò trước lượt Model đầu tiên. Prompt Builder dựng request theo vai trò đó, rồi dựng lại input sau khi tra cứu Skill và khi Tools/MCP nhận kết quả từ Internet/API.",
-    "analogy": "Một cuộc gọi đến: người đó vào đúng vai trò, tra cứu cẩm nang, dùng tay gọi dịch vụ bên ngoài rồi chuyển kết quả lên vùng điều hành trước khi trả lời.",
+    "kicker": "USE CASE 4 · E2E CASE",
+    "title": "Messaging → context → Full Skill → Tool → evidence → trả lời",
+    "desc": "Prompt qua Messaging được ghép với system snapshot, history và Tool Schemas. Model gọi skill_view nếu cần, nhận Full Skill trong lượt kế tiếp, sau đó gọi Tool/MCP; evidence lại được append vào context trước lượt Model kiểm chứng và trả lời.",
+    "analogy": "Tin nhắn đến tổng đài; người đó gom nền tảng sẵn có, mở đúng cẩm nang, dùng remote lấy evidence, cập nhật bàn làm việc rồi mới trả lời.",
     "edges": [
       [
         "prompt-channels",
-        "Người gửi → Prompt → kênh"
+        "Current Prompt → Messaging"
       ],
       [
-        "channels-bot",
-        "Kênh → Bot"
+        "channels-context",
+        "Messaging append prompt vào conversation"
       ],
       [
-        "bot-gateway",
-        "Bot → Gateway"
+        "context-assembly",
+        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
       ],
       [
-        "gateway-ear",
-        "Gateway → tai tiếp nhận"
+        "pfc-context",
+        "Prompt Builder → Context Window hoàn chỉnh"
       ],
       [
-        "ear-soul",
-        "Tai → tính cách"
+        "context-model",
+        "Context Window → Model inference #1"
       ],
       [
-        "soul-skill-index",
-        "Tính cách → mục lục kỹ năng"
-      ],
-      [
-        "skill-index-memory",
-        "Mục lục → trí nhớ dài hạn"
-      ],
-      [
-        "memory-context",
-        "Trí nhớ → working context"
-      ],
-      [
-        "context-profile",
-        "Context → chọn vai trò"
-      ],
-      [
-        "profile-pfc",
-        "Vai trò → Prompt Builder"
-      ],
-      [
-        "pfc-model",
-        "Prompt Builder → Model"
-      ],
-      [
-        "model-skill-index",
-        "Model → mục lục"
-      ],
-      [
-        "skill-index-skill-view",
-        "Mục lục → skill_view"
+        "model-skill-view",
+        "Model phát Tool Call skill_view(name)"
       ],
       [
         "skill-view-lookup",
-        "skill_view đang tra cứu nội dung"
+        "Runtime mở Full SKILL.md"
       ],
       [
-        "skill-view-pfc",
-        "Kết quả tra cứu → Prompt Builder"
+        "skill-full-context",
+        "Full SKILL.md → conversation context"
       ],
       [
-        "pfc-model",
-        "Prompt Builder dựng lại input → Model"
+        "context-reassembly",
+        "ASSEMBLE LẠI · Context cũ + Full Skill"
+      ],
+      [
+        "pfc-context",
+        "Prompt Builder → Context Window cập nhật"
+      ],
+      [
+        "context-model",
+        "Context cập nhật → Model inference #2"
       ],
       [
         "model-tools",
-        "Model → Tools/MCP"
+        "Model phát Tool Call → Tools/MCP"
       ],
       [
         "tools-external",
-        "Tools → thế giới"
+        "Tools/MCP → Internet/API"
       ],
       [
         "external-tools",
         "Internet/API → Tools/MCP"
       ],
       [
-        "tools-pfc",
-        "Tools/MCP → Prompt Builder"
+        "tools-context",
+        "Tool Result / RAG → conversation context"
       ],
       [
-        "pfc-model",
-        "Prompt Builder dựng vòng verify → Model"
+        "context-reassembly",
+        "ASSEMBLE LẠI · Context cũ + Tool Result"
       ],
       [
-        "model-response",
-        "Model → phản hồi"
+        "pfc-context",
+        "Prompt Builder → Context Window cập nhật"
       ],
       [
-        "response-gateway",
-        "Phản hồi → Gateway"
+        "context-model",
+        "Context cập nhật → Model kiểm chứng"
       ],
       [
-        "gateway-bot",
-        "Gateway → Bot"
+        "model-mouth",
+        "Model → miệng cô gái"
       ],
       [
-        "bot-channel",
-        "Bot → kênh"
-      ],
-      [
-        "channels-prompt",
-        "Kênh → người gửi"
+        "mouth-channels",
+        "Miệng → Messaging"
       ]
     ]
   }
