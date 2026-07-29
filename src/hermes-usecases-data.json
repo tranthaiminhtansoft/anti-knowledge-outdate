@@ -2,7 +2,7 @@
   "gateway": {
     "kicker": "USE CASE 1 · PROMPT TỪ MESSAGING",
     "title": "Prompt Messaging được ghép với context đã có",
-    "desc": "Messaging chuyển Current Prompt vào conversation. Prompt Builder ghép các nguồn system độc lập theo tier — SOUL, active Profile/USER.md, MEMORY.md snapshot và Skill Index — cùng Chat History và Current Prompt; Tool Schemas được gửi ở trường API riêng. Context hoàn chỉnh mới đi vào Model và câu trả lời quay lại Messaging.",
+    "desc": "Messaging chuyển Current Prompt vào conversation. Prompt Builder tạo cached SYSTEM từ các nguồn theo tier; AIAgent request assembly kết hợp SYSTEM với MESSAGES[] và trường TOOLS[] riêng trước khi gọi Model. Câu trả lời sau đó quay lại Messaging.",
     "analogy": "Tin nhắn tới tổng đài; người điều hành đặt nó cạnh bản sắc, ký ức, mục lục kỹ năng và cuộc trò chuyện hiện tại trước khi bộ não suy luận.",
     "edges": [
       [
@@ -13,13 +13,15 @@
         "channels-context",
         "Messaging append prompt vào conversation"
       ],
-      [
-        "context-assembly",
-        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
-      ],
+      ["soul-pfc", "SOUL.md → STABLE tier"],
+      ["skill-index-pfc", "Skill Index {name, description} → STABLE tier"],
+      ["profile-pfc", "Active Profile hint → STABLE tier"],
+      ["context-tier", "Project context + system_message → CONTEXT tier"],
+      ["memory-pfc", "MEMORY.md snapshot → VOLATILE tier"],
+      ["user-pfc", "USER.md từ active profile → VOLATILE tier"],
       [
         "pfc-context",
-        "Prompt Builder → Context Window hoàn chỉnh"
+        "AIAgent ghép SYSTEM + MESSAGES[] + TOOLS[]"
       ],
       [
         "context-model",
@@ -36,54 +38,55 @@
     ]
   },
   "tool": {
-    "kicker": "USE CASE 2 · TOOL / MCP",
-    "title": "Model dùng Tool/MCP rồi đọc evidence trong lượt kế tiếp",
-    "desc": "Request đầu tiên được ghép từ các nguồn context độc lập. Tool Schemas được gửi qua trường API riêng. Nếu Model gọi tool, payload web/API chỉ trở thành context sau khi runtime append Tool Result; Prompt Builder dựng request kế tiếp để Model kiểm chứng.",
-    "analogy": "Người đó gom đủ lời nhắn và trí nhớ, suy nghĩ, dùng remote lấy dữ liệu bên ngoài, đặt kết quả mới vào trí nhớ làm việc rồi suy nghĩ lại.",
+    "kicker": "USE CASE 2 · MCP = LẤY KẾT QUẢ THỰC TẾ",
+    "title": "Model biết có công cụ, nhưng chưa có kết quả",
+    "desc": "TRƯỚC: TOOLS[] chỉ mô tả MCP tool có thể làm gì; chưa chứa dữ liệu hay xác nhận hành động. Model phát tool call, Hermes Runtime gọi MCP server. SAU: MCP Result được append vào MESSAGES[] của Request #2, nên Model mới có evidence thực tế để kiểm chứng và trả lời.",
+    "analogy": "MCP giống chiếc remote: biết nút nào tồn tại không có nghĩa TV đã trả dữ liệu. Phải bấm nút, chờ dịch vụ thực thi rồi đọc kết quả quay về.",
     "edges": [
+      ["soul-pfc", "FIRST TURN · SOUL.md → STABLE tier"],
+      ["skill-index-pfc", "Skill Index → STABLE tier (không có Full Skill)"],
+      ["profile-pfc", "Active Profile hint → STABLE tier"],
+      [
+        "context-tier",
+        "Project context + system_message → CONTEXT tier"
+      ],
+      ["memory-pfc", "MEMORY.md snapshot → VOLATILE tier"],
+      ["user-pfc", "USER.md từ active profile → VOLATILE tier"],
       [
         "prompt-context",
-        "Current Prompt → conversation messages"
-      ],
-      [
-        "context-assembly",
-        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
+        "USER PROMPT → append vào MESSAGES[]"
       ],
       [
         "pfc-context",
-        "Prompt Builder → Context Window hoàn chỉnh"
+        "AIAgent tạo REQUEST #1: SYSTEM + MESSAGES[] + MCP schemas"
       ],
       [
         "context-model",
-        "Context Window → Model inference #1"
+        "MODEL ĐANG THIẾU: kết quả thực tế"
       ],
       [
         "model-tools",
-        "Model phát Tool Call → Tools/MCP"
+        "Model phát MCP tool_call; Runtime nhận lệnh"
       ],
       [
         "tools-external",
-        "Tools/MCP → Internet/API"
+        "Runtime → MCP server → dịch vụ/API"
       ],
       [
         "external-tools",
-        "Internet/API → Tools/MCP"
+        "Dịch vụ/API → MCP Result"
       ],
       [
         "tools-context",
-        "Tool Result / RAG → conversation context"
+        "APPEND: tool_call + MCP Result → MESSAGES[]"
       ],
       [
         "context-reassembly",
-        "ASSEMBLE LẠI · Context cũ + Tool Result"
-      ],
-      [
-        "pfc-context",
-        "Prompt Builder → Context Window cập nhật"
+        "REQUEST #2: SYSTEM/TOOLS giữ nguyên trong normal loop + MCP Result"
       ],
       [
         "context-model",
-        "Context cập nhật → Model kiểm chứng"
+        "MODEL ĐÃ CÓ: evidence để kiểm chứng/trả lời"
       ],
       [
         "model-mouth",
@@ -96,50 +99,51 @@
     ]
   },
   "skill": {
-    "kicker": "USE CASE 3 · FULL SKILL",
-    "title": "Model đọc Skill Index rồi gọi skill_view khi cần",
-    "desc": "Skill Index name + description đã nằm trong system prompt của session. Model đọc index ở inference #1 rồi phát tool call skill_view(name); runtime trả Full SKILL.md như Tool Result, append vào conversation context và dựng inference #2.",
-    "analogy": "Mục lục đã nằm trong trí nhớ làm việc; người đó chọn đúng sách, mở nội dung đầy đủ, đặt trang vừa đọc vào bàn làm việc rồi suy nghĩ tiếp.",
+    "kicker": "USE CASE 3 · FULL SKILL = HƯỚNG DẪN CÁCH LÀM",
+    "title": "Model biết skill tồn tại, nhưng chưa biết quy trình chi tiết",
+    "desc": "TRƯỚC: System chỉ có Skill Index {name, description}, không có toàn bộ hướng dẫn. Model gọi skill_view(name); Hermes Runtime đọc file SKILL.md nội bộ. SAU: Full SKILL.md được append vào MESSAGES[] của Request #2, nên Model mới biết các bước, quy tắc và pitfall cần làm theo.",
+    "analogy": "Full Skill giống nội dung sách hướng dẫn: thấy tên sách trong mục lục chưa có nghĩa đã đọc sách. Phải mở đúng sách rồi mới biết cách làm.",
     "edges": [
+      ["soul-pfc", "FIRST TURN · SOUL.md → STABLE tier"],
+      ["skill-index-pfc", "Skill Index {name, description} → STABLE tier"],
+      ["profile-pfc", "Active Profile hint → STABLE tier"],
+      [
+        "context-tier",
+        "Project context + system_message → CONTEXT tier"
+      ],
+      ["memory-pfc", "MEMORY.md snapshot → VOLATILE tier"],
+      ["user-pfc", "USER.md từ active profile → VOLATILE tier"],
       [
         "prompt-context",
-        "Current Prompt → conversation messages"
-      ],
-      [
-        "context-assembly",
-        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
+        "USER PROMPT → append vào MESSAGES[]"
       ],
       [
         "pfc-context",
-        "Prompt Builder → Context Window hoàn chỉnh"
+        "AIAgent tạo REQUEST #1: SYSTEM + MESSAGES[] + Tool Schemas"
       ],
       [
         "context-model",
-        "Context Window → Model inference #1"
+        "MODEL ĐANG THIẾU: hướng dẫn chi tiết"
       ],
       [
         "model-skill-view",
-        "Model phát Tool Call skill_view(name)"
+        "Model phát tool_call skill_view(name)"
       ],
       [
         "skill-view-lookup",
-        "Runtime mở Full SKILL.md"
+        "Runtime đọc file SKILL.md nội bộ"
       ],
       [
         "skill-full-context",
-        "Full SKILL.md → conversation context"
+        "APPEND: skill_view call + Tool Result chứa Full SKILL.md → MESSAGES[]"
       ],
       [
         "context-reassembly",
-        "ASSEMBLE LẠI · Context cũ + Full Skill"
-      ],
-      [
-        "pfc-context",
-        "Prompt Builder → Context Window cập nhật"
+        "REQUEST #2: SYSTEM/TOOLS giữ nguyên trong normal loop + Full SKILL.md"
       ],
       [
         "context-model",
-        "Context cập nhật → Model inference #2"
+        "MODEL ĐÃ BIẾT: các bước và quy tắc phải theo"
       ],
       [
         "model-mouth",
@@ -165,13 +169,15 @@
         "channels-context",
         "Messaging append prompt vào conversation"
       ],
-      [
-        "context-assembly",
-        "NGUỒN ĐỘC LẬP HỘI TỤ · System + Messages; Tool Schemas ở API field"
-      ],
+      ["soul-pfc", "SOUL.md → STABLE tier"],
+      ["skill-index-pfc", "Skill Index {name, description} → STABLE tier"],
+      ["profile-pfc", "Active Profile hint → STABLE tier"],
+      ["context-tier", "Project context + system_message → CONTEXT tier"],
+      ["memory-pfc", "MEMORY.md snapshot → VOLATILE tier"],
+      ["user-pfc", "USER.md từ active profile → VOLATILE tier"],
       [
         "pfc-context",
-        "Prompt Builder → Context Window hoàn chỉnh"
+        "AIAgent ghép SYSTEM + MESSAGES[] + TOOLS[]"
       ],
       [
         "context-model",
@@ -192,10 +198,6 @@
       [
         "context-reassembly",
         "ASSEMBLE LẠI · Context cũ + Full Skill"
-      ],
-      [
-        "pfc-context",
-        "Prompt Builder → Context Window cập nhật"
       ],
       [
         "context-model",
@@ -220,10 +222,6 @@
       [
         "context-reassembly",
         "ASSEMBLE LẠI · Context cũ + Tool Result"
-      ],
-      [
-        "pfc-context",
-        "Prompt Builder → Context Window cập nhật"
       ],
       [
         "context-model",

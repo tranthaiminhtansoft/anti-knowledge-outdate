@@ -90,8 +90,16 @@ export function HermesUseCases() {
         const pause = runtime.querySelector<HTMLButtonElement>('#pause');
         const responseTyping = runtime.querySelector<SVGElement>('#response-typing');
         const responseDots = runtime.querySelector<SVGTextElement>('#response-dots');
-        const contextContract = runtime.querySelector<HTMLElement>('#context-contract');
-        if (!active || !pulse || !stage || !caseHead || !diagramShell || !timeline || !pause || !responseTyping || !responseDots || !contextContract) {
+        const assemblyBoard = runtime.querySelector<SVGElement>('#assembly-board');
+        const assemblyTitle = runtime.querySelector<SVGTextElement>('#assembly-title');
+        const assemblyCurrent = runtime.querySelector<SVGTextElement>('#assembly-current');
+        const assemblyNeedCopy = runtime.querySelector<SVGTextElement>('[data-assembly-tier="need"] .row-copy');
+        const assemblyGainCopy = runtime.querySelector<SVGTextElement>('[data-assembly-tier="gain"] .row-copy');
+        const assemblySystemCopy = runtime.querySelector<SVGTextElement>('[data-assembly-tier="system"] .row-copy');
+        const assemblyMessagesCopy = runtime.querySelector<SVGTextElement>('[data-assembly-tier="messages"] .row-copy');
+        const assemblyToolsCopy = runtime.querySelector<SVGTextElement>('[data-assembly-tier="tools"] .row-copy');
+        const assemblyRows = [...runtime.querySelectorAll<SVGElement>('[data-assembly-tier]')];
+        if (!active || !pulse || !stage || !caseHead || !diagramShell || !timeline || !pause || !responseTyping || !responseDots || !assemblyBoard || !assemblyTitle || !assemblyCurrent || !assemblyNeedCopy || !assemblyGainCopy || !assemblySystemCopy || !assemblyMessagesCopy || !assemblyToolsCopy) {
           throw new Error('Thiếu thành phần tương tác');
         }
 
@@ -108,13 +116,16 @@ export function HermesUseCases() {
         });
 
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const edgeMs = 2700;
-        const holdMs = 350;
+        const fastTest = new URLSearchParams(window.location.search).has('testfast');
+        const edgeMs = fastTest ? 120 : 2700;
+        const holdMs = fastTest ? 30 : 350;
         runtime.style.setProperty('--edge', `${edgeMs}ms`);
 
         let current = 'gateway';
         let index = 0;
-        let running = !reduced;
+        let running = false;
+        let started = false;
+        let completed = false;
         let progress = 0;
         let lastTs: number | null = null;
         let inHold = false;
@@ -234,7 +245,6 @@ export function HermesUseCases() {
 
         const clearVisual = () => {
           actors.forEach((actor) => actor.classList.remove('active', 'lookup-active'));
-          contextContract.classList.remove('is-assembling', 'is-reassembling');
           active.setAttribute('d', '');
           active.style.strokeDasharray = '';
           active.style.strokeDashoffset = '';
@@ -242,7 +252,165 @@ export function HermesUseCases() {
           currentPath = null;
           pathLength = 0;
           setTyping(false);
+          assemblyRows.forEach((row) => row.classList.remove('active', 'loaded'));
           runtime.querySelectorAll('.step').forEach((step) => step.classList.remove('current'));
+        };
+
+        const updateAssemblyBoard = (edgeName: string) => {
+          const elapsedEdges = edgeName
+            ? useCases[current].edges.slice(0, index + 1).map(([name]) => name)
+            : [];
+          const hasEdge = (name: string) => elapsedEdges.includes(name);
+          const hasMcpResult = elapsedEdges.includes('tools-context');
+          const hasSkillResult = elapsedEdges.includes('skill-full-context');
+          const hasResult = hasMcpResult || hasSkillResult;
+          const isResultStep = edgeName === 'tools-context' || edgeName === 'skill-full-context';
+          const isReassemblyStep = edgeName === 'context-reassembly';
+          const systemEdges = ['soul-pfc', 'skill-index-pfc', 'profile-pfc', 'context-tier', 'memory-pfc', 'user-pfc', 'pfc-context'];
+          const messageEdges = ['prompt-channels', 'channels-context', 'prompt-context'];
+          const toolEdges = ['model-tools', 'tools-external', 'external-tools', 'model-skill-view', 'skill-view-lookup'];
+          const isSystemAssembly = systemEdges.includes(edgeName);
+          const isMessageStep = messageEdges.includes(edgeName);
+          const isToolStep = toolEdges.includes(edgeName);
+          const isToolCallStep = ['model-tools', 'model-skill-view', 'skill-view-lookup'].includes(edgeName);
+          const requestNumber = elapsedEdges.filter((name) => name === 'context-model').length;
+
+          const systemParts: string[] = [];
+          if (hasEdge('soul-pfc')) systemParts.push('SOUL');
+          if (hasEdge('skill-index-pfc')) systemParts.push('Skills');
+          if (hasEdge('profile-pfc')) systemParts.push('Profile');
+          if (hasEdge('context-tier') || hasEdge('pfc-context')) systemParts.push('Project');
+          if (hasEdge('memory-pfc')) systemParts.push('Memory');
+          if (hasEdge('user-pfc')) systemParts.push('USER');
+          const hasPrompt = elapsedEdges.some((name) => messageEdges.includes(name));
+          const hasToolCall = elapsedEdges.some((name) => ['model-tools', 'model-skill-view'].includes(name));
+          const hasRequest = requestNumber > 0;
+
+          assemblySystemCopy.textContent = systemParts.length
+            ? hasEdge('pfc-context')
+              ? systemParts.join(' · ')
+              : `Đã nạp: ${systemParts.join(' · ')}`
+            : 'Chưa assemble · Start để xem từng nguồn';
+
+          const messageParts = ['History'];
+          if (hasPrompt) messageParts.push('Prompt');
+          if (hasEdge('model-skill-view')) messageParts.push('skill_view call');
+          if (hasSkillResult) messageParts.push('Full Skill');
+          if (hasEdge('model-tools')) messageParts.push('MCP call');
+          if (hasMcpResult) messageParts.push('MCP Result');
+          if (current === 'e2e') {
+            const e2eParts = ['History+Prompt'];
+            if (hasEdge('model-skill-view')) e2eParts.push(hasSkillResult ? 'skill call/result' : 'skill call');
+            if (hasEdge('model-tools')) e2eParts.push(hasMcpResult ? 'MCP call/result' : 'MCP call');
+            assemblyMessagesCopy.textContent = e2eParts.join(' · ');
+          } else {
+            assemblyMessagesCopy.textContent = messageParts.join(' → ');
+          }
+
+          assemblyBoard.classList.add('visible');
+          assemblyBoard.setAttribute('aria-hidden', 'false');
+          assemblyBoard.classList.toggle('mode-tool', current === 'tool');
+          assemblyBoard.classList.toggle('mode-skill', current === 'skill');
+
+          if (current === 'tool') {
+            assemblyTitle.textContent = 'CONTEXT WINDOW · MCP';
+            assemblyToolsCopy.textContent = hasRequest || hasToolCall
+              ? 'Đã gửi: MCP schema · chưa phải result'
+              : 'Sẽ gửi: MCP schema ở API field riêng';
+          } else if (current === 'skill') {
+            assemblyTitle.textContent = 'CONTEXT WINDOW · FULL SKILL';
+            assemblyToolsCopy.textContent = hasRequest || hasToolCall
+              ? 'Đã gửi: skill_view schema · Index ở SYSTEM'
+              : 'Sẽ gửi: skill_view schema ở API field riêng';
+          } else if (current === 'e2e') {
+            assemblyTitle.textContent = 'CONTEXT WINDOW · E2E';
+            assemblyToolsCopy.textContent = hasRequest || hasToolCall
+              ? 'Đã gửi: skill_view + MCP schemas'
+              : 'Sẽ gửi: skill_view + MCP schemas';
+          } else {
+            assemblyTitle.textContent = 'CONTEXT WINDOW · MESSAGING';
+            assemblyToolsCopy.textContent = hasRequest
+              ? 'Đã gửi: native · plugin · MCP schemas'
+              : 'Sẽ gửi: tool schemas ở API field riêng';
+          }
+
+          if (!edgeName) {
+            assemblyNeedCopy.textContent = 'Chưa chạy · chưa assemble request';
+            assemblyGainCopy.textContent = 'Bấm Start để xem context thay đổi';
+          } else if (isSystemAssembly) {
+            const source = edgeName === 'soul-pfc' ? 'SOUL.md'
+              : edgeName === 'profile-pfc' ? 'Active Profile hint'
+                : edgeName === 'memory-pfc' ? 'MEMORY.md'
+                  : edgeName === 'user-pfc' ? 'USER.md'
+                  : edgeName === 'skill-index-pfc' ? 'Skill Index'
+                    : edgeName === 'context-tier' ? 'system sources'
+                      : 'SYSTEM hoàn chỉnh';
+            assemblyNeedCopy.textContent = `Đang nạp: ${source}`;
+            assemblyGainCopy.textContent = edgeName === 'pfc-context'
+              ? 'SYSTEM đã cache cho các request sau'
+              : `SYSTEM vừa nhận thêm ${source}`;
+          } else if (isMessageStep) {
+            assemblyNeedCopy.textContent = 'User prompt chưa nằm trong MESSAGES[]';
+            assemblyGainCopy.textContent = 'Đã append current user prompt';
+          } else if (edgeName === 'context-model') {
+            assemblyNeedCopy.textContent = hasResult ? 'Model cần đọc result mới' : 'Model chưa có tool result';
+            assemblyGainCopy.textContent = `Request #${Math.max(requestNumber, 1)} đã đủ 3 fields`;
+          } else if (isToolCallStep) {
+            assemblyNeedCopy.textContent = hasResult ? 'Model cần hành động tiếp' : 'Model cần dữ liệu/quy trình';
+            assemblyGainCopy.textContent = edgeName.includes('skill')
+              ? 'Đã phát skill_view call'
+              : 'Đã phát MCP tool call';
+          } else if (edgeName === 'tools-external' || edgeName === 'external-tools') {
+            assemblyNeedCopy.textContent = 'Runtime/MCP đang thực thi bên ngoài';
+            assemblyGainCopy.textContent = 'Đang chờ Tool Result trả về';
+          } else if (isResultStep) {
+            assemblyNeedCopy.textContent = 'Tool Result vừa quay về Runtime';
+            assemblyGainCopy.textContent = edgeName === 'tools-context'
+              ? 'Đã append MCP Result vào MESSAGES[]'
+              : 'Đã append Full Skill vào MESSAGES[]';
+          } else if (isReassemblyStep) {
+            assemblyNeedCopy.textContent = 'Request trước chưa chứa result mới';
+            assemblyGainCopy.textContent = 'Request kế tiếp dùng MESSAGES[] mới';
+          } else {
+            assemblyNeedCopy.textContent = hasResult ? 'Model đang đọc evidence mới' : 'Model đang suy luận request';
+            assemblyGainCopy.textContent = hasResult ? 'Có thể trả lời hoặc gọi tool tiếp' : 'Sắp quyết định bước tiếp theo';
+          }
+
+          assemblyCurrent.textContent = !edgeName
+            ? 'SẴN SÀNG · BẤM START'
+            : isSystemAssembly
+              ? edgeName === 'pfc-context'
+                ? 'FIRST TURN · CACHE SYSTEM PROMPT'
+                : 'FIRST TURN · PROMPT BUILDER ĐANG NẠP SYSTEM'
+              : isResultStep
+                ? edgeName === 'tools-context'
+              ? 'APPEND MCP RESULT → MESSAGES[]'
+              : 'APPEND FULL SKILL → MESSAGES[]'
+            : isReassemblyStep
+              ? 'REQUEST KẾ TIẾP · SYSTEM/TOOLS GIỮ NGUYÊN'
+              : hasResult
+                ? 'MODEL ĐỌC RESULT → TOOL KHÁC HOẶC FINAL'
+                : edgeName === 'context-model'
+                  ? 'REQUEST #1 · MODEL CHƯA CÓ RESULT'
+                  : 'AGENT LOOP · SYSTEM/TOOLS GIỮ NGUYÊN';
+
+          assemblyRows.forEach((row) => {
+            const tier = row.dataset.assemblyTier;
+            const activeTiers = new Set<string>();
+            if (isSystemAssembly) activeTiers.add('system');
+            if (isMessageStep || isResultStep || isReassemblyStep) activeTiers.add('messages');
+            if (isToolStep) activeTiers.add('tools');
+            if (edgeName === 'context-model') ['system', 'messages', 'tools'].forEach((name) => activeTiers.add(name));
+            if (edgeName && !isResultStep && edgeName !== 'context-model') activeTiers.add('need');
+            if (isResultStep || hasResult) activeTiers.add('gain');
+            const activeTier = tier ? activeTiers.has(tier) : false;
+            row.classList.toggle('active', activeTier);
+            row.classList.toggle('loaded',
+              (tier === 'system' && systemParts.length > 0)
+              || (tier === 'messages' && (hasPrompt || hasResult))
+              || (tier === 'tools' && hasRequest),
+            );
+          });
         };
 
         const renderMotion = () => {
@@ -257,7 +425,18 @@ export function HermesUseCases() {
         };
 
         const next = () => {
-          index = (index + 1) % useCases[current].edges.length;
+          if (index >= useCases[current].edges.length - 1) {
+            running = false;
+            started = false;
+            completed = true;
+            stopMotion();
+            sourceMain.classList.remove('paused');
+            pause.textContent = '↻ Chạy lại';
+            pause.setAttribute('aria-pressed', 'false');
+            runtime.querySelector('#speed-badge')!.textContent = 'ĐÃ XONG · KHÔNG TỰ LẶP';
+            return;
+          }
+          index += 1;
           showEdge();
         };
 
@@ -286,17 +465,29 @@ export function HermesUseCases() {
           inHold = false;
           const edgeName = edge[0];
           const path = runtime.querySelector<SVGPathElement>(`[data-edge="${edgeName}"]`);
+          updateAssemblyBoard(edgeName);
           setTyping(edgeName === 'mouth-prompt' || edgeName === 'mouth-channels');
-          runtime.querySelectorAll('.step')[index]?.classList.add('current');
+          const currentStep = runtime.querySelectorAll<HTMLElement>('.step')[index];
+          currentStep?.classList.add('current');
+          currentStep?.scrollIntoView({
+            behavior: reduced ? 'auto' : 'smooth',
+            block: 'nearest',
+            inline: 'center',
+          });
 
-          if (edgeName === 'context-assembly' || edgeName === 'context-reassembly') {
-            const reassembling = edgeName === 'context-reassembly';
-            contextContract.classList.add(reassembling ? 'is-reassembling' : 'is-assembling');
-            ['soul', 'profile', 'memory', 'skill-index', 'pfc', 'context'].forEach((id) => {
-              runtime.querySelector<SVGElement>(`#${id}`)?.classList.add('active');
-            });
+          if (edgeName === 'context-tier') {
+            runtime.querySelector<SVGElement>('#pfc')?.classList.add('active');
             active.dataset.edge = edgeName;
-            active.dataset.source = reassembling ? 'tool-result' : 'parallel-context-sources';
+            active.dataset.source = 'prompt-builder';
+            active.dataset.target = 'prompt-builder';
+            if (running) raf = window.requestAnimationFrame(tick);
+            return;
+          }
+
+          if (edgeName === 'context-reassembly') {
+            runtime.querySelector<SVGElement>('#context')?.classList.add('active');
+            active.dataset.edge = edgeName;
+            active.dataset.source = 'messages-plus-tool-result';
             active.dataset.target = 'context';
             if (running) raf = window.requestAnimationFrame(tick);
             return;
@@ -313,11 +504,19 @@ export function HermesUseCases() {
           }
 
           if (!path) return;
-          const color = edgeName.includes('gateway') || edgeName.includes('channel') || edgeName.includes('bot')
-            ? '#fb923c'
-            : edgeName.includes('tool') || edgeName.includes('external')
-              ? '#34d399'
-              : '#fef08a';
+          const color = edgeName.includes('profile') || edgeName.includes('user')
+            ? '#fbbf24'
+            : edgeName.includes('memory')
+              ? '#a78bfa'
+              : edgeName.includes('skill-index')
+                ? '#67e8f9'
+                : edgeName.includes('soul')
+                  ? '#fb7185'
+                  : edgeName.includes('gateway') || edgeName.includes('channel') || edgeName.includes('bot')
+                    ? '#fb923c'
+                    : edgeName.includes('tool') || edgeName.includes('external')
+                      ? '#34d399'
+                      : '#fef08a';
           runtime.style.setProperty('--flow', color);
           active.style.setProperty('--flow', color);
           pulse.style.setProperty('--flow', color);
@@ -350,6 +549,12 @@ export function HermesUseCases() {
           stopMotion();
           current = name;
           index = 0;
+          running = false;
+          started = false;
+          completed = false;
+          progress = 0;
+          inHold = false;
+          sourceMain.classList.remove('paused');
           const selected = useCases[name];
           tabs.forEach((tab) => {
             const selectedTab = tab.dataset.case === name;
@@ -365,7 +570,9 @@ export function HermesUseCases() {
           setText('#case-title', selected.title);
           setText('#case-desc', selected.desc);
           setText('#case-analogy', selected.analogy);
-          setText('#speed-badge', reduced ? 'SƠ ĐỒ TĨNH · REDUCED MOTION' : 'TỰ ĐỘNG · 2,7S/CHẶNG');
+          setText('#speed-badge', reduced ? 'SƠ ĐỒ TĨNH · REDUCED MOTION' : 'SẴN SÀNG · TỰ BẤM START');
+          pause.textContent = reduced ? 'Chuyển động đã tắt' : '▶ Start';
+          pause.setAttribute('aria-pressed', 'false');
 
           timeline.replaceChildren(...selected.edges.map((edge, stepIndex) => {
             const step = document.createElement('span');
@@ -386,12 +593,19 @@ export function HermesUseCases() {
               if (path.dataset.to) usedActors.add(path.dataset.to);
             }
           });
-          ['soul', 'profile', 'memory', 'context', 'pfc', 'model', 'skill-index', 'skill-full', 'skill-view']
+          ['soul', 'profile', 'memory', 'context', 'pfc', 'model', 'skill-index']
             .forEach((id) => usedActors.add(id));
+          if (name === 'skill' || name === 'e2e') {
+            ['skill-full', 'skill-view'].forEach((id) => usedActors.add(id));
+          }
           actors.forEach((actor) => actor.classList.toggle('hidden-for-case', !usedActors.has(actor.id)));
           const book = runtime.querySelector('#book');
           book?.classList.remove('hidden-for-case', 'index-only');
-          showEdge();
+          clearVisual();
+          updateAssemblyBoard('');
+          if (reduced) {
+            assemblyCurrent.textContent = 'CHUYỂN ĐỘNG ĐÃ TẮT · ĐỌC TIMELINE BÊN DƯỚI';
+          }
         };
 
         tabs.forEach((tab) => {
@@ -417,17 +631,31 @@ export function HermesUseCases() {
 
         const onPause = () => {
           if (reduced) return;
+          if (!started) {
+            if (completed) index = 0;
+            completed = false;
+            started = true;
+            running = true;
+            sourceMain.classList.remove('paused');
+            pause.textContent = 'Ⅱ Tạm dừng';
+            pause.setAttribute('aria-pressed', 'false');
+            runtime.querySelector('#speed-badge')!.textContent = 'ĐANG CHẠY · 2,7S/CHẶNG';
+            showEdge();
+            return;
+          }
           if (running) {
             running = false;
             stopMotion();
             sourceMain.classList.add('paused');
             pause.textContent = '▶ Chạy tiếp';
             pause.setAttribute('aria-pressed', 'true');
+            runtime.querySelector('#speed-badge')!.textContent = 'ĐÃ TẠM DỪNG';
           } else {
             running = true;
             sourceMain.classList.remove('paused');
             pause.textContent = 'Ⅱ Tạm dừng';
             pause.setAttribute('aria-pressed', 'false');
+            runtime.querySelector('#speed-badge')!.textContent = 'ĐANG CHẠY · 2,7S/CHẶNG';
             lastTs = null;
             if (inHold || progress >= 1) timer = window.setTimeout(next, holdMs);
             else raf = window.requestAnimationFrame(tick);
@@ -439,6 +667,7 @@ export function HermesUseCases() {
         if (reduced) {
           pause.disabled = true;
           pause.textContent = 'Chuyển động đã tắt';
+          pause.setAttribute('aria-label', 'Chuyển động đã tắt theo cài đặt hệ thống');
         }
         select('gateway');
       })
@@ -463,7 +692,7 @@ export function HermesUseCases() {
         <div>
           <span className="badge">Hermes Agent · mô hình cơ thể người</span>
           <h2 id="hermes-human-body-title">Usecases</h2>
-          <p>Mỗi user turn tạo một model request mới: Prompt Builder ghép các nguồn system độc lập theo tier cùng chat history và current prompt; Tool Schemas đi trong trường API riêng. Trong luồng on-demand minh hoạ, Full Skill, RAG hoặc payload ngoài xuất hiện sau tool call; preload, plugin hoặc external-memory overlay có thể chèn sớm hơn.</p>
+          <p>Mỗi user turn tạo một model request mới: Prompt Builder tạo cached SYSTEM từ các nguồn theo tier; AIAgent request assembly kết hợp SYSTEM với MESSAGES[] và trường TOOLS[] riêng. Trong luồng on-demand minh hoạ, Full Skill, RAG hoặc payload ngoài xuất hiện sau tool call; preload, plugin hoặc external-memory overlay có thể chèn sớm hơn.</p>
         </div>
       </header>
       {loadError ? <p role="alert" className="hermesUseCasesError">Không thể tải mô phỏng Usecases.</p> : null}
