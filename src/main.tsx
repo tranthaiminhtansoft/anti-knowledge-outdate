@@ -895,7 +895,8 @@ function HermesComponentsTable() {
     ['Profile', 'Tách config, model, memory, session, skill, plugin và gateway theo vai trò.', 'Có', '~/.hermes/profiles/<name>/'],
     ['Model & provider', 'Sinh quyết định/câu trả lời; effort phụ thuộc khả năng của model.', 'Có', '~/.hermes/config.yaml · ~/.hermes/.env cho secrets'],
     ['Prompt Builder & context', 'Ghép SOUL, tool guidance, skills, project context và memory theo thứ tự.', 'Một phần', 'Custom input qua SOUL, skills, memory và .hermes.md / AGENTS.md'],
-    ['Skills', 'Workflow tái sử dụng gồm hướng dẫn, pitfall, script, template và bước verify.', 'Có', '~/.hermes/skills/<skill>/SKILL.md'],
+    ['Skill Index', 'Danh mục nhẹ gồm tên và mô tả của các skill khả dụng. Hermes quét và dựng index khi bắt đầu session; Model dùng index để nhận diện skill phù hợp mà chưa nạp toàn bộ nội dung.', 'Có mặc định*', '~/.hermes/skills/ · skills_list()'],
+    ['skill_view + Full Skill', 'Chỉ chạy theo nhu cầu: khi Model đã chọn một skill và cần quy trình chi tiết, skill_view(name) nạp toàn bộ SKILL.md vào context; skill_view(name, path) mở thêm file reference cụ thể.', 'Theo nhu cầu', '~/.hermes/skills/<skill>/SKILL.md'],
     ['Tools / MCP', 'Thực thi hành động thật như terminal, file, browser hoặc dịch vụ ngoài.', 'Có', '~/.hermes/config.yaml · plugin ở ~/.hermes/plugins/'],
     ['Gateway', 'Nhận/gửi tin nhắn qua Discord, Telegram và các channel đã cấu hình.', 'Có', '~/.hermes/config.yaml · secrets trong ~/.hermes/.env'],
     ['Session & state', 'Giữ lịch sử hội thoại, checkpoint và dữ liệu vận hành.', 'Runtime quản lý', '~/.hermes/state.db và state của profile'],
@@ -913,6 +914,15 @@ function HermesComponentsTable() {
           <thead><tr><th>Thành phần</th><th>Vai trò</th><th>Custom?</th><th>Đường dẫn / điểm cấu hình</th></tr></thead>
           <tbody>{components.map(([name, role, custom, path]) => <tr key={name}><th scope="row">{name}</th><td>{role}</td><td>{custom}</td><td><code>{path}</code></td></tr>)}</tbody>
         </table>
+      </div>
+      <div className="hermesSkillFlow" aria-labelledby="hermes-skill-flow-title">
+        <h3 id="hermes-skill-flow-title">Skills được nạp khi nào?</h3>
+        <ol>
+          <li><strong>Đầu session — dựng Skill Index:</strong> Hermes quét các skill đã cài, đang bật và tương thích với platform, rồi đưa danh mục nhẹ <code>name + description</code> vào system prompt. Profile <code>default</code> có catalog skill bundled theo mặc định, trừ khi cài bằng <code>--no-skills</code>, tắt skill hoặc catalog đang trống.</li>
+          <li><strong>Khi xử lý yêu cầu — chọn skill:</strong> Model đối chiếu yêu cầu với mô tả trong index. Việc thấy một skill trong index không có nghĩa Full Skill đã được nạp.</li>
+          <li><strong>Khi cần hướng dẫn đầy đủ — gọi skill_view:</strong> Model gọi <code>skill_view(name)</code> để nạp toàn bộ <code>SKILL.md</code> và metadata vào context trước khi làm theo workflow. Nếu skill dẫn tới tài liệu phụ, Model gọi tiếp <code>skill_view(name, path)</code> cho đúng file reference.</li>
+        </ol>
+        <p><strong>Ngoại lệ preload:</strong> người dùng có thể gọi <code>/skill &lt;name&gt;</code> hoặc chạy <code>hermes -s &lt;name&gt;</code>; khi đó Full Skill được nạp trực tiếp, không cần chờ Model tự chọn từ index.</p>
       </div>
     </section>
   );

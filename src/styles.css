@@ -259,11 +259,18 @@ th { color: #8cc7ff; }
 .hermesSectionHeading h2 { margin: 12px 0 8px; }
 .hermesSectionHeading code, .hermesComponentTable code { color: #fde68a; overflow-wrap: anywhere; }
 .hermesComponentTable { max-width: 100%; overflow-x: auto; margin-top: 18px; border: 1px solid #334566; border-radius: 18px; background: #06101d; }
-.hermesComponentTable table { width: 100%; min-width: 900px; margin: 0; border: 0; border-collapse: collapse; }
+.hermesComponentTable table { width: 100%; min-width: 820px; margin: 0; border: 0; border-collapse: collapse; }
 .hermesComponentTable th, .hermesComponentTable td { padding: 13px 14px; border-bottom: 1px solid #273751; text-align: left; vertical-align: top; line-height: 1.55; }
 .hermesComponentTable thead { color: #a5f3fc; background: #0b2038; }
 .hermesComponentTable tbody th { color: #67e8f9; }
 .hermesComponentTable tbody tr:last-child :is(th, td) { border-bottom: 0; }
+.hermesSkillFlow { margin-top: 18px; padding: 18px 20px; border: 1px solid #31517c; border-radius: 18px; background: linear-gradient(135deg, #092039, #081522); }
+.hermesSkillFlow h3 { margin: 0 0 12px; color: #a5f3fc; }
+.hermesSkillFlow ol { display: grid; gap: 10px; margin: 0; padding-left: 22px; color: #b9c5d8; line-height: 1.65; }
+.hermesSkillFlow li::marker { color: #22d3ee; font-weight: 800; }
+.hermesSkillFlow strong { color: #e0f2fe; }
+.hermesSkillFlow code { color: #fde68a; overflow-wrap: anywhere; }
+.hermesSkillFlow p { margin: 14px 0 0; padding-top: 14px; border-top: 1px solid #2b4566; color: #aebdd2; line-height: 1.65; }
 .hermesMisconceptionGrid article { min-width: 0; padding: 18px; border: 1px solid #31517c; border-radius: 20px; background: #0b1728; }
 .hermesMisconceptionGrid h3 { margin: 0 0 8px; color: #dbeafe; }
 .hermesMisconceptionGrid p { margin: 0; color: #aebdd2; line-height: 1.65; }
