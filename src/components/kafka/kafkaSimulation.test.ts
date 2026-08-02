@@ -34,6 +34,12 @@ describe('Kafka learning journey contract', () => {
     ]);
     expect(components?.keyPoints.join(' ')).toContain('Kafka không nhận HTTP request');
     expect(components?.keyPoints.join(' ')).toContain('Producer là Kafka client');
+    expect(components?.glossary?.find((item) => item.term === 'Leader')?.role).toContain('read mặc định từ leader');
+    expect(components?.steps.find((step) => step.title === 'Offset')?.metrics).toEqual({
+      current_record: '1842',
+      position: '1843',
+      committed: '1843',
+    });
     expect(apiFlow?.flowLanes?.map((lane) => lane.title)).toEqual(['Lane đồng bộ HTTP', 'Lane bất đồng bộ Kafka']);
     expect(components?.glossary).toHaveLength(10);
   });
