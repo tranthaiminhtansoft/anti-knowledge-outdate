@@ -809,9 +809,33 @@ th { color: #8cc7ff; }
 }
 :root[data-theme='light'] .hermesUseCasesRuntime .person-outline { fill: #dff6fb; stroke: #0891b2; }
 :root[data-theme='light'] .hermesUseCasesRuntime .person-detail { stroke: #0891b288; }
+:root[data-theme='light'] .hermesUseCasesRuntime .manga-reference {
+  opacity: 1;
+  filter: url('#manga-lineart-light-strong');
+}
 :root[data-theme='light'] .hermesUseCasesRuntime .brain-shell { fill: #ede9fe; stroke: #7c3aed; }
 :root[data-theme='light'] .hermesUseCasesRuntime .brain-fold { stroke: #7c3aed66; }
-:root[data-theme='light'] .hermesUseCasesRuntime .surface { fill: #ffffff; }
+/* SVG actor surfaces need individual light palettes. A blanket white fill hides
+   the white labels baked into the standalone dark-mode diagram. */
+:root[data-theme='light'] .hermesUseCasesRuntime .brain-node { fill: #ffffff; }
+:root[data-theme='light'] .hermesUseCasesRuntime .model-core .brain-shape { fill: #ede9fe; }
+:root[data-theme='light'] .hermesUseCasesRuntime .brain-title { fill: #5b21b6; }
+:root[data-theme='light'] .hermesUseCasesRuntime .brain-node-label { fill: #17243a; }
+:root[data-theme='light'] .hermesUseCasesRuntime .heart { fill: #ffe4e6; stroke: #e11d48; }
+:root[data-theme='light'] .hermesUseCasesRuntime :is(.heart-label, .heart-sub) {
+  fill: #9f1239;
+  stroke: #fff1f2;
+}
+:root[data-theme='light'] .hermesUseCasesRuntime .page-surface { fill: #f3e8ff; }
+:root[data-theme='light'] .hermesUseCasesRuntime .lookup-surface { fill: #dcfce7; }
+:root[data-theme='light'] .hermesUseCasesRuntime .lookup-text { fill: #14532d; }
+:root[data-theme='light'] .hermesUseCasesRuntime .remote-shell { fill: #ecfeff; }
+:root[data-theme='light'] .hermesUseCasesRuntime .remote-button { fill: #cffafe; stroke: #0891b2; }
+:root[data-theme='light'] .hermesUseCasesRuntime .remote-label { fill: #164e63; }
+:root[data-theme='light'] .hermesUseCasesRuntime .tv-shell { fill: #fff7ed; }
+:root[data-theme='light'] .hermesUseCasesRuntime .tv-label { fill: #7c2d12; }
+:root[data-theme='light'] .hermesUseCasesRuntime .tv-sub { fill: #9a3412; }
+:root[data-theme='light'] .hermesUseCasesRuntime .mouth-surface { fill: transparent; }
 :root[data-theme='light'] .hermesUseCasesRuntime :is(.label, .book-title) {
   fill: #17243a;
   stroke: #f8fbff;
@@ -870,6 +894,51 @@ th { color: #8cc7ff; }
 :root[data-theme='light'] .hermesComponentTable tbody td { color: #40536d; }
 :root[data-theme='light'] .hermesComponentTable :is(th, td) { border-color: #d7e1ee; }
 :root[data-theme='light'] :is(.hermesSectionHeading code, .hermesComponentTable code) { color: #854d0e; }
+:root[data-theme='light'] .hermesSkillFlow {
+  color: #17243a;
+  border-color: #b7cbe4;
+  background: #f8fbff;
+  box-shadow: 0 12px 28px #4f6f9614;
+}
+:root[data-theme='light'] .hermesSkillFlow h3 { color: #075985; }
+:root[data-theme='light'] .hermesSkillFlow ol,
+:root[data-theme='light'] .hermesSkillFlow p { color: #40536d; }
+:root[data-theme='light'] .hermesSkillFlow strong { color: #17243a; }
+:root[data-theme='light'] .hermesSkillFlow code { color: #854d0e; }
+:root[data-theme='light'] .hermesSkillFlow p { border-top-color: #d7e1ee; }
+
+:root[data-theme='light'] .hermesUseCasesRuntime .difference {
+  color: #17243a;
+  border-color: #b7cbe4;
+  background: #ffffff;
+  box-shadow: 0 16px 40px #4f6f9614;
+}
+:root[data-theme='light'] .hermesUseCasesRuntime .difference .kicker { color: #0e7490; }
+:root[data-theme='light'] .hermesUseCasesRuntime .difference > p { color: #435570; }
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card {
+  color: #17243a;
+  border-color: #c5d4e7;
+  background: #f8fbff;
+}
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card.skill {
+  border-color: #c4b5fd;
+  background: #faf5ff;
+}
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card.mcp {
+  border-color: #6ee7b7;
+  background: #f0fdfa;
+}
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card h3 { color: #17243a; }
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card.skill h3 { color: #6d28d9; }
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card.mcp h3 { color: #047857; }
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card b { color: #17243a; }
+:root[data-theme='light'] .hermesUseCasesRuntime .difference-card p { color: #52657d; }
+:root[data-theme='light'] .hermesUseCasesRuntime .combined-flow {
+  color: #713f12;
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+:root[data-theme='light'] .hermesUseCasesRuntime .combined-flow code { color: #854d0e; }
 :root[data-theme='light'] :is(.hermesTuningHeader p, .hermesTuningGuide p, .hermesDecisionFlow small) { color: #40536d; }
 :root[data-theme='light'] .hermesTuningGuide code { color: #854d0e; border-color: #f59e0b66; background: #fffbeb; }
 :root[data-theme='light'] :is(.hermesDecisionFlow > div, .hermesEffortGrid article) { color: #17243a; border-color: #c5d4e7; background: #ffffff; }

@@ -19,6 +19,8 @@ import { DockerCoreDiagram, DockerLessonDetails } from './components/DockerLearn
 import { KubernetesConfigurationGuide, KubernetesObservabilityGuide } from './components/KubernetesOperationsLearning';
 import { RedisLearningJourney } from './components/redis/RedisLearningJourney';
 import { redisChapters } from './components/redis/redisJourneyData';
+import { KafkaLearningJourney } from './components/kafka/KafkaLearningJourney';
+import { kafkaChapters } from './components/kafka/kafkaJourneyData';
 import { ModelAgentSimulator } from './components/ModelAgentSimulator';
 import { HermesUseCases } from './HermesUseCases';
 import './styles.css';
@@ -31,7 +33,7 @@ type View = { type: 'home' } | { type: 'topic'; topicId: string } | { type: 'art
 
 type Article = {
   id: string;
-  topic: 'AI' | 'Kubernetes' | 'Docker' | 'Redis' | 'DevOps';
+  topic: 'AI' | 'Kubernetes' | 'Docker' | 'Redis' | 'Kafka' | 'DevOps';
   title: string;
   navLabel?: string;
   question: string;
@@ -205,6 +207,15 @@ const topics: Topic[] = [
     articleCount: redisChapters.length,
     icon: <Database />,
     bullets: ['Cache & memory', 'HA & Sentinel', 'Cluster & multi-region', 'Production operations'],
+  },
+  {
+    id: 'kafka',
+    title: 'Kafka',
+    description: 'Kafka từ event flow, broker và partition tới KRaft, consumer lag, failure recovery và production operations.',
+    status: 'available',
+    articleCount: kafkaChapters.length,
+    icon: <Network />,
+    bullets: ['Broker & partition', 'KRaft vs ZooKeeper', 'Producer & consumer', 'Production pain lab'],
   },
   {
     id: 'devops',
@@ -633,6 +644,20 @@ Network --> DB`,
     points: chapter.keyPoints,
     misconceptions: chapter.misconceptions,
     nextQuestions: chapter.questions,
+  })),
+  ...kafkaChapters.map((chapter): Article => ({
+    id: `kafka-${chapter.id}`,
+    topic: 'Kafka',
+    title: chapter.title,
+    navLabel: chapter.navLabel,
+    question: chapter.question,
+    summary: chapter.summary,
+    lastVerified: '2026-08-02',
+    status: 'draft',
+    diagram: 'Interactive KafkaLearningJourney component',
+    points: chapter.keyPoints,
+    misconceptions: chapter.misconceptions,
+    nextQuestions: [chapter.checkpoint],
   })),
 ];
 
@@ -1318,6 +1343,7 @@ function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'k8s-workload-configuration') return <KubernetesConfigurationGuide />;
   if (article.id === 'k8s-observability-probes') return <KubernetesObservabilityGuide />;
   if (article.topic === 'Redis') return <RedisLearningJourney chapterId={article.id.replace(/^redis-/, '')} />;
+  if (article.topic === 'Kafka') return <KafkaLearningJourney chapterId={article.id.replace(/^kafka-/, '')} />;
   return <MermaidDiagram chart={article.diagram} id={article.id} />;
 }
 
@@ -1345,20 +1371,24 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
         <h1>{article.title}</h1>
         <p className="summary">{article.summary}</p>
         <ArticleVisual article={article} />
-        <div className="grid2">
-          <section>
-            <h4>Ý chính</h4>
-            <ul>{article.points.map((p) => <li key={p}>{p}</li>)}</ul>
-          </section>
-          <section>
-            <h4>Hiểu lầm thường gặp</h4>
-            <ul>{article.misconceptions.map((p) => <li key={p}>{p}</li>)}</ul>
-          </section>
-        </div>
+        {article.topic !== 'Kafka' && (
+          <div className="grid2">
+            <section>
+              <h4>Ý chính</h4>
+              <ul>{article.points.map((p) => <li key={p}>{p}</li>)}</ul>
+            </section>
+            <section>
+              <h4>Hiểu lầm thường gặp</h4>
+              <ul>{article.misconceptions.map((p) => <li key={p}>{p}</li>)}</ul>
+            </section>
+          </div>
+        )}
         {(lessonQAs[article.id]?.length ?? 0) > 0 && <LessonQA items={lessonQAs[article.id]} />}
         <footer className="articleFooter">
           <span>Cập nhật lần cuối: {article.lastVerified}</span>
-          <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
+          {article.topic !== 'Kafka' && (
+            <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
+          )}
         </footer>
       </article>
       </div>
