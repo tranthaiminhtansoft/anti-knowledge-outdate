@@ -1,0 +1,207 @@
+.kafkaJourney {
+  --k-bg: #071017;
+  --k-panel: #0c1822;
+  --k-panel-2: #102431;
+  --k-text: #ecf5f7;
+  --k-muted: #9bb0ba;
+  --k-line: #365665;
+  --k-active: #55d6be;
+  --k-good: #62dc91;
+  --k-warn: #ffbe55;
+  --k-bad: #ff647c;
+  margin-top: 16px;
+  overflow: hidden;
+  color: var(--k-text);
+  border: 1px solid #284553;
+  border-radius: 18px;
+  background: radial-gradient(circle at 15% 0%, #133342 0, var(--k-bg) 43%);
+}
+.kafkaJourney button { font: inherit; }
+.kafkaJourneyHeader { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:18px; padding:22px 24px 18px; border-bottom:1px solid #223c48; }
+.kafkaJourneyHeader > div > span, .kafkaBrief span, .kafkaStageTitle span, .kafkaEvidence header span { color: var(--k-active); font-size: 11px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.kafkaJourneyHeader h2 { margin: 6px 0; font-size: clamp(25px, 3vw, 37px); }
+.kafkaJourneyHeader p { max-width: 900px; margin: 0; color: var(--k-muted); line-height: 1.55; }
+.kafkaControls button, .kafkaModeSwitch button { flex: 0 0 auto; color: var(--k-text); border: 1px solid #355867; border-radius: 10px; background: #102531; padding: 8px 11px; cursor: pointer; }
+.kafkaControls button:hover:not(:disabled), .kafkaModeSwitch button.active { color: #fff; border-color: var(--k-active); background: #174356; }
+.kafkaBrief { display: grid; grid-template-columns: minmax(0, 2fr) minmax(230px, 1fr); gap: 12px; padding: 15px 18px; border-bottom: 1px solid #223c48; background: linear-gradient(110deg, #123748aa, #09141e); }
+.kafkaBrief p { margin: 8px 0 0; color: #ccdae0; line-height: 1.55; }
+.kafkaBrief aside { display: grid; align-content: center; gap: 5px; padding: 11px 13px; color: #c9d7dc; border: 1px solid #2f5361; border-left: 3px solid var(--k-good); border-radius: 10px; background: #07141cb3; font-size: 13px; line-height: 1.45; }
+.kafkaBrief aside strong { color: var(--k-good); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.kafkaModeSwitch { display: flex; gap: 8px; padding: 11px 14px 0; }
+.kafkaControls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid #223c48; }
+.kafkaControls button:disabled { opacity: .38; cursor: not-allowed; }
+.kafkaControls span { margin-left: auto; color: var(--k-muted); font-size: 12px; }
+.kafkaJourney :focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+.kafkaWorkspace { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
+.kafkaStage { min-width: 0; border-bottom: 1px solid #223c48; background: linear-gradient(#41637314 1px, transparent 1px), linear-gradient(90deg, #41637314 1px, transparent 1px); background-size: 28px 28px; }
+.kafkaStageTitle, .kafkaEvidence header { display: flex; justify-content: space-between; gap: 10px; align-items: center; min-height: 43px; padding: 0 15px; border-bottom: 1px solid #223c48; background: #08151ddd; }
+.kafkaStageTitle strong, .kafkaEvidence header b { color: var(--k-muted); font-size: 11px; font-weight: 650; }
+.kafkaStage svg { display: block; width: 100%; min-height: 400px; }
+.kafkaEdge line, .kafkaEdge > path { fill: none; stroke: var(--k-line); stroke-width: 2; }
+.kafkaEdge text { fill: var(--k-text); stroke: var(--k-bg); stroke-width: 6px; stroke-linejoin: round; paint-order: stroke fill; font-size: 14px; font-weight: 800; text-anchor: middle; }
+.kafkaEdgeLabel rect { fill: var(--k-panel); stroke: #7396a4; stroke-width: 1.5; }
+.kafkaEdgeLabel text { stroke: none; paint-order: normal; }
+.kafkaEdge.active line, .kafkaEdge.active > path { stroke: var(--k-active); stroke-width: 3.5; stroke-dasharray: 10 7; animation: kafka-flow .7s linear infinite; filter: drop-shadow(0 0 4px #55d6be88); }
+.kafkaEdge.active .kafkaEdgeLabel rect { stroke: var(--k-active); stroke-width: 2.5; }
+.kafkaEdge.active text { fill: var(--k-active); font-weight: 800; }
+#kafka-arrow path { fill: var(--k-line); }
+.kafkaNode rect { fill: #102632; stroke: #466777; stroke-width: 2; transition: fill .2s, stroke .2s; }
+.kafkaNode text { fill: var(--k-text); font-size: 14px; font-weight: 800; text-anchor: middle; }
+.kafkaNode .kafkaNodeSub { fill: var(--k-muted); font-size: 10.5px; font-weight: 550; }
+.kafkaNode.active rect { fill: #17495a; stroke: var(--k-active); stroke-width: 4; filter: drop-shadow(0 0 9px #55d6be73); }
+.kafkaNode.good rect { stroke: var(--k-good); }
+.kafkaNode.warn rect { stroke: var(--k-warn); }
+.kafkaNode.bad rect { stroke: var(--k-bad); }
+@keyframes kafka-flow { to { stroke-dashoffset: -17; } }
+.kafkaStepCaption { padding: 15px 18px 18px; border-top: 1px solid #223c48; background: #07141dd9; }
+.kafkaStepCaption h3 { margin: 0; font-size: 20px; }
+.kafkaStepCaption p { margin: 7px 0 12px; color: #c0d0d7; line-height: 1.55; }
+.kafkaStepCaption > div { height: 7px; overflow: hidden; border-radius: 999px; background: #17303c; }
+.kafkaStepCaption > div span { display: block; height: 100%; background: linear-gradient(90deg, var(--k-active), var(--k-good)); transition: width .25s; }
+.kafkaEvidence { min-width: 0; background: #08131b; }
+.kafkaEvidence dl { margin: 0; padding: 8px 14px; }
+.kafkaEvidence dl div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 8px 0; border-bottom: 1px solid #1d3440; }
+.kafkaEvidence dt { color: var(--k-muted); font-size: 12px; text-transform: capitalize; }
+.kafkaEvidence dd { margin: 0; color: var(--k-text); font-size: 12px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.kafkaEvidence section { margin: 8px 14px; padding: 11px; border: 1px solid #274551; border-radius: 10px; background: #0b1a23; }
+.kafkaEvidence h3 { margin: 0 0 8px; font-size: 13px; }
+.kafkaEvidence pre { max-width: 100%; margin: 0; overflow-x: auto; color: #9ee8c1; white-space: pre-wrap; font-size: 11px; }
+.kafkaEvidence ol { margin: 0; padding-left: 18px; color: #b8c9d0; font-size: 12px; line-height: 1.55; }
+.kafkaEvidence .kafkaCheckpoint { border-left: 3px solid var(--k-warn); }
+.kafkaEvidence .kafkaCheckpoint p { margin: 0; color: #d8caa9; font-size: 12px; line-height: 1.5; }
+.kafkaEvidence > a { display: inline-block; margin: 8px 14px 16px; color: #7ce7d2; font-size: 12px; }
+.kafkaKnowledge { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; border-top: 1px solid #223c48; }
+.kafkaKnowledge article { padding: 13px; border: 1px solid #294753; border-radius: 11px; background: #091821; }
+.kafkaKnowledge h3 { margin: 0 0 8px; font-size: 14px; }
+.kafkaKnowledge ul { margin: 0; padding-left: 18px; color: #b9cbd1; font-size: 12px; line-height: 1.6; }
+.kafkaTopologyList { display: none; }
+.kafkaCallouts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:14px; }
+.kafkaCallouts article, .kafkaFlowLanes article, .kafkaGlossary { border:1px solid #284653; border-radius:12px; background:var(--k-panel); }
+.kafkaCallouts article { padding:14px; border-top:3px solid var(--k-line); }
+.kafkaCallouts article.good { border-top-color:var(--k-good); }
+.kafkaCallouts article.bad { border-top-color:var(--k-bad); }
+.kafkaCallouts h3, .kafkaFlowLanes h3, .kafkaGlossary h3, .kafkaGlossary h4 { margin:0; color:var(--k-text); }
+.kafkaCallouts p, .kafkaGlossary p { margin:6px 0 0; color:var(--k-muted); line-height:1.55; }
+.kafkaFlowLanes { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px; }
+.kafkaFlowLanes article { padding:14px; }
+.kafkaFlowLanes ol { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; margin:10px 0 0; }
+.kafkaFlowLanes li { display:flex; align-items:center; gap:8px; color:var(--k-text); background:var(--k-panel-2); border:1px solid #294957; border-radius:8px; padding:8px 10px; font-size:.82rem; }
+.kafkaFlowLanes li:not(:last-child)::after { content:'→'; color:var(--k-active); font-weight:800; }
+.kafkaGlossary { margin:14px; padding:14px; }
+.kafkaGlossary header { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.kafkaGlossary header span { color:var(--k-active); text-transform:uppercase; font-size:.72rem; letter-spacing:.08em; }
+.kafkaGlossary > div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.kafkaGlossary article { padding:10px; border:1px solid #284653; border-radius:9px; background:var(--k-panel-2); }
+.kafkaGlossary article span { display:block; margin-top:3px; color:var(--k-active); font-size:.72rem; }
+.kafkaGlossary article p { font-size:.8rem; }
+:root[data-theme='light'] .kafkaJourney { --k-bg:#f8fbfc; --k-panel:#ffffff; --k-panel-2:#eef6f8; --k-text:#12262d; --k-muted:#536b75; --k-line:#7e9aa5; --k-active:#087568; --k-good:#087f4d; --k-warn:#9a5b00; --k-bad:#c32645; border-color:#abc4cd; background:radial-gradient(circle at 15% 0%, #dff7f4 0, #f8fbfc 44%); }
+:root[data-theme='light'] .kafkaBrief, :root[data-theme='light'] .kafkaStageTitle, :root[data-theme='light'] .kafkaEvidence header, :root[data-theme='light'] .kafkaStepCaption { background:#f4fafb; }
+:root[data-theme='light'] .kafkaBrief p, :root[data-theme='light'] .kafkaStepCaption p { color:#405c66; }
+:root[data-theme='light'] .kafkaBrief aside, :root[data-theme='light'] .kafkaEvidence section, :root[data-theme='light'] .kafkaKnowledge article { color:#26424c; background:#fff; border-color:#b8ced6; }
+:root[data-theme='light'] .kafkaControls button, :root[data-theme='light'] .kafkaModeSwitch button { color:#14323b; background:#edf7f8; border-color:#9db9c3; }
+:root[data-theme='light'] .kafkaControls button:hover:not(:disabled), :root[data-theme='light'] .kafkaModeSwitch button.active { color:#0d3741; background:#ccefeb; }
+:root[data-theme='light'] .kafkaStage { background-color:#f7fbfc; }
+:root[data-theme='light'] .kafkaEvidence { background:#f7fbfc; }
+:root[data-theme='light'] .kafkaEvidence pre { color:#087046; }
+:root[data-theme='light'] .kafkaEvidence ol, :root[data-theme='light'] .kafkaKnowledge ul { color:#26424c; }
+:root[data-theme='light'] .kafkaEvidence .kafkaCheckpoint p { color:#5d4a18; }
+:root[data-theme='light'] .kafkaEvidence > a { color:#087568; }
+:root[data-theme='light'] .kafkaStepCaption > div { background:#c5dae2; }
+:root[data-theme='light'] .kafkaNode rect { fill:#fff; stroke:#7796a1; }
+:root[data-theme='light'] .kafkaNode.active rect { fill:#d9f4ef; stroke:#087568; }
+:root[data-theme='light'] .kafkaNode text { fill:#12262d; }
+:root[data-theme='light'] .kafkaNode .kafkaNodeSub { fill:#536b75; }
+:root[data-theme='light'] .kafkaTopologyList article { color:#14323b; background:#fff; border-color:#9db9c3; }
+:root[data-theme='light'] .kafkaTopologyList article.active { background:#d9f4ef; }
+.kafkaLessonNav { display:flex; justify-content:flex-end; gap:8px; margin:0; }
+.kafkaLessonNav button, .kafkaLabInvite button, .kafkaBottomNav button { padding:9px 12px; color:var(--k-text); border:1px solid var(--k-line); border-radius:10px; background:var(--k-panel-2); cursor:pointer; }
+.kafkaLessonNav button:disabled { opacity:.35; cursor:not-allowed; }
+.kafkaLabInvite span, .kafkaLessonClose span { color:var(--k-active); font-size:11px; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+.kafkaLabInvite h3, .kafkaLessonClose h3 { margin:5px 0; color:var(--k-text); }
+.kafkaLabInvite p, .kafkaLessonClose p { margin:0; color:var(--k-muted); line-height:1.55; }
+
+.kafkaProjectCase { margin:0 14px 14px; padding:18px; border:1px solid color-mix(in srgb,var(--k-active) 48%,var(--k-line)); border-radius:14px; background:var(--k-panel); }
+.kafkaProjectCase > header span, .kafkaProjectCaseDiagrams figcaption > span { color:var(--k-active); font-size:11px; font-weight:850; letter-spacing:.09em; text-transform:uppercase; }
+.kafkaProjectCase > header h3 { margin:5px 0; color:var(--k-text); font-size:22px; }
+.kafkaProjectCase > header p, .kafkaProjectCaseDiagrams figcaption p { margin:0; color:var(--k-muted); line-height:1.55; }
+.kafkaCaseScopeNote { margin-top:14px; padding:10px 12px; border-left:4px solid var(--k-active); border-radius:0 9px 9px 0; color:var(--k-muted); background:color-mix(in srgb,var(--k-active) 8%,var(--k-panel-2)); font-size:12px; line-height:1.55; }
+.kafkaCaseScopeNote strong { color:var(--k-text); }
+.kafkaProjectCaseDiagrams { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+.kafkaProjectCaseDiagrams figure { display:flex; flex-direction:column; min-width:0; margin:0; padding:15px; border:1px solid var(--k-line); border-top:5px solid var(--k-line); border-radius:12px; background:var(--k-panel-2); }
+.kafkaProjectCaseDiagrams figure.bad { border-top-color:#c94b52; }
+.kafkaProjectCaseDiagrams figure.good { border-top-color:var(--k-active); }
+.kafkaProjectCaseDiagrams figcaption { min-height:142px; }
+.kafkaProjectCaseDiagrams figcaption h3 { margin:5px 0; color:var(--k-text); font-size:18px; }
+.kafkaCaseFlowchart { display:block; width:100%; height:auto; margin-top:14px; overflow:visible; }
+.kafkaFlowConnectors > path { fill:none; stroke:var(--k-active); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.kafkaFlowConnectors.bad > path { stroke:#c94b52; }
+.kafkaFlowConnectors > path.success, .kafkaFlowConnectors > path.ack { stroke:var(--k-active); }
+.kafkaFlowConnectors > path.timeout, .kafkaFlowConnectors > path.retry, .kafkaFlowConnectors > path.error { stroke:#c94b52; }
+.kafkaFlowConnectors > path.timeout, .kafkaFlowConnectors > path.retry { stroke-dasharray:7 7; }
+.kafkaFlowConnectors > .kafkaFlowMotionPath { stroke:transparent; marker-end:none; }
+.kafkaProjectCaseDiagrams marker path { fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.kafkaProjectCaseDiagrams figure.good marker path { stroke:var(--k-active); }
+.kafkaProjectCaseDiagrams figure.bad marker path { stroke:#c94b52; }
+.kafkaProjectCaseDiagrams figure marker.kafkaFlowMarker.success path { stroke:var(--k-active); }
+.kafkaProjectCaseDiagrams figure marker.kafkaFlowMarker.error path { stroke:#c94b52; }
+.kafkaFlowJunction { stroke:var(--k-panel); stroke-width:2px; }
+.kafkaFlowJunction.bad { fill:#c94b52; }
+.kafkaFlowJunction.good { fill:var(--k-active); }
+.kafkaFlowNode rect { fill:var(--k-panel); stroke:var(--k-active); stroke-width:2; vector-effect:non-scaling-stroke; }
+.kafkaFlowNode.bad rect { stroke:#c94b52; }
+.kafkaFlowNode.kafka rect { fill:color-mix(in srgb,#151515 94%,var(--k-panel)); stroke:#151515; }
+.kafkaFlowNodeTitle { fill:var(--k-text); font-size:15px; font-weight:850; text-anchor:middle; }
+.kafkaFlowNodeSubtitle { fill:var(--k-muted); font-size:11px; font-weight:700; text-anchor:middle; }
+.kafkaFlowNode.bad .kafkaFlowNodeSubtitle { fill:#ef6b72; }
+.kafkaFlowNode.kafka .kafkaFlowNodeTitle { fill:#fff; }
+.kafkaFlowNode.kafka .kafkaFlowNodeSubtitle { fill:#d8e3e7; }
+.kafkaFlowLogo path { fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; }
+.kafkaFlowLogo circle { fill:#fff; }
+.kafkaFlowEdgeLabel { fill:var(--k-muted); font-size:11px; font-weight:800; }
+.kafkaFlowEdgeLabel.bad { fill:#ef6b72; }
+.kafkaFlowEdgeLabel.good { fill:var(--k-active); }
+.kafkaFlowTrafficDot { fill:var(--k-active); stroke:var(--k-panel); stroke-width:3; filter:drop-shadow(0 0 4px color-mix(in srgb,var(--k-active) 72%,transparent)); pointer-events:none; }
+.kafkaFlowTrafficDot.bad { fill:#c94b52; filter:drop-shadow(0 0 4px color-mix(in srgb,#c94b52 72%,transparent)); }
+.kafkaProjectCaseDiagrams footer { margin-top:auto; padding-top:13px; color:var(--k-muted); font-size:12px; font-weight:750; }
+.kafkaProjectCaseDiagrams footer code { color:var(--k-active); font-weight:850; }
+.kafkaLabInvite { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:14px; padding:16px; border:1px dashed var(--k-line); border-radius:12px; background:var(--k-panel); }
+.kafkaLabInvite button, .kafkaBottomNav button { color:#fff; border-color:var(--k-active); background:var(--k-active); font-weight:800; }
+.kafkaLab { margin-top:14px; border-top:1px solid var(--k-line); }
+.kafkaLessonClose { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin:0 14px 14px; padding:15px; border:1px solid var(--k-line); border-radius:12px; background:var(--k-panel-2); }
+.kafkaCheckpointBody { flex:1; min-width:0; }
+.kafkaCheckpointBody > button { margin-top:12px; padding:8px 12px; color:#fff; border:1px solid var(--k-active); border-radius:9px; background:var(--k-active); font-weight:800; cursor:pointer; }
+.kafkaCheckpointAnswer { margin-top:12px; padding:13px 15px; border:1px solid color-mix(in srgb,var(--k-active) 45%,var(--k-line)); border-left:4px solid var(--k-active); border-radius:10px; background:var(--k-panel); }
+.kafkaCheckpointAnswer strong { color:var(--k-active); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+.kafkaCheckpointAnswer p { margin-top:6px; color:var(--k-text); }
+.kafkaLessonClose a { flex:0 0 auto; color:var(--k-active); font-size:12px; font-weight:750; }
+.kafkaBottomNav { display:flex; justify-content:flex-end; padding:0 14px 18px; }
+.kafkaBottomNav button { padding:11px 15px; }
+@media (max-width: 980px) { .kafkaWorkspace { grid-template-columns: 1fr; } .kafkaStage { border-right: 0; border-bottom: 1px solid #223c48; } }
+@media (max-width: 700px) {
+  .kafkaJourneyHeader { grid-template-columns:1fr; padding:16px; }
+  .kafkaBrief, .kafkaKnowledge, .kafkaCallouts, .kafkaFlowLanes, .kafkaGlossary > div, .kafkaProjectCaseDiagrams { grid-template-columns: 1fr; }
+  .kafkaLabInvite, .kafkaLessonClose { align-items:stretch; flex-direction:column; margin:10px; padding:14px; }
+  .kafkaLessonNav { display:grid; grid-template-columns:1fr 1fr; margin:0; }
+  .kafkaLessonNav button { white-space:nowrap; }
+
+  .kafkaProjectCase { margin:0 10px 10px; padding:14px; }
+  .kafkaProjectCaseDiagrams figcaption { min-height:0; }
+  .kafkaLessonClose a { align-self:flex-start; }
+  .kafkaBottomNav { padding:0 10px 14px; }
+  .kafkaBottomNav button { width:100%; }
+  .kafkaCallouts, .kafkaFlowLanes, .kafkaGlossary { margin:10px; }
+  .kafkaFlowLanes ol { flex-direction:column; }
+  .kafkaFlowLanes li:not(:last-child)::after { content:'↓'; }
+  .kafkaControls span { width: 100%; margin-left: 0; text-align: center; }
+  .kafkaStage svg { display: none; }
+  .kafkaTopologyList { display: grid; gap: 8px; padding: 14px; }
+  .kafkaTopologyList article { display: grid; gap: 3px; padding: 11px 13px; border: 1px solid #355867; border-radius: 10px; background: #102531; }
+  .kafkaTopologyList article strong { font-size: 13px; }
+  .kafkaTopologyList article span { color: var(--k-muted); font-size: 11px; }
+  .kafkaTopologyList article.active { border-width: 3px; border-color: var(--k-active); background: #17495a; }
+  .kafkaTopologyList article.bad { border-color: var(--k-bad); }
+  .kafkaTopologyList article.warn { border-color: var(--k-warn); }
+  .kafkaTopologyList article.good { border-color: var(--k-good); }
+  .kafkaJourneyHeader { padding: 17px 14px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .kafkaEdge.active line, .kafkaEdge.active > path { animation: none; stroke-dasharray: none; } .kafkaStepCaption > div span, .kafkaNode rect { transition: none; } .kafkaFlowTrafficDot { display:none; } }
