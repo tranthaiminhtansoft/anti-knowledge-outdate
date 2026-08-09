@@ -559,7 +559,16 @@ th { color: #8cc7ff; }
   color: #d8ffe7;
 }
 .k8sMasterIdea span { color: #b8c4d9; line-height: 1.55; }
-.k8sCoreGrid { display: grid; grid-template-columns: .85fr 1.35fr; gap: 18px; align-items: stretch; }
+.k8sCoreGrid { display: grid; grid-template-columns: .85fr 1.35fr; gap: 18px; align-items: stretch; position: relative; isolation: isolate; }
+.k8sIconNode { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; }
+.k8sIconNode > svg { width: 23px; height: 23px; flex: 0 0 auto; color: #8ceeff; }
+.controlWorkerWires { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.wireBase { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 8 8; opacity: .78; }
+.podSpecBase { stroke: #b49aff; marker-end: url(#flowArrowViolet); }.statusBase { stroke: #73ebff; marker-end: url(#flowArrowCyan); }
+#flowArrowViolet path { fill: #b49aff; } #flowArrowCyan path { fill: #73ebff; }
+.wirePulse { filter: drop-shadow(0 0 6px currentColor); }.violetPulse { fill: #f0ebff; color: #b49aff; }.cyanPulse { fill: #e3fbff; color: #73ebff; }
+.wireLabel { display: none; }
+.k8sControlPanel > *, .k8sDataPlanePanel > * { position: relative; z-index: 3; }
 .k8sControlPanel, .k8sDataPlanePanel, .patternStage {
   padding: 18px;
   border-radius: 26px;
@@ -590,6 +599,17 @@ th { color: #8cc7ff; }
 .workerCluster { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .workerNodeCard { min-height: 188px; display: grid; gap: 8px; align-content: start; border-color: #22c55e88; }
 .workerNodeCard > span { color: #86efac; font-weight: 950; }
+.lifecycleWorker { min-height: 378px; grid-template-rows: auto auto 16px auto 16px auto auto; }
+.processNode { min-height: 58px; gap: 2px; color: #dbeafe; font-size: .82rem; }
+.processNode small { color: #aebdd2; font-size: .7rem; }.processNode b { font-size: .83rem; }
+.processNode > svg { width: 25px; height: 25px; }.kubeletProcess > svg { color: #a78bfa; }.runtimeProcess > svg { color: #fbbf24; }.cniProcess > svg { color: #5eead4; }
+.processRail { width: 3px; height: 16px; justify-self: center; position: relative; overflow: hidden; background: repeating-linear-gradient(180deg, #a78bfa 0 6px, transparent 6px 11px); }
+.processRail::after { content: ''; position: absolute; left: -3px; top: -8px; width: 9px; height: 9px; border-radius: 50%; background: #f5f3ff; box-shadow: 0 0 12px #a78bfa; animation: lifecycleCurrent 6s linear infinite; }.cniRail::after { animation-delay: 1.25s; background: #ccfbf1; box-shadow: 0 0 12px #5eead4; }
+.lifecycleWorker .kubeletProcess { animation: processSpin 6s ease-in-out infinite; }.lifecycleWorker .runtimeProcess { animation: processSpin 6s 1.1s ease-in-out infinite; }.lifecycleWorker .cniProcess { animation: processSpin 6s 2.35s ease-in-out infinite; }.delayedWorker .processNode, .delayedWorker .processRail::after { animation-delay: 3s; }
+.podSpawn { opacity: 0; transform: scale(.35); filter: blur(7px); animation: podMaterialize 6s 3.1s ease-out infinite; }.podSpawn.delayed { animation-delay: 6.1s; }
+@keyframes lifecycleCurrent { 0% { transform: translateY(-10px); opacity: 0; } 18% { opacity: 1; } 82% { opacity: 1; } 100% { transform: translateY(22px); opacity: 0; } }
+@keyframes processSpin { 0%, 8%, 30%, 100% { transform: scale(1); filter: none; } 14%, 24% { transform: scale(1.08); filter: drop-shadow(0 0 9px currentColor); } }
+@keyframes podMaterialize { 0%, 48% { opacity: 0; transform: scale(.35); filter: blur(7px); } 60% { opacity: 1; transform: scale(1.07); filter: blur(0); box-shadow: 0 0 22px #22c55e99; } 74%, 100% { opacity: 1; transform: scale(1); filter: none; } }
 .kubeletChip, .runtimeChip { padding: 8px; border-radius: 12px; border: 1px solid #223958; background: #091426; color: #bfdbfe; font-size: .88rem; font-weight: 850; }
 .componentMissionGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
 .componentMissionGrid article { text-align: left; display: grid; gap: 6px; }
@@ -633,7 +653,9 @@ th { color: #8cc7ff; }
 @keyframes initCycle { 0%, 8% { opacity: 1; transform: rotate(0deg) scale(1); } 55% { opacity: 1; transform: rotate(360deg) scale(1.04); } 72%, 100% { opacity: .18; transform: rotate(420deg) scale(.86); } }
 @keyframes mainAfterInit { 0%, 56% { opacity: .38; filter: grayscale(.7); } 72%, 100% { opacity: 1; filter: none; box-shadow: 0 0 34px #22c55e44; } }
 @media (prefers-reduced-motion: reduce) {
-  .controlRailDown span, .controlHub, .reconcileLoop b, .sidecarCircle, .localhostBridge span, .initOrbit, .containerCircle.stable { animation: none !important; }
+  .controlRailDown span, .controlHub, .reconcileLoop b, .sidecarCircle, .localhostBridge span, .initOrbit, .containerCircle.stable, .processRail::after, .lifecycleWorker .processNode, .podSpawn { animation: none !important; }
+  .controlWorkerWires animateMotion { display: none; }
+  .podSpawn { opacity: 1; transform: none; filter: none; }
 }
 
 .k8sCoreLab, .k8sCoreGrid, .k8sDataPlanePanel, .dataPlanePath, .workerCluster, .workerNodeCard { min-width: 0; }
@@ -971,3 +993,57 @@ th { color: #8cc7ff; }
 :root[data-theme='light'] :is(.whyDocker li, .dockerBuildChoices li, .dockerLessonGrid li) { color: #334155; }
 :root[data-theme='light'] .ephemeralCiExample { color: #17243a; border-color: #b9cbea; background: #ffffff; }
 :root[data-theme='light'] .ephemeralCiExample p { color: #40536d; }
+
+/* One-scene Kubernetes lifecycle: connectors are real SVG paths, never detached cards. */
+.k8sScene { padding: 22px; border: 1px solid #315779; border-radius: 22px; background: radial-gradient(circle at 52% 35%, #16233b 0, #07101d 48%, #030814 100%); overflow: hidden; }
+.k8sSceneHeader { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; color: #dcecff; }
+.k8sSceneHeader strong { font-size: .95rem; }
+.k8sSvgViewport { width: 100%; overflow-x: auto; border-radius: 16px; background: linear-gradient(90deg, #06101c99, #09142666); }
+.k8sLifecycleSvg { display: block; width: 100%; min-width: 920px; height: auto; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+.sceneZone { fill: #071323; stroke-width: 1.5; }
+.controlZone { stroke: #8b5cf6; } .workerZone { stroke: #fbbf24; } .trafficZone { stroke: #34d399; }
+.zoneTitle { font-size: 14px; font-weight: 900; letter-spacing: .5px; } .zoneCaption { fill: #9fb0c9; font-size: 11px; font-weight: 650; } .controlTitle { fill: #b9a9ff; } .workerTitle { fill: #fcd34d; } .trafficTitle { fill: #6ee7b7; }
+.wire { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.manifestWire, .lifecycleWire { stroke: #fbbf24; } .controlWire { stroke: #8b7cff; } .watchWire { stroke: #8b7cff; stroke-dasharray: 5 6; opacity: .9; } .statusWire { stroke: #67e8f9; stroke-dasharray: 5 6; } .trafficWire { stroke: #34d399; stroke-width: 4; }
+.svgNode { text-anchor: middle; fill: #e6f3ff; font-weight: 850; font-size: 14px; } .svgNode path, .svgNode circle, .svgNode rect, .svgNode ellipse { fill: #091a2e; stroke: #8be9fd; stroke-width: 2.5; } .svgNode .sub { fill: #9fb0c9; font-size: 11px; font-weight: 600; } .miniNode { font-size: 13px; } .miniNode path, .miniNode ellipse { stroke: #b89cff; } .registryNode path { stroke: #fbbf24; } .trafficNode path, .trafficNode circle { stroke: #5eead4; } .process path { stroke: #fbbf24; }
+/* Compact, fixed-coordinate nodes: no CSS transform may override SVG placement. */
+.k8sCleanScene .k8sSimpleNode { text-anchor: middle; fill: #e6f3ff; font-weight: 850; font-size: 13px; }
+.k8sCleanScene .k8sSimpleNode .glyph { fill: currentColor; font-size: 10px; font-weight: 950; letter-spacing: .02em; }
+.k8sCleanScene .k8sSimpleNode.control { color: #c4b5fd; }
+.k8sCleanScene .k8sSimpleNode.life { color: #fcd34d; }
+.k8sCleanScene .k8sSimpleNode.traffic { color: #6ee7b7; }
+.k8sCleanScene .k8sSimpleNode circle { fill: #0b1a2e; stroke-width: 2.5; }
+.k8sCleanScene .k8sSimpleNode .sub { fill: #9fb0c9; font-size: 10px; font-weight: 650; }
+.k8sCleanScene .k8sSimpleNode.control circle { stroke: #a78bfa; }
+.k8sCleanScene .k8sSimpleNode.life circle { stroke: #fbbf24; }
+.k8sCleanScene .k8sSimpleNode.traffic circle { stroke: #34d399; }
+.k8sCleanScene .k8sReadyPod rect { fill: #123329; stroke: #34d399; stroke-width: 2.5; }
+.k8sCleanScene .k8sReadyPod circle { fill: #34d399; }
+.k8sCleanScene .k8sReadyPod text { text-anchor: middle; fill: #d1fae5; font-size: 12px; font-weight: 850; }
+.k8sCleanScene .green { fill: #6ee7b7; }
+.apiNode circle { animation: apiGlow 6s ease-in-out infinite; } .kubeletNode path { animation: processSpin 3s linear 3s infinite; transform-box: fill-box; transform-origin: center; } .criNode path { animation: processGlow 3s linear 5s infinite; } .cniNode path { animation: processGlow 3s linear 8s infinite; }
+.wireNote { font-size: 10px; font-weight: 850; } .violet { fill: #b9a9ff; } .cyan { fill: #67e8f9; } .amber { fill: #fcd34d; }
+.trafficGate { fill: #a7f3d0; font-size: 10px; font-weight: 750; opacity: .48; } .readyGate { animation: readyGate 18s linear infinite; }
+.controlPacket { fill: #c4b5fd; filter: drop-shadow(0 0 6px #8b7cff); } .lifePacket { fill: #fcd34d; filter: drop-shadow(0 0 6px #fbbf24); } .trafficPacket { fill: #6ee7b7; filter: drop-shadow(0 0 8px #34d399); animation: trafficVisibility 18s linear infinite; }
+.lifecyclePod { animation: podMaterialize 18s linear infinite; } .lifecyclePod rect { fill: #0c2730; stroke: #5eead4; } .lifecyclePod circle { fill: #34d399; stroke: none; } .lifecyclePod text { font-size: 12px; }
+.k8sLegend { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; padding-top: 16px; color: #cbd5e1; font-size: .82rem; font-weight: 750; } .k8sLegend span::before { content: ''; display: inline-block; width: 22px; height: 3px; margin: 0 7px 3px 0; border-radius: 9px; } .legendControl::before { background: #8b7cff; } .legendLife::before { background: #fbbf24; } .legendTraffic::before { background: #34d399; }
+@keyframes apiGlow { 0%, 100% { filter: drop-shadow(0 0 0 #67e8f9); } 20%, 35% { filter: drop-shadow(0 0 12px #67e8f9); } } @keyframes processSpin { 0%, 18%, 100% { transform: rotate(0); } 35%, 62% { transform: rotate(360deg); } } @keyframes processGlow { 0%, 100% { filter: none; } 40%, 65% { filter: drop-shadow(0 0 9px #fbbf24); } } @keyframes podMaterialize { 0%, 54% { opacity: 0; } 60%, 94% { opacity: 1; } 100% { opacity: 0; } } @keyframes readyGate { 0%, 59% { opacity: .18; } 63%, 94% { opacity: 1; } 100% { opacity: .18; } } @keyframes trafficVisibility { 0%, 59% { opacity: 0; } 63%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .k8sLifecycleSvg *, .k8sLifecycleSvg *::before, .k8sLifecycleSvg *::after { animation: none !important; } .lifecyclePod, .trafficPacket, .readyGate { opacity: 1 !important; transform: none !important; } }
+@media (max-width: 700px) { .k8sScene { padding: 14px; } .k8sSceneHeader strong { font-size: .84rem; } .k8sLegend { justify-content: flex-start; gap: 9px 14px; } }
+
+/* Interactive CRI / CNI / kube-proxy lifecycle reel. */
+.k8sReel { --reel-bg: #0b1220; --reel-text: #eef5ff; --reel-muted: #a9b7c9; --reel-cyan: #68e7ff; --reel-green: #8dff86; color: var(--reel-text); background: var(--reel-bg); border: 1px solid #263449; border-radius: 18px; padding: 14px; overflow: hidden; }
+.k8sReelTopbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.k8sReelTopbar button, .k8sReelTopbar select { color: var(--reel-text); background: #162238; border: 1px solid #40516c; border-radius: 10px; padding: 8px 11px; font: inherit; font-size: 13px; }
+.k8sReelTopbar button { cursor: pointer; }.k8sReelTopbar button:hover, .k8sReelTopbar button:focus-visible { border-color: #7ddff2; outline: none; }.k8sReelTopbar label { display: flex; align-items: center; gap: 6px; color: var(--reel-muted); font-size: 13px; }.k8sReelClock { margin-left: auto; color: var(--reel-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.k8sReelViewport { overflow-x: auto; border: 1px solid #2b3a52; border-radius: 14px; background: linear-gradient(rgba(93,122,155,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(93,122,155,.07) 1px, transparent 1px), #0d1626; background-size: 36px 36px; }
+.k8sReelSvg { display: block; width: 100%; min-width: 760px; height: auto; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+.k8sReelRegion { fill: #17233a; stroke: #7a8aa4; stroke-width: 2; }.k8sReelWorkerRegion { fill: #163222; }.k8sReelDataPlaneFrame { fill: none; stroke: #8ae9ff; stroke-width: 3; stroke-dasharray: 12 10; opacity: .85; }.k8sReelRegionTitle { fill: #f2f7ff; font-size: 25px; font-weight: 800; }.k8sReelPlaneTitle { fill: #90f1ff; font-size: 28px; font-weight: 900; letter-spacing: 1px; }.k8sReelHelper { fill: #b8c7d8; font-size: 14px; font-weight: 600; }
+.k8sReelNode { transition: opacity .18s ease; }.k8sReelNode rect { fill: #e5edf7; stroke: #1d2b3f; stroke-width: 2; }.k8sReelNode.isReady rect { fill: #b6e0a5; }.k8sReelNode.isActive rect { stroke: #7cecff; stroke-width: 4; filter: url(#k8s-reel-glow); }.k8sReelNode.isReady.isActive rect { stroke: #8fff8c; }.k8sReelNode.isHidden { opacity: 0; }.k8sReelNodeTitle { fill: #102033; font-size: 19px; font-weight: 800; }.k8sReelNodeDetail { fill: #23354a; font-size: 13px; font-weight: 600; }
+.k8sReelProgressTrack { fill: #dbe5ef; stroke: #1f3044; stroke-width: 2; }.k8sReelProgressFill { fill: #71d878; transition: width .15s linear; }.k8sReelCriBadge rect { fill: #123149; stroke: #7cecff; stroke-width: 2; }.k8sReelCriBadge text { fill: #dff8ff; font-size: 13px; font-weight: 800; }
+.k8sReelBaseEdges path { fill: none; stroke: #6f7f95; stroke-width: 3; opacity: .52; marker-end: url(#k8s-reel-arrow); }.k8sReelBaseEdges path.isHidden { opacity: 0; }.k8sReelBaseEdges marker path, .k8sReelActiveEdge + marker path { fill: #71839b; }.k8sReelActiveEdge { fill: none; stroke: #77ebff; stroke-width: 4; filter: url(#k8s-reel-glow); }.k8sReelActiveEdge + .k8sReelSpark { fill: #e8fbff; filter: url(#k8s-reel-glow); }
+.k8sReelTimeline { width: 100%; margin-top: 10px; accent-color: #67e3fa; }.k8sReelCaption { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; margin-top: 10px; padding: 12px 13px; border: 1px solid #31435e; border-radius: 12px; background: #111d30; }.k8sReelCaption > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: #eafaff; background: #183753; border: 1px solid #67ddf3; font-weight: 800; }.k8sReelCaption strong { display: block; margin-bottom: 3px; color: #132b47; }.k8sReelCaption p { margin: 0; color: #bdc9d8; font-size: 13px; line-height: 1.5; }
+.k8sReelLegend { display: flex; gap: 10px 15px; flex-wrap: wrap; margin-top: 10px; color: var(--reel-muted); font-size: 12px; }.k8sReelLegend i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; }.activeDot { background: #79eaff; }.readyDot { background: #8fff8c; }.externalDot { background: #ffe271; }.k8sReelNote { margin: 10px 0 0; padding: 9px 11px; border-left: 3px solid #68e7ff; color: #bdc9d8; font-size: 12px; line-height: 1.55; background: #101b2d; }
+@media (prefers-reduced-motion: reduce) { .k8sReel *, .k8sReel *::before, .k8sReel *::after { transition: none !important; animation: none !important; } .k8sReelSpark { display: none; } }
+@media (max-width: 700px) { .k8sReel { padding: 10px; }.k8sReelClock { width: 100%; margin-left: 0; }.k8sReelCaption { grid-template-columns: 40px 1fr; }.k8sReelLegend { gap: 8px 12px; } }
+:root[data-theme='light'] .k8sReel { --reel-bg: #eef5fc; --reel-text: #10233a; --reel-muted: #40536d; border-color: #a9c0d9; }.k8sReelTopbar button, :root[data-theme='light'] .k8sReelTopbar select { color: #10233a; background: #fff; border-color: #9ab1c9; }.k8sReelViewport { background-color: #dbe8f5; }.k8sReelCaption, :root[data-theme='light'] .k8sReelNote { background: #fff; border-color: #afc3d8; }.k8sReelCaption p, :root[data-theme='light'] .k8sReelNote { color: #40536d; }

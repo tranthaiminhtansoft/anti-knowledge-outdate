@@ -17,6 +17,7 @@ import mermaid from 'mermaid';
 import { AIApplicationDiagram, AgentArchitectureDiagram, LessonQA } from './components/AIFundamentalsDiagrams';
 import { DockerCoreDiagram, DockerLessonDetails } from './components/DockerLearning';
 import { KubernetesConfigurationGuide, KubernetesObservabilityGuide } from './components/KubernetesOperationsLearning';
+import { KubernetesLifecycleReel } from './components/KubernetesLifecycleReel';
 import { RedisLearningJourney } from './components/redis/RedisLearningJourney';
 import { redisChapters } from './components/redis/redisJourneyData';
 import { KafkaLearningJourney } from './components/kafka/KafkaLearningJourney';
@@ -792,64 +793,7 @@ function PageActions({ onBack, onHome, backLabel }: { onBack?: () => void; onHom
 }
 
 function KubernetesCoreArchitectureLab() {
-  const components = [
-    ['API Server', 'Nhận lệnh từ kubectl, CI/CD và controller; validate request rồi mở API Kubernetes cho toàn cluster.'],
-    ['etcd', 'Lưu trạng thái mong muốn và trạng thái quan trọng; đây là bộ nhớ/sổ cái của cluster.'],
-    ['Scheduler', 'Tìm Pod chưa có Node và chọn Worker Node phù hợp nhất để đặt Pod.'],
-    ['Controller Manager', 'So sánh trạng thái mong muốn với actual state rồi tạo/sửa resource để kéo cluster về đúng mong muốn.'],
-    ['Kubelet', 'Chạy trên mỗi Worker Node; yêu cầu container runtime chạy Pod và báo status về control plane.'],
-    ['Container Runtime', 'Pull image và chạy container bên trong Pod.'],
-    ['Pod', 'Đơn vị deploy nhỏ nhất; bọc một hoặc nhiều container phía sau cùng một Pod IP.'],
-    ['Service', 'Địa chỉ ảo ổn định để route traffic tới endpoint đủ điều kiện, thường là Pod endpoint ở trạng thái Ready.'],
-    ['Ingress / Gateway', 'Cổng vào cho HTTP hoặc traffic L7 từ bên ngoài trước khi tới Service.'],
-  ];
-
-  return (
-    <div className="k8sCoreLab" aria-label="Sơ đồ động kiến trúc Kubernetes cốt lõi">
-      <div className="trafficLegend">
-        <span className="badge">Kubernetes cốt lõi</span>
-        <strong>Vòng reconcile biến trạng thái mong muốn thành Pod đang chạy; luồng dữ liệu đưa traffic người dùng đi qua cluster.</strong>
-      </div>
-      <div className="k8sMasterIdea">
-        <strong>Cách master Kubernetes</strong>
-        <span>Hãy đọc mọi vấn đề qua hai luồng: luồng điều khiển tạo trạng thái và luồng dữ liệu phục vụ traffic.</span>
-      </div>
-      <div className="k8sCoreGrid">
-        <section className="k8sControlPanel">
-          <span className="zoneLabel">Control plane: tòa thị chính</span>
-          <div className="kubectlBox">kubectl / manifest từ CI</div>
-          <div className="controlRailDown" aria-hidden="true"><span /><span /><span /></div>
-          <div className="controlHub apiHub">API Server</div>
-          <div className="controlFanout">
-            <div className="controlMini schedulerMini">Scheduler<br/><small>xếp Pod</small></div>
-            <div className="controlMini controllerMini">Controller<br/><small>reconcile</small></div>
-            <div className="controlMini etcdMini">etcd<br/><small>lưu state</small></div>
-          </div>
-          <div className="reconcileLoop" aria-hidden="true"><span >desired</span><b>↻</b><span>actual</span></div>
-        </section>
-        <section className="k8sDataPlanePanel">
-          <span className="zoneLabel">Data plane: đường traffic</span>
-          <div className="dataPlanePath">
-            <div className="trafficNode userTraffic">Người dùng</div>
-            <div className="trafficRail" aria-hidden="true"><span /><span /><span /></div>
-            <div className="trafficNode entry">Ingress / Gateway</div>
-            <div className="trafficRail" aria-hidden="true"><span /><span /><span /></div>
-            <div className="trafficNode service">Service</div>
-            <div className="fanoutRail" aria-hidden="true"><span /><span /><span /></div>
-            <div className="workerCluster">
-              <div className="workerNodeCard"><span>Worker Node A</span><div className="kubeletChip">Kubelet</div><div className="runtimeChip">Runtime container</div><div className="pod activePod">Pod: app-1</div></div>
-              <div className="workerNodeCard"><span>Worker Node B</span><div className="kubeletChip">Kubelet</div><div className="runtimeChip">Runtime container</div><div className="pod activePod delayed">Pod: app-2</div></div>
-            </div>
-          </div>
-          <div className="responseLane" aria-hidden="true"><span /><span /><span /><span /></div>
-          <div className="trafficNode response">Phản hồi trả về người dùng</div>
-        </section>
-      </div>
-      <section className="componentMissionGrid" aria-label="Nhiệm vụ ngắn của từng component Kubernetes">
-        {components.map(([name, mission]) => <article key={name}><strong>{name}</strong><span>{mission}</span></article>)}
-      </section>
-    </div>
-  );
+  return <KubernetesLifecycleReel />;
 }
 
 function MultiContainerPodPatternLab() {
