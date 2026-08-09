@@ -125,6 +125,16 @@ const lessonQAs: Record<string, { question: string; answer: string }[]> = {
       answer: 'Không. Tóm tắt, phân loại, extraction và chat trực tiếp thường hợp model general/fast hơn. Một router thực dụng có thể dùng model nhanh trước, chỉ chuyển sang reasoning model khi task nhiều bước, độ rủi ro cao hoặc lần đầu không đạt tiêu chí.',
     },
   ],
+  'rag-grounding-runtime': [
+    {
+      question: 'RAG có thay thế fine-tuning không?',
+      answer: 'Không. RAG đưa bằng chứng ngoài model vào context tại runtime; fine-tuning thay đổi trọng số để thay đổi hành vi hoặc kỹ năng. Có thể kết hợp cả hai, nhưng phải đánh giá riêng retrieval và chất lượng câu trả lời.',
+    },
+    {
+      question: 'Có vector database là đã có RAG tốt chưa?',
+      answer: 'Chưa. Chất lượng còn phụ thuộc tài liệu nguồn, chunking, metadata/filter, hybrid search, rerank, context budget và cách hệ thống từ chối khi không có bằng chứng.',
+    },
+  ],
   'k8s-workload-configuration': [
     {
       question: 'Có thể copy requests/limits từ một service tương tự không?',
@@ -151,6 +161,16 @@ const lessonQAs: Record<string, { question: string; answer: string }[]> = {
       answer: 'Agent là một loại AI application có control loop và quyền tự điều phối nhiều bước. AI application thông thường có thể chỉ chạy một inference rồi trả output; agent có thể chọn tool, thực thi, quan sát kết quả, cập nhật state và lặp đến khi đạt mục tiêu.',
     },
   ],
+  'model-context-protocol': [
+    {
+      question: 'MCP có phải là agent hoặc tool không?',
+      answer: 'Không. MCP là protocol để AI application kết nối chuẩn hóa tới MCP server; server có thể cung cấp tools, resources và prompts. Agent/runtime vẫn quyết định có gọi capability nào và chịu trách nhiệm permission, approval, audit.',
+    },
+    {
+      question: 'MCP server có tự an toàn không?',
+      answer: 'Không. Cần least privilege, allowlist server/tool, xác thực nguồn server, approval cho side effect, giới hạn dữ liệu đưa vào model và audit log. Một server/tool được kết nối không tự động đáng tin hay được phép toàn quyền.',
+    },
+  ],
   'hermes-vs-copilot-chatgpt': [
     {
       question: 'Hermes Agent có phải là một model không?',
@@ -175,11 +195,11 @@ const topics: Topic[] = [
   {
     id: 'ai',
     title: 'AI căn bản',
-    description: 'Bốn lớp nền tảng: AI application, Model, Agent và Hermes Agent — từ khái niệm đến runtime thực thi.',
+    description: 'Sáu lớp nền tảng: AI application, Model, RAG, Agent, MCP và Hermes Agent — từ khái niệm đến runtime thực thi.',
     status: 'available',
-    articleCount: 4,
+    articleCount: 6,
     icon: <BrainCircuit />,
-    bullets: ['AI', 'Model', 'Agent', 'Hermes Agent'],
+    bullets: ['AI', 'Model', 'RAG', 'Agent', 'MCP', 'Hermes Agent'],
   },
   {
     id: 'k8s',
@@ -284,6 +304,33 @@ const articles: Article[] = [
     nextQuestions: ['Model được train như thế nào?', 'Embedding khác generation ra sao?', 'Reasoning model có thêm gì ở runtime?'],
   },
   {
+    id: 'rag-grounding-runtime',
+    topic: 'AI',
+    title: 'RAG là gì?',
+    navLabel: 'RAG',
+    question: 'Làm sao để AI trả lời dựa trên tài liệu mới và có thể kiểm tra nguồn?',
+    summary: 'RAG (Retrieval-Augmented Generation) tìm bằng chứng từ dữ liệu ngoài model ở runtime rồi đưa phần liên quan vào context trước khi model trả lời: một “open-book exam” có kiểm soát.',
+    lastVerified: '2026-08-09',
+    status: 'review-needed',
+    diagram: `flowchart LR
+  A[Tài liệu đã cấp quyền] --> B[Ingest + chunk + metadata]
+  B --> C[Keyword / vector index]
+  Q[Câu hỏi] --> D[Retrieve + filter + rerank]
+  C --> D --> E[Context có nguồn] --> F[LLM] --> G[Answer + citation hoặc từ chối]`,
+    points: [
+      'Pipeline: ingest → chunk/metadata → keyword, vector hoặc hybrid index → retrieve/filter/rerank → context → answer kèm citation.',
+      'Retrieval phải filter theo tenant/user; không đưa chunk không được phép vào context.',
+      'Nếu không có bằng chứng đủ tốt, hệ thống phải từ chối thay vì suy đoán. Đánh giá riêng retrieval và grounded answer.',
+      'Nguồn khái niệm: Lewis et al., “Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks” (2020).',
+    ],
+    misconceptions: [
+      '“RAG không phải fine-tuning” — RAG thay đổi context tại runtime; fine-tuning thay đổi trọng số model.',
+      '“Có vector database là có RAG tốt” — sai; chunking, metadata, hybrid retrieval, rerank và citation đều quan trọng.',
+      '“RAG loại bỏ hoàn toàn hallucination” — sai; vẫn cần quality gate và cách từ chối rõ ràng.',
+    ],
+    nextQuestions: ['Chunk nên cắt theo cấu trúc tài liệu hay token?', 'Khi nào cần hybrid search và reranker?', 'Đo groundedness ra sao?'],
+  },
+  {
     id: 'agent',
     topic: 'AI',
     title: 'AI Agent là gì?',
@@ -306,6 +353,35 @@ const articles: Article[] = [
       '“Agent tự động thì không cần human review” — sai. Hành động có side effect cần permission, audit và approval phù hợp.',
     ],
     nextQuestions: ['Agent loop dừng khi nào?', 'State khác memory thế nào?', 'Tool permission nên giới hạn ra sao?'],
+  },
+  {
+    id: 'model-context-protocol',
+    topic: 'AI',
+    title: 'MCP là gì?',
+    navLabel: 'MCP',
+    question: 'Làm sao để AI application kết nối tool và dữ liệu bên ngoài theo một protocol có kiểm soát?',
+    summary: 'Model Context Protocol (MCP) chuẩn hóa cách host/AI application kết nối MCP server. Server có thể cung cấp tools, resources và prompts; runtime vẫn quyết định permission, approval, execution và audit.',
+    lastVerified: '2026-08-09',
+    status: 'review-needed',
+    diagram: `flowchart LR
+  H[Host / AI application] --> C[MCP client]
+  C <--> S[MCP server]
+  S --> T[Tools]
+  S --> R[Resources]
+  S --> P[Prompts]
+  H --> G[Policy: allowlist, least privilege, approval, audit]`,
+    points: [
+      'MCP là protocol, không phải model, agent, tool hay RAG. Host/client/server là các vai trò chính.',
+      'Tools là capability có thể gọi; resources là dữ liệu/context; prompts là template/workflow do server cung cấp.',
+      'Kết nối server không có nghĩa cấp toàn quyền: allowlist server/tool, xác thực nguồn, cấp quyền tối thiểu và approval cho side effect.',
+      'Giới hạn dữ liệu gửi vào model, ghi audit log và coi tool output là dữ liệu không tin cậy để giảm prompt injection.',
+    ],
+    misconceptions: [
+      '“MCP server an toàn mặc định” — sai; server và tool vẫn cần trust boundary, auth và policy.',
+      '“MCP thay agent” — sai; agent/runtime mới điều phối goal, state, tool call và verification.',
+      '“Tool output luôn đáng tin” — sai; output có thể chứa dữ liệu hoặc chỉ dẫn độc hại.',
+    ],
+    nextQuestions: ['Tool khác resource và prompt thế nào?', 'Approval nên đặt ở đâu?', 'Làm sao giảm prompt injection từ tool output?'],
   },
   {
     id: 'hermes-vs-copilot-chatgpt',
