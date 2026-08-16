@@ -994,6 +994,85 @@ th { color: #8cc7ff; }
 :root[data-theme='light'] .ephemeralCiExample { color: #17243a; border-color: #b9cbea; background: #ffffff; }
 :root[data-theme='light'] .ephemeralCiExample p { color: #40536d; }
 
+/* Kubernetes / multi-container diagrams: replace the dark-only inner surfaces
+   with an explicit light palette. Keep the semantic green/cyan/pink/violet
+   accents, but ensure every label remains readable on a light surface. */
+:root[data-theme='light'] .multiPodLab {
+  border-color: #a78bca;
+  background:
+    radial-gradient(circle at 50% 18%, #ede9fe, transparent 30%),
+    radial-gradient(circle at 16% 4%, #dcfce7, transparent 26%),
+    #f8fbff;
+  box-shadow: 0 18px 44px #31517c1f;
+}
+:root[data-theme='light'] .multiPodLab .podCircleHeader { color: #17243a; }
+:root[data-theme='light'] .multiPodLab .sharedPodContract div,
+:root[data-theme='light'] .multiPodLab .patternStage,
+:root[data-theme='light'] .multiPodLab .patternUsecaseGrid article {
+  color: #17243a;
+  border-color: #c5b5e5;
+  background: #ffffff;
+  box-shadow: 0 8px 20px #4f6f9614;
+}
+:root[data-theme='light'] .multiPodLab .sharedPodContract div { background: #faf7ff; }
+:root[data-theme='light'] .multiPodLab .sharedPodContract span,
+:root[data-theme='light'] .multiPodLab .patternStage p,
+:root[data-theme='light'] .multiPodLab .patternUsecaseGrid p,
+:root[data-theme='light'] .multiPodLab .containerCircle small,
+:root[data-theme='light'] .multiPodLab .initCircle small { color: #40536d; }
+:root[data-theme='light'] .multiPodLab .zoneLabel {
+  color: #37306b;
+  border-color: #a78bca;
+  background: #f3efff;
+}
+:root[data-theme='light'] .multiPodLab .containerCircle,
+:root[data-theme='light'] .multiPodLab .initCircle {
+  color: #17243a;
+  border-color: #6683a8;
+  background: radial-gradient(circle, #eef5ff, #ffffff);
+  box-shadow: 0 8px 24px #31517c26;
+}
+:root[data-theme='light'] .multiPodLab .mainCircle {
+  border-color: #16a34a;
+  background: radial-gradient(circle, #ecfdf5, #ffffff);
+  box-shadow: 0 0 26px #16a34a26;
+}
+:root[data-theme='light'] .multiPodLab .sidecarCircle {
+  border-color: #0891b2;
+  background: radial-gradient(circle, #ecfeff, #ffffff);
+  box-shadow: 0 0 26px #0891b226;
+}
+:root[data-theme='light'] .multiPodLab .initOrbit {
+  border-color: #db2777;
+}
+:root[data-theme='light'] .multiPodLab .initCircle {
+  border-color: #db2777;
+  background: radial-gradient(circle, #fdf2f8, #ffffff);
+}
+:root[data-theme='light'] .multiPodLab .initArrow,
+:root[data-theme='light'] .multiPodLab .miniFlow span { color: #087f9f; }
+:root[data-theme='light'] .multiPodLab .localhostBridge {
+  background: repeating-linear-gradient(90deg, #8aa2bf 0 12px, transparent 12px 20px);
+}
+:root[data-theme='light'] .multiPodLab .localhostBridge span {
+  background: #0891b2;
+  box-shadow: 0 0 14px #0891b266;
+}
+:root[data-theme='light'] .multiPodLab .miniFlow div {
+  color: #17243a;
+  border-color: #b7cbe4;
+  background: #f8fbff;
+}
+:root[data-theme='light'] .multiPodLab .patternUsecaseGrid article { background: #ffffff; }
+:root[data-theme='light'] .multiPodLab .patternUsecaseGrid h4 { color: #6d28d9; }
+
+/* The lifecycle reel ships its own light baseline; make the host-level
+   Kubernetes lab wrapper and embedded SVG controls follow the same contract. */
+:root[data-theme='light'] .k8sCoreLab {
+  border-color: #9bb9d9;
+  background: radial-gradient(circle at 12% 0%, #dbeafe, transparent 28%), #f8fbff;
+}
+
 /* One-scene Kubernetes lifecycle: connectors are real SVG paths, never detached cards. */
 .k8sScene { padding: 22px; border: 1px solid #315779; border-radius: 22px; background: radial-gradient(circle at 52% 35%, #16233b 0, #07101d 48%, #030814 100%); overflow: hidden; }
 .k8sSceneHeader { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; color: #dcecff; }
