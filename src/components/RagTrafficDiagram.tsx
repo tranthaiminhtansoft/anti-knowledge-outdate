@@ -121,8 +121,18 @@ export function RagTrafficDiagram() {
           <use className="rag-edge rag-edge-cross" href="#offline-db-to-search" />
           <use className="rag-edge rag-edge-cross" href="#topk-to-prompt" />
           {edgePaths.map(([id], index) => (
-            <circle key={`${id}-packet`} className={`rag-packet packet-${index % 4}`} r="6" filter="url(#ragGlow)">
-              <animateMotion dur={`${2.2 + (index % 3) * 0.45}s`} begin={`${(index % 4) * -0.5}s`} repeatCount="indefinite"><mpath href={`#${id}`} /></animateMotion>
+            <circle
+              key={`${id}-packet-${paused ? 'paused' : 'running'}`}
+              className={`rag-packet packet-${index % 4}`}
+              r="6"
+              filter="url(#ragGlow)"
+              {...(paused ? { cx: 0, cy: 0 } : {})}
+            >
+              {!paused && (
+                <animateMotion dur={`${2.2 + (index % 3) * 0.45}s`} begin={`${(index % 4) * -0.5}s`} repeatCount="indefinite">
+                  <mpath href={`#${id}`} />
+                </animateMotion>
+              )}
             </circle>
           ))}
           {offlineStages.map((stage, index) => <StageCard key={stage.id} stage={stage} index={index} active={activeStage === index} />)}

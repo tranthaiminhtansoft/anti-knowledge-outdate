@@ -31,10 +31,12 @@ describe('RagTrafficDiagram', () => {
 
     fireEvent.click(pause);
     expect(screen.getByRole('button', { name: 'Chạy mô phỏng' })).toBeTruthy();
+    expect(document.querySelectorAll('.rag-packet animateMotion')).toHaveLength(0);
     act(() => { vi.advanceTimersByTime(5000); });
     expect(status.textContent).toContain('Chunking');
 
     fireEvent.click(replay);
     expect(status.textContent).toContain('Nguồn vào');
+    expect(document.querySelectorAll('.rag-packet animateMotion')).toHaveLength(11);
   });
 });
