@@ -23,6 +23,7 @@ import { redisChapters } from './components/redis/redisJourneyData';
 import { KafkaLearningJourney } from './components/kafka/KafkaLearningJourney';
 import { kafkaChapters } from './components/kafka/kafkaJourneyData';
 import { ModelAgentSimulator } from './components/ModelAgentSimulator';
+import { RagTrafficDiagram } from './components/RagTrafficDiagram';
 import { HermesUseCases } from './HermesUseCases';
 import './styles.css';
 
@@ -1355,6 +1356,7 @@ function HermesAgentLearningPage({ article }: { article: Article }) {
 function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
   if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelSelectionGuide /><ModelAgentSimulator /></>;
+  if (article.id === 'rag-grounding-runtime') return <RagTrafficDiagram />;
   if (article.id === 'agent') return <AgentArchitectureDiagram />;
   if (article.id === 'docker-build-trong-vs-ngoai') return <DockerCoreDiagram />;
   if (article.topic === 'Docker') return <DockerLessonDetails articleId={article.id} />;
