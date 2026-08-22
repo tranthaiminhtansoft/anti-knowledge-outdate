@@ -28,13 +28,13 @@ const onlineStages: Stage[] = [
 
 const allStages = [...offlineStages, ...onlineStages];
 const onlineStageLayout = [
-  { x: 130, y: 456 },
-  { x: 432, y: 456 },
-  { x: 734, y: 456 },
-  { x: 1036, y: 456 },
-  { x: 432, y: 594 },
-  { x: 734, y: 594 },
-  { x: 1036, y: 594 },
+  { x: 56, y: 456 },
+  { x: 376, y: 456 },
+  { x: 696, y: 456 },
+  { x: 1016, y: 456 },
+  { x: 376, y: 594 },
+  { x: 696, y: 594 },
+  { x: 1016, y: 594 },
 ];
 const offlineStageLayout = [
   { x: 54, y: 128 },
@@ -47,13 +47,13 @@ const edgePaths = [
   ['offline-docs-chunks', 'M 216 177 C 260 177 290 177 334 177'],
   ['offline-chunks-embedding', 'M 496 177 C 540 177 570 177 614 177'],
   ['offline-embedding-db', 'M 776 177 C 820 177 850 177 894 177'],
-  ['online-question-query', 'M 280 505 C 334 505 378 505 432 505'],
-  ['online-query-search', 'M 582 505 C 636 505 680 505 734 505'],
-  ['online-search-topk', 'M 884 505 C 938 505 982 505 1036 505'],
-  ['online-topk-prompt', 'M 1111 568 C 1111 584 507 574 507 594'],
-  ['online-prompt-llm', 'M 582 650 C 636 650 680 650 734 650'],
-  ['online-llm-answer', 'M 884 650 C 938 650 982 650 1036 650'],
-  ['offline-db-to-search', 'M 975 213 C 975 320 815 370 815 469'],
+  ['online-question-query', 'M 206 505 C 260 505 322 505 376 505'],
+  ['online-query-search', 'M 526 505 C 580 505 642 505 696 505'],
+  ['online-search-topk', 'M 846 505 C 900 505 962 505 1016 505'],
+  ['online-topk-prompt', 'M 1091 568 C 1091 584 451 574 451 594'],
+  ['online-prompt-llm', 'M 526 650 C 580 650 642 650 696 650'],
+  ['online-llm-answer', 'M 846 650 C 900 650 962 650 1016 650'],
+  ['offline-db-to-search', 'M 975 213 C 975 320 771 370 771 469'],
 ];
 
 const phaseLabels = [

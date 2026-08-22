@@ -27,15 +27,15 @@ describe('RagTrafficDiagram', () => {
     expect(container.querySelector('.rag-traffic-canvas svg')?.getAttribute('viewBox')).toBe('0 0 1240 800');
     expect(rect('question')?.getAttribute('y')).toBe('456');
     expect(rect('top-k')?.getAttribute('y')).toBe('456');
-    expect(rect('question')?.getAttribute('x')).toBe('130');
-    expect(rect('query-embedding')?.getAttribute('x')).toBe('432');
-    expect(rect('search')?.getAttribute('x')).toBe('734');
-    expect(rect('top-k')?.getAttribute('x')).toBe('1036');
-    expect(rect('prompt')?.getAttribute('x')).toBe('432');
+    expect(rect('question')?.getAttribute('x')).toBe('56');
+    expect(rect('query-embedding')?.getAttribute('x')).toBe('376');
+    expect(rect('search')?.getAttribute('x')).toBe('696');
+    expect(rect('top-k')?.getAttribute('x')).toBe('1016');
+    expect(rect('prompt')?.getAttribute('x')).toBe('376');
     expect(rect('prompt')?.getAttribute('y')).toBe('594');
-    expect(rect('llm')?.getAttribute('x')).toBe('734');
+    expect(rect('llm')?.getAttribute('x')).toBe('696');
     expect(rect('llm')?.getAttribute('y')).toBe('594');
-    expect(rect('answer')?.getAttribute('x')).toBe('1036');
+    expect(rect('answer')?.getAttribute('x')).toBe('1016');
     expect(rect('answer')?.getAttribute('y')).toBe('594');
   });
 
