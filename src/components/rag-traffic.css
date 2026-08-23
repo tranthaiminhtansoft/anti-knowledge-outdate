@@ -10,7 +10,7 @@
 .rag-live-dot { width: 9px; height: 9px; border-radius: 50%; background: #22d3ee; box-shadow: 0 0 0 5px #22d3ee1f, 0 0 18px #22d3ee; }
 .rag-status-separator { width: 1px; height: 16px; margin: 0 6px; background: #2a5770; }
 .rag-traffic-canvas { overflow-x: auto; padding: 8px 0 2px; }
-.rag-traffic-canvas svg { display: block; width: 1240px; max-width: none; height: auto; min-width: 920px; }
+.rag-traffic-canvas svg { display: block; width: 100%; height: auto; min-width: 0; }
 .rag-lane { stroke-width: 1.5; }
 .rag-lane-offline { fill: url(#ragOffline); stroke: #3b82f666; }
 .rag-lane-online { fill: url(#ragOnline); stroke: #22d3ee66; }

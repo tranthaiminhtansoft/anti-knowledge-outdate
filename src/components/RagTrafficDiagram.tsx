@@ -27,18 +27,33 @@ const onlineStages: Stage[] = [
 ];
 
 const allStages = [...offlineStages, ...onlineStages];
+const onlineStageLayout = [
+  { x: 56, y: 456 },
+  { x: 376, y: 456 },
+  { x: 696, y: 456 },
+  { x: 1016, y: 456 },
+  { x: 376, y: 594 },
+  { x: 696, y: 594 },
+  { x: 1016, y: 594 },
+];
+const offlineStageLayout = [
+  { x: 54, y: 128 },
+  { x: 334, y: 128 },
+  { x: 614, y: 128 },
+  { x: 894, y: 128 },
+];
+
 const edgePaths = [
-  ['offline-docs-chunks', 'M 126 177 C 188 177 208 177 270 177'],
-  ['offline-chunks-embedding', 'M 342 177 C 404 177 424 177 486 177'],
-  ['offline-embedding-db', 'M 558 177 C 620 177 640 177 702 177'],
-  ['online-question-query', 'M 182 505 C 190 505 195 505 203 505'],
-  ['online-query-search', 'M 353 505 C 361 505 366 505 374 505'],
-  ['online-search-topk', 'M 524 505 C 532 505 537 505 545 505'],
-  ['online-topk-prompt', 'M 695 505 C 703 505 708 505 716 505'],
-  ['online-prompt-llm', 'M 866 505 C 874 505 879 505 887 505'],
-  ['online-llm-answer', 'M 1037 505 C 1045 505 1050 505 1058 505'],
-  ['offline-db-to-search', 'M 783 213 C 783 320 449 370 449 469'],
-  ['topk-to-prompt', 'M 620 541 C 620 584 791 584 791 541'],
+  ['offline-docs-chunks', 'M 216 177 C 260 177 290 177 334 177'],
+  ['offline-chunks-embedding', 'M 496 177 C 540 177 570 177 614 177'],
+  ['offline-embedding-db', 'M 776 177 C 820 177 850 177 894 177'],
+  ['online-question-query', 'M 206 505 C 260 505 322 505 376 505'],
+  ['online-query-search', 'M 526 505 C 580 505 642 505 696 505'],
+  ['online-search-topk', 'M 846 505 C 900 505 962 505 1016 505'],
+  ['online-topk-prompt', 'M 1091 568 C 1091 584 451 574 451 594'],
+  ['online-prompt-llm', 'M 526 650 C 580 650 642 650 696 650'],
+  ['online-llm-answer', 'M 846 650 C 900 650 962 650 1016 650'],
+  ['offline-db-to-search', 'M 975 213 C 975 320 771 370 771 469'],
 ];
 
 const phaseLabels = [
@@ -47,8 +62,8 @@ const phaseLabels = [
 ];
 
 function StageCard({ stage, index, active }: { stage: Stage; index: number; active: boolean }) {
-  const x = index < 4 ? 54 + index * 216 : 32 + (index - 4) * 171;
-  const y = index < 4 ? 128 : 456;
+  const layout = index < 4 ? offlineStageLayout[index] : onlineStageLayout[index - 4];
+  const { x, y } = layout;
   const copyLines = stage.id === 'chunks' ? ['chia theo cấu trúc', '+ metadata'] : [stage.copy];
   return (
     <g className={`rag-stage rag-stage-${stage.kind} ${active ? 'is-active' : ''}`} data-stage={stage.id}>
@@ -101,7 +116,7 @@ export function RagTrafficDiagram() {
       </div>
 
       <div className="rag-traffic-canvas" role="img" aria-label="Diagram RAG động gồm nhánh indexing offline và query online">
-        <svg viewBox="0 0 1240 660" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 1240 800" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="ragOffline" x1="0" x2="1"><stop stopColor="#173b65" /><stop offset="1" stopColor="#102943" /></linearGradient>
             <linearGradient id="ragOnline" x1="0" x2="1"><stop stopColor="#123e46" /><stop offset="1" stopColor="#102943" /></linearGradient>
@@ -109,7 +124,7 @@ export function RagTrafficDiagram() {
             {edgePaths.map(([id, path]) => <path key={id} id={id} d={path} />)}
           </defs>
           <rect className="rag-lane rag-lane-offline" x="18" y="42" width="1204" height="268" rx="26" />
-          <rect className="rag-lane rag-lane-online" x="18" y="352" width="1204" height="268" rx="26" />
+          <rect className="rag-lane rag-lane-online" x="18" y="352" width="1204" height="408" rx="26" />
           <line className="rag-boundary" x1="28" y1="330" x2="1212" y2="330" />
           <text className="rag-lane-label" x="48" y="82">OFFLINE / INDEXING</text>
           <text className="rag-lane-note" x="48" y="105">Chuẩn bị artifact một lần, phục vụ nhiều query</text>
@@ -119,7 +134,6 @@ export function RagTrafficDiagram() {
 
           {edgePaths.map(([id]) => <use key={`${id}-base`} className="rag-edge" href={`#${id}`} />)}
           <use className="rag-edge rag-edge-cross" href="#offline-db-to-search" />
-          <use className="rag-edge rag-edge-cross" href="#topk-to-prompt" />
           {edgePaths.map(([id], index) => (
             <circle
               key={`${id}-packet-${paused ? 'paused' : 'running'}`}
@@ -144,7 +158,7 @@ export function RagTrafficDiagram() {
         <span><i className="rag-legend-dot blue" /> artifact / vector</span>
         <span><i className="rag-legend-dot cyan" /> query / context</span>
         <span><i className="rag-legend-dot green" /> grounded output</span>
-        <span className="rag-traffic-footnote">Reduced motion sẽ giữ diagram tĩnh nhưng vẫn đọc được toàn bộ lineage.</span>
+
       </footer>
     </section>
   );
