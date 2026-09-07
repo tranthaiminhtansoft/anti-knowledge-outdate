@@ -1,60 +1,43 @@
 import React from 'react';
-import { redisMapQuestions } from './redisJourneyData';
 
-type Strategy = 'standalone' | 'replica' | 'sentinel' | 'cluster';
-type Tab = 'deploy' | 'core' | 'types';
+const REFERENCE_URL = '/redis/redis-map-reference.html';
 
-type TabOption<T extends string> = { id: T; label: string };
-
-const strategyData: Record<Strategy, { label: string; title: string; description: string; nodes: Array<{ id: string; title: string; sub: string; kind: string }> }> = {
-  standalone: { label: 'Standalone', title: 'Một Redis giữ toàn bộ dữ liệu', description: '1 Redis process. Node dừng → dịch vụ Redis gián đoạn.', nodes: [{ id: 'primary-a', title: 'Redis Server', sub: 'Giữ toàn bộ dữ liệu', kind: 'primary' }] },
-  replica: { label: 'Primary–Replica', title: 'Một bản chính, một bản sao', description: '1 Primary + 1 Replica. Có bản sao, nhưng chưa tự điều phối failover.', nodes: [{ id: 'primary-a', title: 'Primary A', sub: 'Giữ toàn bộ dữ liệu', kind: 'primary' }, { id: 'replica-a', title: 'Replica A', sub: 'Bản sao của Primary A', kind: 'replica' }] },
-  sentinel: { label: 'Primary–Replica + Sentinel', title: 'Thêm process giám sát và tự động chuyển vai trò', description: '1 Primary + 1 Replica + 3 Sentinel. Sentinel xác nhận lỗi và điều phối Replica thành Primary.', nodes: [{ id: 'primary-a', title: 'Primary A', sub: 'Giữ toàn bộ dữ liệu', kind: 'primary' }, { id: 'replica-a', title: 'Replica A', sub: 'Bản sao Primary A', kind: 'replica' }, { id: 'sentinel-1', title: 'Sentinel 1', sub: 'Giám sát & phối hợp', kind: 'sentinel' }, { id: 'sentinel-2', title: 'Sentinel 2', sub: 'Giám sát & phối hợp', kind: 'sentinel' }, { id: 'sentinel-3', title: 'Sentinel 3', sub: 'Giám sát & phối hợp', kind: 'sentinel' }] },
-  cluster: { label: 'Redis Cluster', title: 'Nhiều Redis chính chia nhau giữ dữ liệu', description: '3 Primary + 3 Replica; không dùng Sentinel. Client định tuyến key đến Primary sở hữu hash slot.', nodes: ['A', 'B', 'C'].flatMap((letter) => [{ id: `primary-${letter.toLowerCase()}`, title: `Primary ${letter}`, sub: `Giữ phần dữ liệu ${letter}`, kind: 'primary' }, { id: `replica-${letter.toLowerCase()}`, title: `Replica ${letter}`, sub: `Sao chép phần ${letter}`, kind: 'replica' }]) },
-};
-
-const typeData = [
-  ['String', 'counter:views', '42', 'Cache nội dung, token phiên, bộ đếm.', 'SET · GET · INCR'], ['Hash', 'cart:42', 'sku:A → 2 | sku:B → 1', 'Hồ sơ người dùng; giỏ hàng theo mã sản phẩm.', 'HSET · HGET · HINCRBY'], ['List', 'jobs', 'job:A → job:B → job:C', 'Danh sách gần đây, hàng đợi đơn giản.', 'LPUSH · RPOP · LRANGE'], ['Set', 'tags:post:42', 'redis · cache · backend', 'Nhãn không trùng, kiểm tra thành viên, giao tập.', 'SADD · SISMEMBER · SINTER'], ['Sorted Set', 'ranking', 'An:950 → Bình:820 → Chi:760', 'Leaderboard, nội dung phổ biến, ưu tiên theo score.', 'ZADD · ZRANGE · ZREVRANK'], ['Stream', 'orders', 'event 1 → event 2 → event 3', 'Luồng sự kiện, consumer group, xử lý công việc.', 'XADD · XREADGROUP · XACK'], ['Bitmap', 'attendance', '0 · 1 · 1 · 0 · 1', 'Cờ có/không cho mã định danh số.', 'SETBIT · GETBIT · BITCOUNT'], ['HyperLogLog', 'visitors', 'unique visitors ≈', 'Ước lượng số người dùng khác nhau ít bộ nhớ.', 'PFADD · PFCOUNT · PFMERGE'], ['Geospatial', 'stores', 'Cửa hàng A ↔ Cửa hàng B', 'Tìm điểm trong bán kính và khoảng cách.', 'GEOADD · GEOSEARCH · GEODIST'],
-] as const;
-const coreSteps = ['Application Client', '1 · Network I/O', '2 · Protocol Parser', '3 · Kiểm tra lệnh', '4 · Command Engine', '5 · Keyspace', '6 · Response Writer', '7 · Application nhận'];
-const coreDetails: Record<string, string> = {
-  'Application Client': 'Ứng dụng gọi client library và gửi lệnh như SET cart:42 3 EX 60 hoặc GET cart:42.', '1 · Network I/O': 'Event loop nhận bytes từ socket vào buffer và quản lý nhiều kết nối.', '2 · Protocol Parser': 'RESP parser tách tên lệnh và tham số từ dữ liệu đã nhận.', '3 · Kiểm tra lệnh': 'Kiểm tra ACL, tham số, trạng thái node; Cluster có thể trả MOVED/ASK.', '4 · Command Engine': 'Chọn hàm xử lý và thực thi lệnh trên cấu trúc dữ liệu trong RAM.', '5 · Keyspace': 'Tìm key, kiểm tra kiểu dữ liệu, đọc/cập nhật giá trị và metadata TTL.', '6 · Response Writer': 'Mã hóa OK, giá trị, nil hoặc lỗi theo RESP rồi ghi ra kết nối.', '7 · Application nhận': 'Client library nhận response; persistence/replication có thể tiếp tục ở nền.',
-};
-
-function tabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
-  if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
-  const tabs = Array.from(event.currentTarget.closest('[role="tablist"]')?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? []);
-  const current = tabs.indexOf(event.currentTarget);
-  const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-  event.preventDefault(); tabs[next]?.focus(); tabs[next]?.click();
-}
-function SubTabs<T extends string>({ label, value, options, onChange, panelId, mode = 'buttons' }: { label: string; value: T; options: readonly TabOption<T>[]; onChange: (value: T) => void; panelId?: string | ((id: T) => string); mode?: 'tabs' | 'buttons' }) {
-  if (mode === 'buttons') return <div className="redisMapSubTabs" role="group" aria-label={label}>{options.map((option) => <button key={option.id} type="button" aria-pressed={value === option.id} onClick={() => onChange(option.id)}>{option.label}</button>)}</div>;
-  return <div className="redisMapSubTabs" role="tablist" aria-label={label}>{options.map((option) => <button key={option.id} type="button" role="tab" id={`redis-map-tab-${option.id}`} aria-controls={typeof panelId === 'function' ? panelId(option.id) : panelId} aria-selected={value === option.id} tabIndex={value === option.id ? 0 : -1} onKeyDown={tabKeyDown} onClick={() => onChange(option.id)}>{option.label}</button>)}</div>;
-}
-const strategyOptions = (Object.keys(strategyData) as Strategy[]).map((id) => ({ id, label: strategyData[id].label }));
-const mapTabOptions: TabOption<Tab>[] = [
-  { id: 'deploy', label: '① Deploy Strategy' },
-  { id: 'core', label: '② Components' },
-  { id: 'types', label: '③ Data Types' },
-];
-const typeOptions = typeData.map(([label], index) => ({ id: String(index), label }));
-
+/**
+ * The Redis Map is a source-faithful standalone visual artifact. Keep it in an
+ * iframe instead of re-implementing the generated interactive document in a
+ * second React tree; that prevents the app and the design reference drifting
+ * apart again.
+ */
 export function RedisMapLesson() {
-  const [tab, setTab] = React.useState<Tab>('deploy'); const [strategy, setStrategy] = React.useState<Strategy>('standalone'); const [host, setHost] = React.useState('vm'); const [node, setNode] = React.useState('primary-a'); const [typeIndex, setTypeIndex] = React.useState(0); const [activeStep, setActiveStep] = React.useState(-1); const [selectedComponent, setSelectedComponent] = React.useState(coreSteps[0]); const [isRunning, setIsRunning] = React.useState(false); const [openAnswers, setOpenAnswers] = React.useState<Record<number, boolean>>({}); const timer = React.useRef<number | null>(null); const current = strategyData[strategy];
-  const stop = React.useCallback(() => { if (timer.current) window.clearInterval(timer.current); timer.current = null; setIsRunning(false); }, []);
-  React.useEffect(() => () => stop(), [stop]); React.useEffect(() => { if (!current.nodes.some((item) => item.id === node)) setNode('primary-a'); }, [current.nodes, node]);
-  const nextStep = React.useCallback(() => { setActiveStep((step) => { const next = (step + 1) % coreSteps.length; setSelectedComponent(coreSteps[next]); if (next === coreSteps.length - 1) stop(); return next; }); }, [stop]);
-  const toggleRun = () => { if (isRunning) { stop(); return; } setActiveStep(-1); nextStep(); timer.current = window.setInterval(nextStep, 1200); setIsRunning(true); };
-  const changeStrategy = (next: Strategy) => { stop(); setStrategy(next); setNode('primary-a'); setActiveStep(-1); };
-  const selectNode = (id: string) => { setNode(id); setTab('core'); setActiveStep(-1); setSelectedComponent('Application Client'); };
-  const type = typeData[typeIndex];
-  return <section className="redisMapLesson" aria-label="Redis Map lesson">
-    <header className="redisMapHead"><h2>Redis Map</h2><span>Mô hình triển khai → bên trong từng node</span></header>
-    <SubTabs label="Các phần trong Redis Map" value={tab} options={mapTabOptions} panelId={(id) => `redis-map-${id}`} mode="tabs" onChange={(id) => { stop(); setTab(id); }} />
-    {tab === 'deploy' && <section id="redis-map-deploy" role="tabpanel" aria-labelledby="redis-map-tab-deploy"><SubTabs label="Chọn chiến lược triển khai" value={strategy} options={strategyOptions} onChange={changeStrategy} /><label className="redisMapSelect">Nơi chạy các node<select value={host} onChange={(event) => setHost(event.target.value)}><option value="vm">VM (Virtual Machine) — máy ảo</option><option value="k8s">K8s (Kubernetes) — các Pod</option></select></label><article className="redisMapSummary"><h3>{current.title}</h3><p>{current.description}</p></article><p className="redisMapNote">Deploy Strategy = cách các Redis process phối hợp. VM / Kubernetes = nơi chạy chúng; cả bốn mô hình đều có thể dùng cả hai.</p><div className="redisMapLegend"><span><i className="request" /> Request / response</span><span><i className="copy" /> Sao chép dữ liệu</span><span><i className="control" /> Giám sát / điều phối</span></div><div className={`redisMapDiagram strategy-${strategy}`} role="group" aria-label={`Sơ đồ ${current.label}`}><div className="redisMapClient">◉<strong>Application Client</strong><small>Gửi lệnh ↑↓ nhận kết quả</small></div><div className="redisMapBoundary"><span>{current.label} · {host === 'vm' ? 'chạy trên các máy ảo' : 'chạy trong Kubernetes'}</span><div className="redisMapNodeGrid">{current.nodes.map((item) => <button type="button" className={`redisMapNode ${item.kind}`} key={item.id} disabled={item.kind === 'sentinel'} aria-label={item.kind === 'sentinel' ? `${item.title}: process giám sát, không có Redis Server Core` : undefined} onClick={() => selectNode(item.id)}><b>{item.kind === 'sentinel' ? '◌' : item.kind === 'replica' ? '◫' : '●'}</b><strong>{item.title}</strong><small>{item.sub}</small></button>)}{strategy === 'cluster' && <div className="redisMapBus">⌁ Cluster Bus <small>Các node trao đổi trạng thái</small></div>}</div></div></div><p className="redisMapNote">{host === 'vm' ? 'Mỗi ô là một process; một VM có thể chạy nhiều process. Nên đặt các bản sao/giám sát qua miền lỗi độc lập.' : 'StatefulSet giữ định danh; PVC cần disk bền vững. Kubernetes quản lý Pod; Redis/Sentinel vẫn điều phối dữ liệu và vai trò.'}</p></section>}
-    {tab === 'core' && <section id="redis-map-core" role="tabpanel" aria-labelledby="redis-map-tab-core"><SubTabs label="Chọn topology cho Components" value={strategy} options={strategyOptions} onChange={changeStrategy} /><label className="redisMapSelect">Mở bên trong<select value={node} onChange={(event) => setNode(event.target.value)}>{current.nodes.filter((item) => item.kind !== 'sentinel').map((item) => <option key={item.id} value={item.id}>{item.title} — {item.sub}</option>)}</select></label><div className="redisMapFlowControls"><span>Luồng minh họa: {node.startsWith('sentinel') ? 'Primary lỗi → đổi sang Replica' : 'Ghi — SET cart:42 3 EX 60'}</span><button type="button" className="primary" onClick={toggleRun}>{isRunning ? '⏸ Tạm dừng' : '▶ Chạy luồng'}</button><button type="button" onClick={() => { stop(); nextStep(); }}>⏭ Từng bước</button></div><p className="redisMapLive" aria-live="polite">{activeStep < 0 ? 'Bắt đầu ở Application Client; bấm icon để xem nhiệm vụ.' : `${activeStep + 1}/${coreSteps.length} · ${coreDetails[selectedComponent]}`}</p><div className="redisMapCoreDiagram" role="group" aria-label="Các thành phần bên trong Redis node"><div className="redisMapSource">◉ Application Client</div><div className="redisMapCoreBoundary"><span>{current.nodes.find((item) => item.id === node)?.title} · Redis Server Core</span><div>{coreSteps.slice(1, -1).map((name, index) => <button type="button" key={name} className={activeStep === index + 1 ? 'active' : ''} onClick={() => { stop(); setSelectedComponent(name); setActiveStep(index + 1); }}><b>{index + 1}</b>{name.replace(/^\d · /, '')}</button>)}</div></div><div className="redisMapSource">◎ Application nhận</div></div><article className="redisMapComponentDetail" aria-live="polite"><h3>{selectedComponent}</h3><p>{coreDetails[selectedComponent]}</p><dl><dt>Nhánh có điều kiện</dt><dd>TTL/expiration, memory eviction, transactions/Lua, AOF/RDB, replication, Pub/Sub/Streams và metrics không phải luôn là bước nối tiếp của từng GET/SET.</dd></dl></article></section>}
-    {tab === 'types' && <section id="redis-map-types" role="tabpanel" aria-labelledby="redis-map-tab-types"><SubTabs label="Chọn kiểu dữ liệu" value={String(typeIndex)} options={typeOptions} onChange={(id) => setTypeIndex(Number(id))} /><article className="redisMapTypeDetail" aria-live="polite"><h3>{type[0]}</h3><p><code>{type[1]}</code> → <strong>{type[2]}</strong></p><dl><dt>Use case</dt><dd>{type[3]}</dd><dt>Lệnh tiêu biểu</dt><dd><code>{type[4]}</code></dd><dt>Lưu ý</dt><dd>Chọn cấu trúc theo thao tác cần thực hiện; data type là cấu trúc trong keyspace, không phải mô hình HA hay persistence.</dd></dl></article></section>}
-    <section className="redisMapCheckpoints" aria-labelledby="redis-map-checkpoints"><h2 id="redis-map-checkpoints">Câu hỏi củng cố</h2>{redisMapQuestions.map(([question, answer], index) => <article key={question}><h3>{index + 1}. {question}</h3><button type="button" aria-expanded={Boolean(openAnswers[index])} aria-controls={`redis-map-answer-${index}`} onClick={() => setOpenAnswers((currentAnswers) => ({ ...currentAnswers, [index]: !currentAnswers[index] }))}>{openAnswers[index] ? 'Ẩn đáp án' : 'Xem đáp án'}</button>{openAnswers[index] ? <div id={`redis-map-answer-${index}`}><strong>Đáp án</strong><p>{answer}</p></div> : null}</article>)}</section><details className="redisMapSources"><summary>Nguồn kỹ thuật & phạm vi minh họa</summary><p>Sơ đồ logic cho Redis Open Source. Các ô biểu diễn trách nhiệm, không có nghĩa mỗi ô là một process hoặc thread riêng. Data Types giới thiệu các nhóm thông dụng.</p></details>
-  </section>;
+  const frameRef = React.useRef<HTMLIFrameElement>(null);
+
+  const syncTheme = React.useCallback(() => {
+    const theme = document.documentElement.dataset.theme;
+    if (theme === 'light' || theme === 'dark') {
+      frameRef.current?.contentWindow?.postMessage({ type: 'redis-map-theme', theme }, '*');
+    }
+  }, []);
+
+  React.useEffect(() => {
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, [syncTheme]);
+
+  return (
+    <section className="redisMapLesson" aria-label="Redis Map lesson">
+      <header className="redisMapHead">
+        <h2>Redis Map</h2>
+        <span>Mô hình triển khai → bên trong từng node</span>
+      </header>
+      <iframe
+        ref={frameRef}
+        className="redisMapReference"
+        title="Redis Map interactive lesson"
+        src={REFERENCE_URL}
+        onLoad={syncTheme}
+      />
+    </section>
+  );
 }

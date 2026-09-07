@@ -95,19 +95,13 @@ describe('Redis persistent database lesson', () => {
     expect(vi.getTimerCount()).toBe(baseline);
   });
 
-  it('renders Redis Map tabs and keeps its five reinforcement answers closed by default', () => {
+  it('renders the source-faithful Redis Map reference artifact', () => {
     render(<RedisLearningJourney chapterId="redis-map" />);
 
     expect(screen.getByRole('heading', { name: 'Redis Map', level: 2 })).toBeTruthy();
-    expect(screen.getByRole('tab', { name: /Deploy Strategy/ }).getAttribute('aria-selected')).toBe('true');
-    expect(screen.getByRole('group', { name: 'Chọn chiến lược triển khai' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('tab', { name: '② Components' }));
-    expect(screen.getByRole('group', { name: 'Chọn topology cho Components' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('tab', { name: '③ Data Types' }));
-    expect(screen.getByRole('group', { name: 'Chọn kiểu dữ liệu' })).toBeTruthy();
-    expect(screen.queryByText('Đáp án')).toBeNull();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Xem đáp án' })[0]);
-    expect(screen.getByText(/Không\. VM và Kubernetes là nơi chạy Redis process/)).toBeTruthy();
+    const frame = screen.getByTitle('Redis Map interactive lesson') as HTMLIFrameElement;
+    expect(frame.getAttribute('src')).toBe('/redis/redis-map-reference.html');
+    expect(frame.className).toContain('redisMapReference');
   });
 
   it('gives independent MCQ feedback and marks wrong selection plus correct answer semantically', () => {

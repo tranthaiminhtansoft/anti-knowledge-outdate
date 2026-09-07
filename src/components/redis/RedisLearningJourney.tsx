@@ -345,18 +345,18 @@ function RedisPersistentDatabaseLesson({ chapterId }: { chapterId: string }) {
           <div className="redisPersistenceWorkspace">
             <div className="redisPersistenceArchitectureFrame">
             <div className="redisPersistenceArchitecture" role="img" aria-label="App Shopee ghi hot state vào Redis qua đường nét đứt; async worker đứng phía sau Redis và MongoDB, batch-write snapshot theo hai đường cung; cold-data miss được warm trở lại Redis">
-              <svg className="redisPersistenceConnections" viewBox="0 0 760 320" aria-hidden="true">
+              <svg className="redisPersistenceConnections" viewBox="0 0 730 320" aria-hidden="true">
                 <defs>
                   <marker id="redis-persistence-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 8 4 L 0 8 z" /></marker>
                   <marker id="redis-persistence-recovery-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 7 3.5 L 0 7 z" /></marker>
                 </defs>
-                <path className="redisPersistenceConnection client-redis" data-connection="client-redis" d="M 210 160 C 270 160, 282 94, 350 94" markerEnd="url(#redis-persistence-arrow)" />
-                <path className="redisPersistenceConnection redis-worker" data-connection="redis-worker" d="M 530 94 C 575 94, 556 132, 600 142" markerEnd="url(#redis-persistence-arrow)" />
-                <path className="redisPersistenceConnection worker-mongo" data-connection="worker-mongo" d="M 600 178 C 556 187, 575 226, 530 226" markerEnd="url(#redis-persistence-arrow)" />
-                <path className="redisPersistenceRecoveryLine" data-connection="cache-recovery" d="M 438 145 C 462 163, 462 174, 438 190" markerEnd="url(#redis-persistence-recovery-arrow)" />
-                <text className="redisPersistenceWireLabel label-snapshot" x="548" y="112">snapshot</text>
-                <text className="redisPersistenceWireLabel label-batch" x="548" y="211">batch write</text>
-                <text className="redisPersistenceWireLabel label-recovery" x="378" y="171">read-through</text>
+                <path className="redisPersistenceConnection client-redis" data-connection="client-redis" d="M 180 160 C 240 160, 252 94, 320 94" markerEnd="url(#redis-persistence-arrow)" />
+                <path className="redisPersistenceConnection redis-worker" data-connection="redis-worker" d="M 500 94 C 545 94, 526 132, 570 142" markerEnd="url(#redis-persistence-arrow)" />
+                <path className="redisPersistenceConnection worker-mongo" data-connection="worker-mongo" d="M 570 178 C 526 187, 545 226, 500 226" markerEnd="url(#redis-persistence-arrow)" />
+                <path className="redisPersistenceRecoveryLine" data-connection="cache-recovery" d="M 408 145 C 432 163, 432 174, 408 190" markerEnd="url(#redis-persistence-recovery-arrow)" />
+                <text className="redisPersistenceWireLabel label-snapshot" x="518" y="112">snapshot</text>
+                <text className="redisPersistenceWireLabel label-batch" x="518" y="211">batch write</text>
+                <text className="redisPersistenceWireLabel label-recovery" x="348" y="171">read-through</text>
               </svg>
 
               <div className="redisPersistenceClient" data-node="client">

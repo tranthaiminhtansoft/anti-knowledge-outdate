@@ -1,0 +1,1709 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Redis Map</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Redis Map" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Redis Map&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 10px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover,
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;redis-map-lesson&quot; lang=&quot;vi&quot;&gt;
+  &lt;style&gt;
+    #redis-map-lesson { color:var(--foreground); width:100%; }
+    #redis-map-lesson * { box-sizing:border-box; }
+    #redis-map-lesson [hidden] { display:none !important; }
+    #redis-map-lesson .rm-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
+    #redis-map-lesson h2,#redis-map-lesson h3 { margin:0; }
+    #redis-map-lesson .rm-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:14px 0; }
+    #redis-map-lesson .rm-line { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; }
+    #redis-map-lesson .rm-note { margin:12px 0; }
+    #redis-map-lesson .rm-legend { display:flex; gap:18px; flex-wrap:wrap; margin:14px 0; }
+    #redis-map-lesson .rm-key { display:inline-flex; align-items:center; gap:7px; }
+    #redis-map-lesson .rm-swatch { width:24px; border-top:2px solid var(--viz-series-1); }
+    #redis-map-lesson .rm-swatch.copy { border-color:var(--viz-series-2); border-top-style:dashed; }
+    #redis-map-lesson .rm-swatch.control { border-color:var(--muted-foreground); border-top-style:dotted; }
+    #redis-map-lesson .rm-diagram { position:relative; margin:16px 0; isolation:isolate; }
+    #redis-map-lesson .rm-wires { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; z-index:0; }
+    #redis-map-lesson .rm-wires path { fill:none; stroke-width:1.5; }
+    #redis-map-lesson .rm-wires path[data-active=&quot;true&quot;] { stroke-width:3; }
+    #redis-map-lesson .rm-wires text { fill:var(--foreground); paint-order:stroke; stroke:var(--background); stroke-width:5px; stroke-linejoin:round; }
+    #redis-map-lesson .rm-boundary { margin:0; padding:24px 20px; border:1px solid var(--border); min-width:0; }
+    #redis-map-lesson .rm-boundary legend { padding:0 8px; }
+    #redis-map-lesson .rm-grid { position:relative; display:grid; gap:60px 40px; grid-template-columns:repeat(var(--cols,3),minmax(0,1fr)); z-index:1; }
+    #redis-map-lesson .rm-cell { min-width:0; display:flex; flex-direction:column; justify-content:center; }
+    #redis-map-lesson .rm-cell &gt; .rm-label { margin:6px 0; text-align:center; }
+    #redis-map-lesson .rm-cell[data-active=&quot;true&quot;] { outline:2px solid var(--viz-series-1); outline-offset:5px; }
+    #redis-map-lesson .rm-cell[data-seen=&quot;true&quot;] .rm-label { color:var(--foreground); }
+    #redis-map-lesson .rm-node-content { display:grid; justify-items:center; gap:5px; white-space:normal; overflow-wrap:anywhere; }
+    #redis-map-lesson .rm-single-column { max-width:300px; margin:0 auto; }
+    #redis-map-lesson .rm-node-title { font-weight:500; }
+    #redis-map-lesson .rm-top-client { max-width:250px; margin:0 auto 76px; position:relative; z-index:1; }
+    #redis-map-lesson .rm-topology-foot .rm-top-client { margin-bottom:0; }
+    #redis-map-lesson .rm-topology-foot { position:relative; z-index:1; padding-top:68px; }
+    #redis-map-lesson .rm-disks { display:grid; grid-template-columns:repeat(var(--cols,3),minmax(0,1fr)); gap:32px; }
+    #redis-map-lesson .rm-selection { margin:16px 0; }
+    #redis-map-lesson .rm-core-header { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin:20px 0 10px; }
+    #redis-map-lesson .rm-detail { display:grid; gap:10px; margin:16px 0; }
+    #redis-map-lesson .rm-detail dl { display:grid; grid-template-columns:90px 1fr; gap:7px 14px; margin:0; }
+    #redis-map-lesson .rm-detail dt { color:var(--muted-foreground); }
+    #redis-map-lesson .rm-detail dd { margin:0; }
+    #redis-map-lesson .rm-type-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:18px 0; }
+    #redis-map-lesson .rm-type-demo { display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; margin:20px 0; }
+    #redis-map-lesson .rm-type-value { padding:12px; border-bottom:2px solid var(--viz-series-1); }
+    #redis-map-lesson pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    #redis-map-lesson .rm-sources { margin-top:22px; }
+    #redis-map-lesson .rm-sources summary { cursor:pointer; }
+    @media(max-width:580px) {
+      #redis-map-lesson .rm-grid { grid-template-columns:1fr; gap:44px; }
+      #redis-map-lesson .rm-cell { grid-area:auto !important; }
+      #redis-map-lesson .rm-boundary { padding:18px; }
+      #redis-map-lesson .rm-type-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      #redis-map-lesson .rm-detail dl { grid-template-columns:1fr; gap:3px; }
+      #redis-map-lesson .rm-detail dd { margin-bottom:8px; }
+      #redis-map-lesson .rm-disks { grid-template-columns:1fr; gap:44px; }
+    }
+  &lt;/style&gt;
+  &lt;div class=&quot;rm-head&quot;&gt;&lt;span class=&quot;text-small text-muted&quot;&gt;Mô hình triển khai → bên trong từng node&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;nav nav-pills&quot; role=&quot;tablist&quot; aria-label=&quot;Các phần trong Redis Map&quot;&gt;
+    &lt;button type=&quot;button&quot; class=&quot;nav-link active&quot; id=&quot;rm-tab-deploy&quot; role=&quot;tab&quot; aria-controls=&quot;rm-deploy&quot; aria-selected=&quot;true&quot;&gt;① Deploy Strategy&lt;/button&gt;
+    &lt;button type=&quot;button&quot; class=&quot;nav-link&quot; id=&quot;rm-tab-core&quot; role=&quot;tab&quot; aria-controls=&quot;rm-core&quot; aria-selected=&quot;false&quot;&gt;② Components&lt;/button&gt;
+    &lt;button type=&quot;button&quot; class=&quot;nav-link&quot; id=&quot;rm-tab-types&quot; role=&quot;tab&quot; aria-controls=&quot;rm-types&quot; aria-selected=&quot;false&quot;&gt;③ Data Types&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;section id=&quot;rm-deploy&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;rm-tab-deploy&quot;&gt;
+    &lt;div class=&quot;rm-controls&quot; data-strategy-controls&gt;&lt;/div&gt;
+    &lt;div class=&quot;rm-line&quot;&gt;
+      &lt;label for=&quot;rm-host&quot;&gt;Nơi chạy các node&lt;/label&gt;
+      &lt;select class=&quot;form-select&quot; id=&quot;rm-host&quot;&gt;&lt;option value=&quot;vm&quot;&gt;VM (Virtual Machine) — máy ảo&lt;/option&gt;&lt;option value=&quot;k8s&quot;&gt;K8s (Kubernetes) — các Pod&lt;/option&gt;&lt;/select&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;rm-deploy-summary&quot; class=&quot;rm-note&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;text-small rm-note&quot;&gt;Deploy Strategy = cách các Redis process phối hợp. VM / Kubernetes = nơi chạy chúng; cả bốn mô hình đều có thể dùng cả hai.&lt;/div&gt;
+    &lt;div class=&quot;rm-legend text-small&quot;&gt;&lt;span class=&quot;rm-key&quot;&gt;&lt;span class=&quot;rm-swatch&quot;&gt;&lt;/span&gt;Request / response&lt;/span&gt;&lt;span class=&quot;rm-key&quot;&gt;&lt;span class=&quot;rm-swatch copy&quot;&gt;&lt;/span&gt;Sao chép dữ liệu&lt;/span&gt;&lt;span class=&quot;rm-key&quot;&gt;&lt;span class=&quot;rm-swatch control&quot;&gt;&lt;/span&gt;Giám sát / điều phối&lt;/span&gt;&lt;/div&gt;
+    &lt;div id=&quot;rm-topology&quot; class=&quot;rm-diagram&quot; role=&quot;group&quot; aria-label=&quot;Sơ đồ triển khai Redis&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;rm-host-note&quot; class=&quot;text-small rm-note&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section id=&quot;rm-types&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;rm-tab-types&quot; hidden&gt;
+    &lt;div class=&quot;rm-type-grid&quot; id=&quot;rm-type-buttons&quot; role=&quot;group&quot; aria-label=&quot;Chọn kiểu dữ liệu&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;rm-type-detail&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+  &lt;/section&gt;
+  &lt;section id=&quot;rm-core&quot; role=&quot;tabpanel&quot; aria-labelledby=&quot;rm-tab-core&quot; hidden&gt;
+    &lt;div class=&quot;rm-controls&quot; data-strategy-controls&gt;&lt;/div&gt;
+    &lt;div class=&quot;rm-line&quot;&gt;&lt;label for=&quot;rm-node&quot;&gt;Mở bên trong&lt;/label&gt;&lt;select class=&quot;form-select&quot; id=&quot;rm-node&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+    &lt;div id=&quot;rm-role&quot; class=&quot;rm-note&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;rm-controls&quot;&gt;
+      &lt;label for=&quot;rm-operation&quot;&gt;Luồng minh họa&lt;/label&gt;
+      &lt;select id=&quot;rm-operation&quot; class=&quot;form-select&quot;&gt;&lt;option value=&quot;write&quot;&gt;Ghi — SET cart:42 3 EX 60&lt;/option&gt;&lt;option value=&quot;read&quot;&gt;Đọc — GET cart:42&lt;/option&gt;&lt;/select&gt;
+      &lt;button class=&quot;btn btn-primary&quot; type=&quot;button&quot; id=&quot;rm-play&quot;&gt;&lt;i data-lucide=&quot;play&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Chạy luồng&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; type=&quot;button&quot; id=&quot;rm-next&quot;&gt;&lt;i data-lucide=&quot;step-forward&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Từng bước&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;rm-step&quot; class=&quot;text-small rm-note&quot; aria-live=&quot;polite&quot;&gt;Bắt đầu ở Application Client; bấm icon để xem nhiệm vụ.&lt;/div&gt;
+    &lt;div id=&quot;rm-core-diagram&quot; class=&quot;rm-diagram&quot; role=&quot;group&quot; aria-label=&quot;Các thành phần bên trong Redis node&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;rm-component-detail&quot; class=&quot;card rm-detail&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;rm-background&quot; hidden&gt;
+      &lt;div class=&quot;rm-core-header&quot;&gt;&lt;h3&gt;Lưu trữ, sao chép &amp; công việc nền&lt;/h3&gt;&lt;span class=&quot;text-small text-muted&quot;&gt;Nhánh có điều kiện; không phải các bước nối tiếp&lt;/span&gt;&lt;/div&gt;
+      &lt;div id=&quot;rm-background-diagram&quot; class=&quot;rm-diagram&quot; role=&quot;group&quot; aria-label=&quot;Lưu trữ, sao chép và công việc nền&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;rm-background-note&quot; class=&quot;text-small rm-note&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;rm-aux-diagrams&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+  &lt;details class=&quot;rm-sources&quot;&gt;&lt;summary class=&quot;text-small&quot;&gt;Nguồn kỹ thuật &amp; phạm vi minh họa&lt;/summary&gt;
+    &lt;p class=&quot;text-small&quot;&gt;Sơ đồ logic cho Redis Open Source. Các ô biểu diễn trách nhiệm, không có nghĩa mỗi ô là một process hoặc thread riêng. Số VM/Pod là ví dụ triển khai; một máy có thể chạy nhiều process. Data Types giới thiệu các nhóm thông dụng, không phải toàn bộ tính năng của mọi phiên bản.&lt;/p&gt;
+    &lt;div class=&quot;rm-line text-small&quot;&gt;&lt;a href=&quot;https://redis.io/docs/latest/develop/reference/clients/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Client handling&lt;/a&gt;&lt;a href=&quot;https://redis.io/docs/latest/operate/oss_and_stack/management/replication/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Replication&lt;/a&gt;&lt;a href=&quot;https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Sentinel&lt;/a&gt;&lt;a href=&quot;https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Redis Cluster&lt;/a&gt;&lt;a href=&quot;https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Persistence&lt;/a&gt;&lt;a href=&quot;https://redis.io/docs/latest/develop/data-types/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Data types&lt;/a&gt;&lt;a href=&quot;https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Kubernetes StatefulSet&lt;/a&gt;&lt;/div&gt;
+  &lt;/details&gt;
+  &lt;script&gt;
+  (function () {
+    &#x27;use strict&#x27;;
+    var root = document.getElementById(&#x27;redis-map-lesson&#x27;);
+    var q = function (s) { return root.querySelector(s); };
+    var qa = function (s) { return Array.from(root.querySelectorAll(s)); };
+    var esc = function (v) { return String(v).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,function(c){return {&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[c];}); };
+    var icon = function (n) { return &#x27;&lt;i data-lucide=&quot;&#x27; + n + &#x27;&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&#x27;; };
+    var refreshIcons = function () { if (globalThis.lucide) globalThis.lucide.createIcons({attrs:{width:16,height:16}}); };
+    var state = {strategy:&#x27;standalone&#x27;, host:&#x27;vm&#x27;, node:&#x27;primary-a&#x27;, operation:&#x27;write&#x27;, step:-1, timer:null, active:&#x27;&#x27;};
+    var graphs = new Map();
+    var strategies = {
+      standalone:{label:&#x27;Standalone&#x27;, title:&#x27;Một Redis giữ toàn bộ dữ liệu&#x27;, count:&#x27;1 Redis process.&#x27;, nodes:[[&#x27;primary-a&#x27;,&#x27;Redis Server&#x27;,&#x27;primary&#x27;,&#x27;Toàn bộ dữ liệu&#x27;]], note:&#x27;Node dừng → dịch vụ Redis gián đoạn.&#x27;},
+      replica:{label:&#x27;Primary–Replica&#x27;, title:&#x27;Một bản chính, một bản sao&#x27;, count:&#x27;Ví dụ: 1 Primary + 1 Replica.&#x27;, nodes:[[&#x27;primary-a&#x27;,&#x27;Primary A&#x27;,&#x27;primary&#x27;,&#x27;Toàn bộ dữ liệu&#x27;],[&#x27;replica-a&#x27;,&#x27;Replica A&#x27;,&#x27;replica&#x27;,&#x27;Bản sao của Primary A&#x27;]], note:&#x27;Có bản sao; mô hình này chưa tự điều phối failover.&#x27;},
+      sentinel:{label:&#x27;Primary–Replica + Sentinel&#x27;, title:&#x27;Thêm các process giám sát &amp; tự động chuyển vai trò&#x27;, count:&#x27;Ví dụ: 1 Primary + 1 Replica + 3 Sentinel.&#x27;, nodes:[[&#x27;primary-a&#x27;,&#x27;Primary A&#x27;,&#x27;primary&#x27;,&#x27;Toàn bộ dữ liệu&#x27;],[&#x27;replica-a&#x27;,&#x27;Replica A&#x27;,&#x27;replica&#x27;,&#x27;Bản sao của Primary A&#x27;],[&#x27;sentinel-1&#x27;,&#x27;Sentinel 1&#x27;,&#x27;sentinel&#x27;,&#x27;Giám sát&#x27;],[&#x27;sentinel-2&#x27;,&#x27;Sentinel 2&#x27;,&#x27;sentinel&#x27;,&#x27;Giám sát&#x27;],[&#x27;sentinel-3&#x27;,&#x27;Sentinel 3&#x27;,&#x27;sentinel&#x27;,&#x27;Giám sát&#x27;]], note:&#x27;Sentinel trao đổi để xác nhận lỗi và điều phối Replica thành Primary.&#x27;},
+      cluster:{label:&#x27;Redis Cluster&#x27;, title:&#x27;Nhiều Redis chính chia nhau giữ dữ liệu&#x27;, count:&#x27;Ví dụ: 3 Primary + 3 Replica; không dùng Sentinel.&#x27;, nodes:[[&#x27;primary-a&#x27;,&#x27;Primary A&#x27;,&#x27;primary&#x27;,&#x27;Phần dữ liệu A&#x27;],[&#x27;primary-b&#x27;,&#x27;Primary B&#x27;,&#x27;primary&#x27;,&#x27;Phần dữ liệu B&#x27;],[&#x27;primary-c&#x27;,&#x27;Primary C&#x27;,&#x27;primary&#x27;,&#x27;Phần dữ liệu C&#x27;],[&#x27;replica-a&#x27;,&#x27;Replica A&#x27;,&#x27;replica&#x27;,&#x27;Bản sao phần A&#x27;],[&#x27;replica-b&#x27;,&#x27;Replica B&#x27;,&#x27;replica&#x27;,&#x27;Bản sao phần B&#x27;],[&#x27;replica-c&#x27;,&#x27;Replica C&#x27;,&#x27;replica&#x27;,&#x27;Bản sao phần C&#x27;]], note:&#x27;Client gửi key đến đúng Primary; các node phối hợp failover qua Cluster Bus.&#x27;}
+    };
+    function nodeMeta() { return strategies[state.strategy].nodes.find(function(n){return n[0]===state.node;}); }
+    function controls() {
+      qa(&#x27;[data-strategy-controls]&#x27;).forEach(function(el){el.innerHTML=Object.keys(strategies).map(function(k){return &#x27;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-strategy=&quot;&#x27;+k+&#x27;&quot; aria-pressed=&quot;&#x27;+(state.strategy===k)+&#x27;&quot;&gt;&#x27;+esc(strategies[k].label)+&#x27;&lt;/button&gt;&#x27;;}).join(&#x27;&#x27;);});
+      q(&#x27;#rm-node&#x27;).innerHTML=strategies[state.strategy].nodes.map(function(n){return &#x27;&lt;option value=&quot;&#x27;+n[0]+&#x27;&quot;&gt;&#x27;+esc(n[1])+&#x27; — &#x27;+esc(n[3])+&#x27;&lt;/option&gt;&#x27;;}).join(&#x27;&#x27;);
+      q(&#x27;#rm-node&#x27;).value=state.node;
+    }
+    function cell(id,title,subtitle,symbol,col,row,action,label) {
+      return &#x27;&lt;div class=&quot;rm-cell&quot; data-graph-node=&quot;&#x27;+id+&#x27;&quot; style=&quot;grid-column:&#x27;+col+&#x27;;grid-row:&#x27;+row+&#x27;&quot;&gt;&#x27;+(label?&#x27;&lt;div class=&quot;rm-label text-small text-muted&quot;&gt;&#x27;+esc(label)+&#x27;&lt;/div&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;button type=&quot;button&quot; class=&quot;btn btn-block&quot; data-&#x27;+action+&#x27;=&quot;&#x27;+id+&#x27;&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(symbol)+&#x27;&lt;span class=&quot;rm-node-title&quot;&gt;&#x27;+esc(title)+&#x27;&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;&#x27;+esc(subtitle)+&#x27;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&#x27;;
+    }
+    function edge(from,to,label,kind,route,both,lane) {return {from:from,to:to,label:label||&#x27;&#x27;,kind:kind||&#x27;request&#x27;,route:route||&#x27;auto&#x27;,both:!!both,lane:lane||0};}
+    function register(el,edges) {graphs.set(el,edges);queueDraw();refreshIcons();}
+    var scheduled=false;
+    function queueDraw(){if(scheduled)return;scheduled=true;requestAnimationFrame(function(){scheduled=false;graphs.forEach(function(edges,el){if(el.offsetWidth) drawWires(el,edges);});});}
+    function drawWires(el,edges) {
+      var old=el.querySelector(&#x27;.rm-wires&#x27;);if(old)old.remove();
+      var bounds=el.getBoundingClientRect(),width=bounds.width,height=bounds.height;
+      if(!width||!height)return;
+      var ns=&#x27;http://www.w3.org/2000/svg&#x27;,svg=document.createElementNS(ns,&#x27;svg&#x27;);svg.setAttribute(&#x27;class&#x27;,&#x27;rm-wires text-small&#x27;);svg.setAttribute(&#x27;viewBox&#x27;,&#x27;0 0 &#x27;+width+&#x27; &#x27;+height);svg.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
+      var uid=el.id,defs=document.createElementNS(ns,&#x27;defs&#x27;);
+      [&#x27;request&#x27;,&#x27;copy&#x27;,&#x27;control&#x27;].forEach(function(k){var m=document.createElementNS(ns,&#x27;marker&#x27;);m.setAttribute(&#x27;id&#x27;,uid+&#x27;-&#x27;+k);m.setAttribute(&#x27;viewBox&#x27;,&#x27;0 0 8 8&#x27;);m.setAttribute(&#x27;refX&#x27;,&#x27;7&#x27;);m.setAttribute(&#x27;refY&#x27;,&#x27;4&#x27;);m.setAttribute(&#x27;markerWidth&#x27;,&#x27;6&#x27;);m.setAttribute(&#x27;markerHeight&#x27;,&#x27;6&#x27;);m.setAttribute(&#x27;orient&#x27;,&#x27;auto-start-reverse&#x27;);var p=document.createElementNS(ns,&#x27;path&#x27;);p.setAttribute(&#x27;d&#x27;,&#x27;M0 0 L8 4 L0 8 Z&#x27;);p.style.fill=color(k);p.style.stroke=&#x27;none&#x27;;m.append(p);defs.append(m);});svg.append(defs);
+      function color(k){return k===&#x27;copy&#x27;?&#x27;var(--viz-series-2)&#x27;:k===&#x27;control&#x27;?&#x27;var(--muted-foreground)&#x27;:&#x27;var(--viz-series-1)&#x27;;}
+      function box(id){var item=el.querySelector(&#x27;[data-graph-node=&quot;&#x27;+id+&#x27;&quot;]&#x27;);if(!item)return null;var b=item.getBoundingClientRect();return {x:b.left-bounds.left,y:b.top-bounds.top,w:b.width,h:b.height};}
+      edges.forEach(function(e,i){var a=box(e.from),b=box(e.to);if(!a||!b)return;
+        var ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,d,lx,ly;
+        var adjacent=Math.abs(ay-by)&lt;30;
+        if(e.route===&#x27;outer&#x27; || (!adjacent &amp;&amp; Math.abs(by-ay)&gt;a.h+150)) {
+          var rail=(e.kind===&#x27;request&#x27;?8+e.lane*12:width-8-e.lane*12),sy=ay,ty=by;
+          var startX=rail&lt;ax?a.x:a.x+a.w,endX=rail&lt;bx?b.x:b.x+b.w;
+          d=&#x27;M&#x27;+startX+&#x27; &#x27;+sy+&#x27; H&#x27;+rail+&#x27; V&#x27;+ty+&#x27; H&#x27;+endX;lx=rail&lt;width/2?rail+7:rail-7;ly=(sy+ty)/2;
+        } else if(adjacent){var right=bx&gt;ax;var sx=right?a.x+a.w:a.x,ex=right?b.x:b.x+b.w;d=&#x27;M&#x27;+sx+&#x27; &#x27;+ay+&#x27; H&#x27;+ex;lx=(sx+ex)/2;ly=ay-10;}
+        else {var down=by&gt;ay,sy2=down?a.y+a.h:a.y,ey=down?b.y:b.y+b.h,my=(sy2+ey)/2;d=&#x27;M&#x27;+ax+&#x27; &#x27;+sy2+&#x27; V&#x27;+my+&#x27; H&#x27;+bx+&#x27; V&#x27;+ey;lx=(ax+bx)/2;ly=my-7;}
+        var path=document.createElementNS(ns,&#x27;path&#x27;);path.setAttribute(&#x27;d&#x27;,d);path.style.stroke=color(e.kind);if(e.kind!==&#x27;request&#x27;)path.setAttribute(&#x27;stroke-dasharray&#x27;,e.kind===&#x27;copy&#x27;?&#x27;6 4&#x27;:&#x27;2 5&#x27;);path.setAttribute(&#x27;marker-end&#x27;,&#x27;url(#&#x27;+uid+&#x27;-&#x27;+e.kind+&#x27;)&#x27;);if(e.both)path.setAttribute(&#x27;marker-start&#x27;,&#x27;url(#&#x27;+uid+&#x27;-&#x27;+e.kind+&#x27;)&#x27;);path.setAttribute(&#x27;data-edge-from&#x27;,e.from);path.setAttribute(&#x27;data-edge-to&#x27;,e.to);
+        var title=document.createElementNS(ns,&#x27;title&#x27;);title.textContent=e.label || e.from+&#x27; → &#x27;+e.to;path.append(title);svg.append(path);
+        if(e.label &amp;&amp; e.route!==&#x27;outer&#x27;){var text=document.createElementNS(ns,&#x27;text&#x27;);text.setAttribute(&#x27;x&#x27;,lx);text.setAttribute(&#x27;y&#x27;,ly);text.setAttribute(&#x27;text-anchor&#x27;,&#x27;middle&#x27;);text.textContent=e.label;svg.append(text);}
+      });el.prepend(svg);highlightEdges();
+    }
+    function topology() {
+      var s=strategies[state.strategy],el=q(&#x27;#rm-topology&#x27;),single=state.strategy===&#x27;standalone&#x27;;
+      q(&#x27;#rm-deploy-summary&#x27;).innerHTML=&#x27;&lt;h3&gt;&#x27;+esc(s.title)+&#x27;&lt;/h3&gt;&lt;div class=&quot;text-small rm-note&quot;&gt;&#x27;+esc(s.count)+&#x27; &#x27;+esc(s.note)+&#x27;&lt;/div&gt;&#x27;;
+      var cells=&#x27;&#x27;,edges=[],unit=state.host===&#x27;vm&#x27;?&#x27;VM (Virtual Machine)&#x27;:&#x27;Pod&#x27;;
+      var cols=state.strategy===&#x27;cluster&#x27;?3:state.strategy===&#x27;sentinel&#x27;?3:1;
+      cells+=cell(&#x27;primary-a&#x27;,single?&#x27;Redis Server&#x27;:&#x27;Primary A&#x27;,single||state.strategy!==&#x27;cluster&#x27;?&#x27;Giữ toàn bộ dữ liệu&#x27;:&#x27;Giữ phần dữ liệu A&#x27;,&#x27;database&#x27;,state.strategy===&#x27;sentinel&#x27;?1:1,1,&#x27;open&#x27;,unit+&#x27; · Redis process&#x27;);
+      if(!single)cells+=cell(&#x27;replica-a&#x27;,&#x27;Replica A&#x27;,state.strategy===&#x27;cluster&#x27;?&#x27;Sao chép phần A&#x27;:&#x27;Sao chép toàn bộ dữ liệu&#x27;,&#x27;copy&#x27;,state.strategy===&#x27;sentinel&#x27;?3:1,state.strategy===&#x27;sentinel&#x27;?1:2,&#x27;open&#x27;,unit+&#x27; · Redis process&#x27;);
+      if(state.strategy===&#x27;cluster&#x27;) {
+        [&#x27;b&#x27;,&#x27;c&#x27;].forEach(function(k,i){cells+=cell(&#x27;primary-&#x27;+k,&#x27;Primary &#x27;+k.toUpperCase(),&#x27;Giữ phần dữ liệu &#x27;+k.toUpperCase(),&#x27;database&#x27;,i+2,1,&#x27;open&#x27;,unit+&#x27; · Redis process&#x27;);cells+=cell(&#x27;replica-&#x27;+k,&#x27;Replica &#x27;+k.toUpperCase(),&#x27;Sao chép phần &#x27;+k.toUpperCase(),&#x27;copy&#x27;,i+2,2,&#x27;open&#x27;,unit+&#x27; · Redis process&#x27;);});
+        [&#x27;a&#x27;,&#x27;b&#x27;,&#x27;c&#x27;].forEach(function(k){edges.push(edge(&#x27;primary-&#x27;+k,&#x27;replica-&#x27;+k,&#x27;Sao chép&#x27;,&#x27;copy&#x27;));});
+        cells+=&#x27;&lt;div style=&quot;grid-column:1 / -1;grid-row:3&quot; class=&quot;rm-cell&quot; data-graph-node=&quot;bus&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-block&quot; data-core-info=&quot;bus&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(&#x27;network&#x27;)+&#x27;&lt;span&gt;Cluster Bus&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;Các node trao đổi trạng thái với nhau&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;rm-label text-small&quot;&gt;Kênh giữa các node, gồm Primary và Replica · không phải một server riêng&lt;/div&gt;&lt;/div&gt;&#x27;;
+        [&#x27;a&#x27;,&#x27;b&#x27;,&#x27;c&#x27;].forEach(function(k,i){edges.push(edge(&#x27;replica-&#x27;+k,&#x27;bus&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;auto&#x27;,true),edge(&#x27;primary-&#x27;+k,&#x27;bus&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;outer&#x27;,true,i));});
+      } else if(!single) edges.push(edge(&#x27;primary-a&#x27;,&#x27;replica-a&#x27;,state.strategy===&#x27;sentinel&#x27;?&#x27;&#x27;:&#x27;Sao chép&#x27;,&#x27;copy&#x27;));
+      if(state.strategy===&#x27;sentinel&#x27;) {
+        [1,2,3].forEach(function(i){cells+=cell(&#x27;sentinel-&#x27;+i,&#x27;Sentinel &#x27;+i,&#x27;Giám sát &amp; phối hợp&#x27;,&#x27;eye&#x27;,i,2,&#x27;open&#x27;,&#x27;Process riêng&#x27;);});
+        edges.push(edge(&#x27;sentinel-1&#x27;,&#x27;primary-a&#x27;,&#x27;Giám sát&#x27;,&#x27;control&#x27;),edge(&#x27;sentinel-3&#x27;,&#x27;replica-a&#x27;,&#x27;Giám sát&#x27;,&#x27;control&#x27;),edge(&#x27;sentinel-1&#x27;,&#x27;sentinel-2&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;auto&#x27;,true),edge(&#x27;sentinel-2&#x27;,&#x27;sentinel-3&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;auto&#x27;,true),edge(&#x27;app&#x27;,&#x27;sentinel-2&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;outer&#x27;,true));
+      }
+      var target=state.strategy===&#x27;cluster&#x27;?&#x27;primary-b&#x27;:&#x27;primary-a&#x27;;
+      edges.push(edge(&#x27;app&#x27;,target,state.strategy===&#x27;cluster&#x27;?&#x27;Ví dụ: key thuộc phần B&#x27;:&#x27;Gửi lệnh / nhận kết quả&#x27;,&#x27;request&#x27;,&#x27;auto&#x27;,true));
+      el.innerHTML=&#x27;&lt;div class=&quot;rm-top-client&quot; data-graph-node=&quot;app&quot;&gt;&lt;button class=&quot;btn btn-block&quot; type=&quot;button&quot; data-core-info=&quot;client&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(&#x27;laptop&#x27;)+&#x27;&lt;span&gt;Application Client&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;Gửi lệnh ↑↓ nhận kết quả&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;fieldset class=&quot;rm-boundary&quot;&gt;&lt;legend&gt;&#x27;+esc(s.label)+&#x27; · &#x27;+(state.host===&#x27;vm&#x27;?&#x27;chạy trên các máy ảo&#x27;:&#x27;chạy trong Kubernetes&#x27;)+&#x27;&lt;/legend&gt;&lt;div class=&quot;rm-grid&#x27;+(cols===1?&#x27; rm-single-column&#x27;:&#x27;&#x27;)+&#x27;&quot; style=&quot;--cols:&#x27;+cols+&#x27;&quot;&gt;&#x27;+cells+&#x27;&lt;/div&gt;&lt;/fieldset&gt;&#x27;;
+      q(&#x27;#rm-host-note&#x27;).textContent=(state.strategy===&#x27;sentinel&#x27;?&#x27;Các Sentinel đều theo dõi Primary/Replica; sơ đồ chỉ vẽ một số đường đại diện. Client hỏi Sentinel địa chỉ Primary, rồi gửi dữ liệu thẳng tới Primary. &#x27;:&#x27;&#x27;)+(state.host===&#x27;vm&#x27;?&#x27;Bấm một Redis node để mở Components. Mỗi ô là một process; một VM có thể chạy nhiều process. Nên tách các bản sao/giám sát qua các miền lỗi độc lập.&#x27;:&#x27;Bấm một node để mở Components. StatefulSet giữ định danh; PVC (PersistentVolumeClaim) yêu cầu disk bền vững. Kubernetes quản lý Pod; Redis/Sentinel vẫn điều phối dữ liệu và vai trò Primary. Chạy nhiều Pod trên cùng máy không loại bỏ lỗi của máy đó.&#x27;);
+      register(el,edges);
+    }
+    var comp={
+      input:[&#x27;Application Client&#x27;,&#x27;laptop&#x27;,&#x27;Bắt đầu&#x27;,&#x27;Ứng dụng gọi thư viện Redis.&#x27;,&#x27;Tạo lệnh SET cart:42 3 EX 60 hoặc GET cart:42. Client biết địa chỉ node phù hợp.&#x27;,&#x27;Network I/O (Input/Output) của Redis.&#x27;],
+      network:[&#x27;1 · Network I/O&#x27;,&#x27;cable&#x27;,&#x27;(Input/Output)&#x27;,&#x27;Socket từ client hoặc primary.&#x27;,&#x27;Event loop tiếp nhận dữ liệu vào bộ đệm; quản lý nhiều kết nối. Đây là trách nhiệm logic, không phải một server riêng.&#x27;,&#x27;Parser đọc các bytes đã nhận.&#x27;],
+      parser:[&#x27;2 · Protocol Parser&#x27;,&#x27;scan-text&#x27;,&#x27;RESP (Redis Serialization Protocol)&#x27;,&#x27;Bộ đệm kết nối.&#x27;,&#x27;Tách tên lệnh và tham số theo giao thức Redis.&#x27;,&#x27;Bộ kiểm tra lệnh; yêu cầu lỗi được trả lỗi.&#x27;],
+      access:[&#x27;3 · Kiểm tra lệnh&#x27;,&#x27;shield-check&#x27;,&#x27;ACL (Access Control List)&#x27;,&#x27;Lệnh đã phân tích.&#x27;,&#x27;Kiểm tra quyền, số tham số và trạng thái node. Cluster kiểm tra node có sở hữu key; sai node có thể trả redirect.&#x27;,&#x27;Command Engine nếu hợp lệ, hoặc Response với lỗi/redirect.&#x27;],
+      engine:[&#x27;4 · Command Engine&#x27;,&#x27;cpu&#x27;,&#x27;Thực thi lệnh&#x27;,&#x27;Lệnh hợp lệ.&#x27;,&#x27;Chọn hàm xử lý; đọc/ghi cấu trúc dữ liệu trong bộ nhớ. Luồng này minh họa lệnh đơn giản, không phải tất cả loại lệnh.&#x27;,&#x27;Keyspace; sau đó tạo response và các nhánh thay đổi nếu có.&#x27;],
+      keyspace:[&#x27;5 · Keyspace&#x27;,&#x27;database&#x27;,&#x27;RAM (Random Access Memory)&#x27;,&#x27;Command Engine.&#x27;,&#x27;Tìm key, kiểm tra kiểu dữ liệu và đọc/cập nhật giá trị. GET key không tồn tại trả nil; SET ví dụ tạo giá trị 3.&#x27;,&#x27;Kết quả về Command Engine. Thay đổi có thể được ghi log và sao chép.&#x27;],
+      response:[&#x27;6 · Response Writer&#x27;,&#x27;send&#x27;,&#x27;Mã hóa kết quả&#x27;,&#x27;Kết quả thực thi hoặc lỗi.&#x27;,&#x27;Tạo response theo giao thức Redis, đưa vào bộ đệm gửi rồi ghi ra kết nối.&#x27;,&#x27;Ứng dụng nhận OK / giá trị / nil / lỗi. Không mặc định đợi Replica áp dụng xong.&#x27;],
+      output:[&#x27;7 · Application nhận&#x27;,&#x27;laptop&#x27;,&#x27;OK / giá trị / lỗi&#x27;,&#x27;Response từ Redis.&#x27;,&#x27;Thư viện Redis chuyển response cho ứng dụng. Kết nối có thể được tái sử dụng.&#x27;,&#x27;Ứng dụng tiếp tục; công việc nền và replication có thể vẫn đang chạy.&#x27;],
+      upstream:[&#x27;Primary gửi thay đổi&#x27;,&#x27;server&#x27;,&#x27;Luồng replication&#x27;,&#x27;Replication của Primary.&#x27;,&#x27;Sau khi thiết lập và đồng bộ ban đầu, Primary truyền luồng thay đổi cho Replica. Đây không phải một request mới từ application.&#x27;,&#x27;Network I/O (Input/Output) trên Replica.&#x27;],
+      trusted:[&#x27;3 · Kênh replication&#x27;,&#x27;shield-check&#x27;,&#x27;Kết nối đã được xác thực&#x27;,&#x27;Luồng từ Primary đã kết nối.&#x27;,&#x27;Replica áp dụng luồng nội bộ từ Primary; không kiểm tra ACL của application gốc như một client request mới.&#x27;,&#x27;Command Engine áp dụng thay đổi.&#x27;],
+      ack:[&#x27;6 · Replication ACK&#x27;,&#x27;send&#x27;,&#x27;ACK (Acknowledgement)&#x27;,&#x27;Tiến độ áp dụng trên Replica.&#x27;,&#x27;Replica báo tiến độ sao chép cho Primary theo cơ chế replication. Không phải một OK đồng bộ cho từng lệnh của application.&#x27;,&#x27;Primary cập nhật tiến độ của Replica.&#x27;],
+      upstreamResult:[&#x27;Primary nhận tiến độ&#x27;,&#x27;server&#x27;,&#x27;Không phải response cho application&#x27;,&#x27;Replication ACK (Acknowledgement) từ Replica.&#x27;,&#x27;Primary theo dõi Replica đã xử lý đến đâu.&#x27;,&#x27;Luồng sao chép tiếp tục; application gốc nhận response từ Primary, không phải Replica.&#x27;],
+      memory:[&#x27;Memory &amp; Eviction&#x27;,&#x27;memory-stick&#x27;,&#x27;Cấp phát / giải phóng bộ nhớ&#x27;,&#x27;Giới hạn bộ nhớ và các thao tác cần cấp phát.&#x27;,&#x27;Khi chạm maxmemory, chính sách có thể chọn key để loại bỏ; noeviction có thể từ chối lệnh cần thêm bộ nhớ. Không phải luôn chạy sau một lệnh ghi.&#x27;,&#x27;Keyspace được giải phóng, hoặc Response báo lỗi.&#x27;],
+      ttl:[&#x27;TTL (Time To Live)&#x27;,&#x27;timer&#x27;,&#x27;Kiểm tra thời hạn key&#x27;,&#x27;Tra cứu key hoặc chu kỳ dọn chủ động.&#x27;,&#x27;Key hết hạn được xem như không tồn tại. SET trong ví dụ gắn thời hạn 60 giây. Expiration và eviction là hai cơ chế khác nhau.&#x27;,&#x27;Keyspace loại key hết hạn; GET có thể trả nil.&#x27;],
+      functions:[&#x27;Transactions / Lua / Functions&#x27;,&#x27;braces&#x27;,&#x27;Khi dùng MULTI/EXEC, EVAL, FCALL&#x27;,&#x27;Lệnh chuyên biệt từ ứng dụng.&#x27;,&#x27;Thực thi chuỗi lệnh/logic phía Redis theo cơ chế tương ứng. SET/GET đơn giản không đi qua nhánh này.&#x27;,&#x27;Command Engine và các cấu trúc dữ liệu.&#x27;],
+      state:[&#x27;Trạng thái trong RAM&#x27;,&#x27;database&#x27;,&#x27;Sau lệnh ghi / khi được yêu cầu&#x27;,&#x27;Keyspace của node này.&#x27;,&#x27;Điểm xuất phát cho lưu trữ, sao chép và snapshot. Các mũi tên dưới đây biểu diễn quan hệ, không áp đặt cùng một thời điểm hoàn tất.&#x27;,&#x27;AOF, replication hoặc RDB tùy cấu hình và trigger.&#x27;],
+      aof:[&#x27;AOF (Append-Only File)&#x27;,&#x27;file-pen&#x27;,&#x27;Nếu bật ghi log&#x27;,&#x27;Các thay đổi dữ liệu.&#x27;,&#x27;Ghi log thay đổi. Chính sách fsync quyết định lúc đẩy xuống thiết bị lưu trữ; chế độ everysec không có nghĩa mỗi OK đã bền vững trên disk.&#x27;,&#x27;File AOF trên disk; dùng để khôi phục Redis.&#x27;],
+      rdb:[&#x27;RDB (Redis Database)&#x27;,&#x27;camera&#x27;,&#x27;Snapshot theo lịch / yêu cầu&#x27;,&#x27;Ảnh dữ liệu trong bộ nhớ tại thời điểm chụp.&#x27;,&#x27;Snapshot thường do tiến trình con tạo ở nền. Không chụp sau từng request.&#x27;,&#x27;File snapshot trên disk; có thể dùng khi khởi động lại.&#x27;],
+      replication:[&#x27;Replication&#x27;,&#x27;copy&#x27;,&#x27;Khi có Replica&#x27;,&#x27;Luồng thay đổi từ Primary.&#x27;,&#x27;Primary gửi thay đổi cho Replica; Replica áp dụng bất đồng bộ. Trả OK thông thường không bảo đảm Replica đã nhận đủ.&#x27;,&#x27;Replica giữ bản sao; có thể còn độ trễ.&#x27;],
+      disk:[&#x27;Disk&#x27;,&#x27;hard-drive&#x27;,&#x27;File của Redis&#x27;,&#x27;AOF hoặc snapshot RDB.&#x27;,&#x27;Giữ dữ liệu khôi phục của chính Redis. Đây không phải Persistent Database bên ngoài trong bài write-behind trước.&#x27;,&#x27;Khi restart, Redis nạp dữ liệu theo cấu hình persistence.&#x27;],
+      downstream:[&#x27;Replica tương ứng&#x27;,&#x27;server&#x27;,&#x27;Bản sao đang đồng bộ&#x27;,&#x27;Replication từ Primary.&#x27;,&#x27;Nhận và áp dụng thay đổi. Replication không thay thế backup độc lập.&#x27;,&#x27;Có thể phục vụ đọc theo cấu hình; Sentinel/Cluster có thể nâng vai trò khi đủ điều kiện.&#x27;],
+      expiry:[&#x27;Dọn key hết hạn&#x27;,&#x27;timer-reset&#x27;,&#x27;Chu kỳ chủ động&#x27;,&#x27;Metadata thời hạn của key.&#x27;,&#x27;Redis kiểm tra một tập key trong các chu kỳ dọn chủ động. Việc này vẫn diễn ra khi ứng dụng đã nhận response.&#x27;,&#x27;Xóa key hết hạn trong keyspace.&#x27;],
+      pubsub:[&#x27;Pub/Sub (Publish/Subscribe)&#x27;,&#x27;radio&#x27;,&#x27;Khi PUBLISH / SUBSCRIBE&#x27;,&#x27;Lệnh hoặc sự kiện được cấu hình.&#x27;,&#x27;Gửi message đến subscriber đang kết nối; Pub/Sub không lưu lịch sử như Streams.&#x27;,&#x27;Subscriber nhận message trên kết nối của họ.&#x27;],
+      streams:[&#x27;Redis Streams&#x27;,&#x27;list-tree&#x27;,&#x27;Khi XADD / XREADGROUP&#x27;,&#x27;Lệnh xử lý luồng sự kiện.&#x27;,&#x27;Streams là một kiểu dữ liệu trong keyspace; nhóm consumer giữ tiến độ xử lý.&#x27;,&#x27;Consumer đọc sự kiện, có thể xác nhận bằng XACK.&#x27;],
+      notifications:[&#x27;Keyspace Notifications&#x27;,&#x27;bell&#x27;,&#x27;Nếu bật&#x27;,&#x27;Sự kiện thay đổi / hết hạn key.&#x27;,&#x27;Phát thông báo qua Pub/Sub. Không phải hàng đợi sự kiện bền vững.&#x27;,&#x27;Các subscriber đang lắng nghe.&#x27;],
+      metrics:[&#x27;Slow Log &amp; Metrics&#x27;,&#x27;activity&#x27;,&#x27;Quan sát vận hành&#x27;,&#x27;Thông tin lệnh và trạng thái Redis.&#x27;,&#x27;Theo dõi thời gian xử lý, bộ nhớ và kết nối; slow log ghi lệnh vượt ngưỡng cấu hình.&#x27;,&#x27;Công cụ monitoring truy vấn để quan sát.&#x27;],
+      commands:[&#x27;Command Engine&#x27;,&#x27;cpu&#x27;,&#x27;Lệnh chuyên biệt / đo thời gian&#x27;,&#x27;Luồng thực thi ở sơ đồ phía trên.&#x27;,&#x27;Các lệnh Pub/Sub và Streams đi đến cơ chế tương ứng. Thời gian lệnh và thông tin trạng thái phục vụ quan sát; không phải một chuỗi bước sau SET.&#x27;,&#x27;Pub/Sub, Streams hoặc thông tin vận hành.&#x27;],
+      lifecycle:[&#x27;Chu kỳ dọn dữ liệu&#x27;,&#x27;timer-reset&#x27;,&#x27;Độc lập với request&#x27;,&#x27;Event loop và metadata thời hạn.&#x27;,&#x27;Chạy các chu kỳ kiểm tra key hết hạn. Replica chủ yếu nhận lệnh xóa từ Primary; không tự dọn chủ động giống Primary.&#x27;,&#x27;Expiration trên Primary; giải phóng key hết hạn.&#x27;],
+      observer:[&#x27;Công cụ monitoring&#x27;,&#x27;chart-no-axes-combined&#x27;,&#x27;Ngoài Redis&#x27;,&#x27;INFO, SLOWLOG và các thông tin vận hành.&#x27;,&#x27;Ứng dụng quan sát truy vấn số liệu và cảnh báo theo cấu hình.&#x27;,&#x27;Người vận hành đánh giá tải, độ trễ, lỗi và bộ nhớ.&#x27;],
+      peers:[&#x27;Các Redis node khác&#x27;,&#x27;server&#x27;,&#x27;Primary và Replica&#x27;,&#x27;Cluster Bus của các node ngang hàng.&#x27;,&#x27;Mỗi node trao đổi thông tin với các node khác, không thông qua một bộ điều phối trung tâm.&#x27;,&#x27;Cluster Bus của node đang xem.&#x27;],
+      election:[&#x27;Cluster failover&#x27;,&#x27;vote&#x27;,&#x27;Phối hợp chuyển vai trò&#x27;,&#x27;Trạng thái lỗi và phiếu từ các Primary.&#x27;,&#x27;Replica đủ điều kiện có thể được bầu thành Primary khi đạt điều kiện bầu chọn. Không cần Sentinel và không bảo đảm giữ mọi write chưa được sao chép.&#x27;,&#x27;Node cập nhật vai trò và quyền sở hữu slot.&#x27;],
+      bus:[&#x27;Cluster Bus&#x27;,&#x27;network&#x27;,&#x27;Chỉ ở Redis Cluster&#x27;,&#x27;Các node trong cluster, gồm cả Replica.&#x27;,&#x27;Trao đổi sức khỏe, quyền sở hữu hash slot và thông tin failover. Đây là các kết nối giữa node, không phải một process điều phối trung tâm.&#x27;,&#x27;Các node cập nhật trạng thái; Replica xin phiếu từ Primary khi bầu failover.&#x27;],
+      routing:[&#x27;Hash slot routing&#x27;,&#x27;route&#x27;,&#x27;Chỉ ở Redis Cluster&#x27;,&#x27;Key của lệnh và bản đồ node trong client.&#x27;,&#x27;Redis chia key vào 16.384 hash slot; mỗi slot thuộc một Primary. Một phần dữ liệu do Primary quản lý còn được gọi là shard.&#x27;,&#x27;Client gửi tới node sở hữu key; nhận MOVED/ASK nếu cần đổi đích.&#x27;],
+      client:[&#x27;Application Client&#x27;,&#x27;laptop&#x27;,&#x27;Ngoài Redis&#x27;,&#x27;Mã ứng dụng.&#x27;,&#x27;Standalone dùng một địa chỉ; Sentinel-aware client hỏi Primary hiện tại; Cluster-aware client định tuyến key.&#x27;,&#x27;Gửi lệnh trực tiếp đến Redis data node.&#x27;],
+      watched:[&#x27;1 · Redis data nodes&#x27;,&#x27;database&#x27;,&#x27;Primary + Replica&#x27;,&#x27;Các request kiểm tra từ Sentinel.&#x27;,&#x27;Primary phục vụ ghi; Replica nhận bản sao bất đồng bộ. Cả hai được nhiều Sentinel process theo dõi.&#x27;,&#x27;Mỗi Sentinel hình thành nhận định cục bộ về tình trạng node.&#x27;],
+      sentinel1:[&#x27;2 · Sentinel 1&#x27;,&#x27;eye&#x27;,&#x27;Process giám sát độc lập&#x27;,&#x27;Primary, Replica và các Sentinel ngang hàng.&#x27;,&#x27;Theo dõi node, trao đổi nhận định và tham gia bỏ phiếu. Không nằm trên đường truyền dữ liệu ứng dụng.&#x27;,&#x27;Kết quả phối hợp phân tán giữa các Sentinel.&#x27;],
+      sentinel2:[&#x27;2 · Sentinel 2&#x27;,&#x27;eye&#x27;,&#x27;Process giám sát độc lập&#x27;,&#x27;Primary, Replica và các Sentinel ngang hàng.&#x27;,&#x27;Theo dõi node, trao đổi nhận định và tham gia bỏ phiếu. Không nằm trên đường truyền dữ liệu ứng dụng.&#x27;,&#x27;Kết quả phối hợp phân tán giữa các Sentinel.&#x27;],
+      sentinel3:[&#x27;2 · Sentinel 3&#x27;,&#x27;eye&#x27;,&#x27;Process giám sát độc lập&#x27;,&#x27;Primary, Replica và các Sentinel ngang hàng.&#x27;,&#x27;Theo dõi node, trao đổi nhận định và tham gia bỏ phiếu. Không nằm trên đường truyền dữ liệu ứng dụng.&#x27;,&#x27;Kết quả phối hợp phân tán giữa các Sentinel.&#x27;],
+      quorum:[&#x27;3 · Xác nhận lỗi&#x27;,&#x27;users&#x27;,&#x27;Kết quả phối hợp phân tán&#x27;,&#x27;Nhận định của nhiều Sentinel process.&#x27;,&#x27;Quorum xác nhận Primary không còn khả dụng; để thực hiện failover, một Sentinel còn phải được đa số Sentinel ủy quyền.&#x27;,&#x27;Một Sentinel được bầu làm người điều phối failover.&#x27;],
+      promote:[&#x27;4 · Điều phối failover&#x27;,&#x27;arrow-up-circle&#x27;,&#x27;Một Sentinel được đa số ủy quyền&#x27;,&#x27;Kết quả xác nhận lỗi và bầu chọn.&#x27;,&#x27;Chọn Replica phù hợp, yêu cầu nó thành Primary và cấu hình lại các Replica khác. Không bảo đảm giữ mọi write chưa kịp sao chép.&#x27;,&#x27;Các Sentinel công bố địa chỉ Primary mới.&#x27;],
+      discovery:[&#x27;5 · Client tìm Primary mới&#x27;,&#x27;map-pin&#x27;,&#x27;Configuration provider&#x27;,&#x27;Địa chỉ Primary do Sentinel cung cấp.&#x27;,&#x27;Client có hỗ trợ Sentinel hỏi địa chỉ Primary hiện tại và kết nối lại sau failover.&#x27;,&#x27;Dữ liệu đi thẳng từ client đến Redis Primary, không đi qua Sentinel.&#x27;]
+    };
+    function coreCell(id,c,r,sub){var x=comp[id];return cell(id,x[0],sub||x[2],x[1],c,r,&#x27;component&#x27;);}
+    function info(id){var x=comp[id];if(!x)return;q(&#x27;#rm-component-detail&#x27;).innerHTML=&#x27;&lt;div class=&quot;rm-line&quot;&gt;&#x27;+icon(x[1])+&#x27;&lt;strong&gt;&#x27;+esc(x[0])+&#x27;&lt;/strong&gt;&lt;/div&gt;&lt;dl&gt;&lt;dt&gt;Nhận từ&lt;/dt&gt;&lt;dd&gt;&#x27;+esc(x[3])+&#x27;&lt;/dd&gt;&lt;dt&gt;Nhiệm vụ&lt;/dt&gt;&lt;dd&gt;&#x27;+esc(x[4])+&#x27;&lt;/dd&gt;&lt;dt&gt;Đi tiếp đến&lt;/dt&gt;&lt;dd&gt;&#x27;+esc(x[5])+&#x27;&lt;/dd&gt;&lt;/dl&gt;&#x27;;qa(&#x27;[data-component]&#x27;).forEach(function(b){b.setAttribute(&#x27;aria-pressed&#x27;,String(b.dataset.component===id));});refreshIcons();}
+    function core(keepOperation) {
+      stop();state.step=-1;state.active=&#x27;&#x27;;graphs.forEach(function(v,el){if(el.id!==&#x27;rm-topology&#x27;)graphs.delete(el);});
+      var meta=nodeMeta(),sentinel=meta[2]===&#x27;sentinel&#x27;,replica=meta[2]===&#x27;replica&#x27;,cluster=state.strategy===&#x27;cluster&#x27;;
+      q(&#x27;#rm-background&#x27;).hidden=sentinel;
+      q(&#x27;#rm-role&#x27;).textContent=meta[1]+&#x27; · &#x27;+(sentinel?&#x27;Bạn đang xem toàn bộ Sentinel subsystem để thấy &#x27;+meta[1]+&#x27; phối hợp với hai Sentinel khác; mỗi Sentinel là một process riêng.&#x27;:replica?&#x27;Redis data node nhận bản sao từ Primary; thường chỉ cho client đọc.&#x27;:&#x27;Redis data node nhận lệnh từ client; &#x27;+meta[3].toLowerCase()+&#x27;.&#x27;);
+      q(&#x27;#rm-operation&#x27;).innerHTML=sentinel?&#x27;&lt;option value=&quot;failover&quot;&gt;Primary lỗi → đổi sang Replica&lt;/option&gt;&#x27;:replica?&#x27;&lt;option value=&quot;replicate&quot;&gt;Nhận thay đổi từ Primary&lt;/option&gt;&lt;option value=&quot;read&quot;&gt;Đọc từ Replica (có thể trễ)&lt;/option&gt;&#x27;:&#x27;&lt;option value=&quot;write&quot;&gt;Ghi — SET cart:42 3 EX 60&lt;/option&gt;&lt;option value=&quot;read&quot;&gt;Đọc — GET cart:42&lt;/option&gt;&#x27;;
+      if(!keepOperation)state.operation=sentinel?&#x27;failover&#x27;:replica?&#x27;replicate&#x27;:&#x27;write&#x27;;
+      q(&#x27;#rm-operation&#x27;).value=state.operation;
+      var receiving=state.operation===&#x27;replicate&#x27;;
+      var el=q(&#x27;#rm-core-diagram&#x27;),cells=&#x27;&#x27;,edges=[];
+      if(sentinel){
+        cells+=coreCell(&#x27;sentinel1&#x27;,1,1)+coreCell(&#x27;sentinel2&#x27;,2,1)+coreCell(&#x27;sentinel3&#x27;,3,1)+coreCell(&#x27;quorum&#x27;,2,2)+coreCell(&#x27;promote&#x27;,2,3);
+        edges=[edge(&#x27;watched&#x27;,&#x27;sentinel1&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;watched&#x27;,&#x27;sentinel2&#x27;,&#x27;PING / trạng thái&#x27;,&#x27;control&#x27;),edge(&#x27;watched&#x27;,&#x27;sentinel3&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;sentinel1&#x27;,&#x27;quorum&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;sentinel2&#x27;,&#x27;quorum&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;sentinel3&#x27;,&#x27;quorum&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;quorum&#x27;,&#x27;promote&#x27;,&#x27;Đa số ủy quyền&#x27;,&#x27;control&#x27;),edge(&#x27;promote&#x27;,&#x27;discovery&#x27;,&#x27;&#x27;,&#x27;control&#x27;)];
+        el.innerHTML=&#x27;&lt;div class=&quot;rm-top-client&quot; data-graph-node=&quot;watched&quot;&gt;&lt;button class=&quot;btn btn-block&quot; type=&quot;button&quot; data-component=&quot;watched&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(&#x27;database&#x27;)+&#x27;&lt;span&gt;Primary + Replica&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;① Redis data nodes được giám sát&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;fieldset class=&quot;rm-boundary&quot;&gt;&lt;legend&gt;Sentinel subsystem · 3 process phối hợp&lt;/legend&gt;&lt;div class=&quot;rm-grid&quot; style=&quot;--cols:3&quot;&gt;&#x27;+cells+&#x27;&lt;/div&gt;&lt;/fieldset&gt;&lt;div class=&quot;rm-topology-foot&quot;&gt;&lt;div class=&quot;rm-top-client&quot; data-graph-node=&quot;discovery&quot;&gt;&lt;button class=&quot;btn btn-block&quot; type=&quot;button&quot; data-component=&quot;discovery&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(&#x27;map-pin&#x27;)+&#x27;&lt;span&gt;Application Client&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;⑤ Tìm địa chỉ Primary mới&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&#x27;;
+      }else{
+        var source=receiving?&#x27;upstream&#x27;:&#x27;input&#x27;,guard=receiving?&#x27;trusted&#x27;:&#x27;access&#x27;,writer=receiving?&#x27;ack&#x27;:&#x27;response&#x27;,destination=receiving?&#x27;upstreamResult&#x27;:&#x27;output&#x27;;
+        cells+=coreCell(&#x27;network&#x27;,1,1)+coreCell(&#x27;parser&#x27;,2,1)+coreCell(guard,3,1);
+        cells+=coreCell(&#x27;engine&#x27;,2,2)+coreCell(&#x27;keyspace&#x27;,3,2)+coreCell(writer,1,2);
+        cells+=coreCell(&#x27;memory&#x27;,1,3)+coreCell(&#x27;functions&#x27;,2,3)+coreCell(&#x27;ttl&#x27;,3,3);
+        edges=[edge(source,&#x27;network&#x27;,&#x27;BẮT ĐẦU&#x27;),edge(&#x27;network&#x27;,&#x27;parser&#x27;),edge(&#x27;parser&#x27;,guard),edge(guard,&#x27;engine&#x27;,&#x27;Hợp lệ&#x27;),edge(&#x27;engine&#x27;,&#x27;keyspace&#x27;,&#x27;&#x27;,&#x27;request&#x27;,&#x27;auto&#x27;,true),edge(&#x27;engine&#x27;,writer),edge(writer,destination,receiving?&#x27;Báo tiến độ&#x27;:&#x27;Trả kết quả&#x27;),edge(&#x27;memory&#x27;,&#x27;engine&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;functions&#x27;,&#x27;engine&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;ttl&#x27;,&#x27;keyspace&#x27;,&#x27;Thời hạn&#x27;,&#x27;control&#x27;)];
+        el.innerHTML=&#x27;&lt;div class=&quot;rm-top-client&quot; data-graph-node=&quot;&#x27;+source+&#x27;&quot;&gt;&lt;button class=&quot;btn btn-block&quot; type=&quot;button&quot; data-component=&quot;&#x27;+source+&#x27;&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(receiving?&#x27;copy&#x27;:&#x27;laptop&#x27;)+&#x27;&lt;span&gt;&#x27;+esc(comp[source][0])+&#x27;&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;&#x27;+(receiving?&#x27;Đồng bộ tiếp nối sau lần đồng bộ đầu&#x27;:&#x27;Nguồn request&#x27;)+&#x27;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;fieldset class=&quot;rm-boundary&quot;&gt;&lt;legend&gt;&#x27;+esc(meta[1])+&#x27; · Redis Server Core&lt;/legend&gt;&lt;div class=&quot;rm-grid&quot;&gt;&#x27;+cells+&#x27;&lt;/div&gt;&lt;/fieldset&gt;&lt;div class=&quot;rm-topology-foot&quot;&gt;&lt;div class=&quot;rm-top-client&quot; data-graph-node=&quot;&#x27;+destination+&#x27;&quot;&gt;&lt;button class=&quot;btn btn-block&quot; type=&quot;button&quot; data-component=&quot;&#x27;+destination+&#x27;&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(receiving?&#x27;server&#x27;:&#x27;laptop&#x27;)+&#x27;&lt;span&gt;&#x27;+esc(comp[destination][0])+&#x27;&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;&#x27;+esc(comp[destination][2])+&#x27;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&#x27;;
+        background(replica,cluster);
+      }
+      q(&#x27;#rm-step&#x27;).textContent=sentinel?&#x27;Luồng failover: 1 Data nodes → 2 ba Sentinel phối hợp → 3 xác nhận lỗi → 4 đổi Primary → 5 client tìm lại Primary.&#x27;:receiving?&#x27;Luồng replication: Primary → 1 Network → 2 Parser → 3 kênh replication → 4 Engine → 5 Keyspace → 6 ACK về Primary.&#x27;:&#x27;Luồng request: client → 1 Network → 2 Parser → 3 kiểm tra → 4 Engine ↔ 5 Keyspace → 6 Response → client. Nét đứt là nhánh có điều kiện.&#x27;;
+      register(el,edges);info(sentinel?&#x27;watched&#x27;:receiving?&#x27;upstream&#x27;:&#x27;input&#x27;);
+    }
+    function background(replica,cluster){
+      var el=q(&#x27;#rm-background-diagram&#x27;),cells=&#x27;&#x27;,edges=[],hasReplica=!replica&amp;&amp;state.strategy!==&#x27;standalone&#x27;;
+      comp.rdbDisk=[&#x27;Disk&#x27;,&#x27;hard-drive&#x27;,&#x27;File RDB&#x27;,comp.disk[3],comp.disk[4],comp.disk[5]];
+      cells+=coreCell(&#x27;aof&#x27;,1,1)+coreCell(&#x27;disk&#x27;,1,2,&#x27;File AOF&#x27;);
+      if(hasReplica)cells+=coreCell(&#x27;replication&#x27;,2,1,&#x27;Truyền bất đồng bộ&#x27;)+coreCell(&#x27;downstream&#x27;,2,2,&#x27;Bản sao của &#x27;+nodeMeta()[1]);
+      cells+=coreCell(&#x27;rdb&#x27;,hasReplica?3:2,1)+coreCell(&#x27;rdbDisk&#x27;,hasReplica?3:2,2);
+      edges=[edge(&#x27;state&#x27;,&#x27;aof&#x27;,&#x27;Nếu bật&#x27;,&#x27;copy&#x27;),edge(&#x27;state&#x27;,&#x27;rdb&#x27;,&#x27;Theo lịch&#x27;,&#x27;control&#x27;),edge(&#x27;aof&#x27;,&#x27;disk&#x27;,&#x27;Ghi file&#x27;,&#x27;copy&#x27;),edge(&#x27;rdb&#x27;,&#x27;rdbDisk&#x27;,&#x27;Ghi file&#x27;,&#x27;copy&#x27;)];
+      if(hasReplica)edges.push(edge(&#x27;state&#x27;,&#x27;replication&#x27;,&#x27;&#x27;,&#x27;copy&#x27;),edge(&#x27;replication&#x27;,&#x27;downstream&#x27;,&#x27;Sao chép&#x27;,&#x27;copy&#x27;));
+      el.innerHTML=&#x27;&lt;div class=&quot;rm-top-client&quot; data-graph-node=&quot;state&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-block&quot; data-component=&quot;state&quot;&gt;&lt;span class=&quot;rm-node-content&quot;&gt;&#x27;+icon(&#x27;database&#x27;)+&#x27;&lt;span&gt;Keyspace của node này&lt;/span&gt;&lt;span class=&quot;text-small&quot;&gt;RAM (Random Access Memory)&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;rm-grid&quot; style=&quot;--cols:&#x27;+(hasReplica?3:2)+&#x27;&quot;&gt;&#x27;+cells+&#x27;&lt;/div&gt;&#x27;;
+      q(&#x27;#rm-background-note&#x27;).textContent=&#x27;Minh họa AOF bật với fsync mỗi giây; RDB theo lịch/yêu cầu. Hai biểu tượng disk là hai loại file, không bắt buộc hai ổ riêng. Trả OK không đồng nghĩa mọi nhánh đã hoàn tất. &#x27;+(replica?&#x27;Node này nhận bản sao từ Primary; ví dụ không có Replica nối tiếp.&#x27;:state.strategy===&#x27;standalone&#x27;?&#x27;Không có nhánh sao chép vì chưa cấu hình Replica.&#x27;:state.strategy===&#x27;sentinel&#x27;?&#x27;Sentinel nằm ngoài data node; chọn Sentinel ở “Mở bên trong” để xem.&#x27;:cluster?&#x27;Cluster Bus hoạt động ở các node; không có Sentinel.&#x27;:&#x27;Primary–Replica riêng lẻ không tự điều phối đổi vai trò.&#x27;);
+      register(el,edges);
+      var specs=[];
+      if(!replica)specs.push([&#x27;expiry-flow&#x27;,&#x27;Thời hạn key — luồng dọn chủ động&#x27;,[[&#x27;lifecycle&#x27;,1,1],[&#x27;expiry&#x27;,2,1],[&#x27;keyspace&#x27;,3,1]],[edge(&#x27;lifecycle&#x27;,&#x27;expiry&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;expiry&#x27;,&#x27;keyspace&#x27;,&#x27;&#x27;,&#x27;control&#x27;)]]);
+      specs.push([&#x27;event-flow&#x27;,&#x27;Sự kiện key — chỉ khi bật thông báo&#x27;,[[&#x27;state&#x27;,1,1],[&#x27;notifications&#x27;,2,1],[&#x27;pubsub&#x27;,3,1]],[edge(&#x27;state&#x27;,&#x27;notifications&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;notifications&#x27;,&#x27;pubsub&#x27;,&#x27;&#x27;,&#x27;control&#x27;)]]);
+      specs.push([&#x27;special-flow&#x27;,&#x27;Lệnh chuyên biệt — Pub/Sub &amp; Streams&#x27;,[[&#x27;commands&#x27;,2,1],[&#x27;pubsub&#x27;,1,2],[&#x27;streams&#x27;,3,2]],[edge(&#x27;commands&#x27;,&#x27;pubsub&#x27;,&#x27;PUBLISH&#x27;,&#x27;request&#x27;),edge(&#x27;commands&#x27;,&#x27;streams&#x27;,&#x27;XADD / XREAD&#x27;,&#x27;request&#x27;)]]);
+      specs.push([&#x27;metrics-flow&#x27;,&#x27;Quan sát — không nằm trên đường trả kết quả&#x27;,[[&#x27;commands&#x27;,1,1],[&#x27;metrics&#x27;,2,1],[&#x27;observer&#x27;,3,1]],[edge(&#x27;commands&#x27;,&#x27;metrics&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;observer&#x27;,&#x27;metrics&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;auto&#x27;,true)]]);
+      if(cluster)specs.unshift([&#x27;cluster-flow&#x27;,&#x27;Redis Cluster — trao đổi trạng thái &amp; failover&#x27;,[[&#x27;peers&#x27;,1,1],[&#x27;bus&#x27;,2,1],[&#x27;routing&#x27;,3,1],[&#x27;election&#x27;,2,2]],[edge(&#x27;peers&#x27;,&#x27;bus&#x27;,&#x27;&#x27;,&#x27;control&#x27;,&#x27;auto&#x27;,true),edge(&#x27;bus&#x27;,&#x27;routing&#x27;,&#x27;&#x27;,&#x27;control&#x27;),edge(&#x27;bus&#x27;,&#x27;election&#x27;,&#x27;Phiếu / trạng thái&#x27;,&#x27;control&#x27;)]]);
+      q(&#x27;#rm-aux-diagrams&#x27;).innerHTML=specs.map(function(s){return &#x27;&lt;details class=&quot;rm-sources&quot;&#x27;+(s[0]===&#x27;cluster-flow&#x27;?&#x27; open&#x27;:&#x27;&#x27;)+&#x27;&gt;&lt;summary&gt;&#x27;+esc(s[1])+&#x27;&lt;/summary&gt;&lt;div id=&quot;rm-&#x27;+s[0]+&#x27;&quot; class=&quot;rm-diagram&quot; role=&quot;group&quot; aria-label=&quot;&#x27;+esc(s[1])+&#x27;&quot;&gt;&lt;div class=&quot;rm-grid&quot;&gt;&#x27;+s[2].map(function(n){return coreCell(n[0],n[1],n[2]);}).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;&#x27;;}).join(&#x27;&#x27;);
+      specs.forEach(function(s){var diagram=q(&#x27;#rm-&#x27;+s[0]);register(diagram,s[3]);diagram.parentElement.addEventListener(&#x27;toggle&#x27;,queueDraw);});
+    }
+    function steps(){
+      var n=nodeMeta();if(n[2]===&#x27;sentinel&#x27;)return [[&#x27;watched&#x27;,&#x27;Primary hoặc Replica không phản hồi kiểm tra.&#x27;],[[&#x27;sentinel1&#x27;,&#x27;sentinel2&#x27;,&#x27;sentinel3&#x27;],&#x27;Ba Sentinel process giám sát và trao đổi nhận định song song.&#x27;],[&#x27;quorum&#x27;,&#x27;Quorum xác nhận lỗi; đa số Sentinel ủy quyền một người điều phối.&#x27;],[&#x27;promote&#x27;,&#x27;Replica phù hợp được nâng thành Primary và các Replica khác được cấu hình lại.&#x27;],[&#x27;discovery&#x27;,&#x27;Client hỏi Sentinel địa chỉ Primary mới rồi kết nối trực tiếp.&#x27;]];
+      var receiving=state.operation===&#x27;replicate&#x27;;
+      var prefix=[[receiving?&#x27;upstream&#x27;:&#x27;input&#x27;,receiving?&#x27;Primary truyền thay đổi tới Replica sau đồng bộ ban đầu.&#x27;:&#x27;Ứng dụng gửi &#x27;+(state.operation===&#x27;read&#x27;?&#x27;GET cart:42.&#x27;:&#x27;SET cart:42 3 EX 60. &#x27;)],[&#x27;network&#x27;,&#x27;Network I/O (Input/Output) nhận bytes vào bộ đệm.&#x27;],[&#x27;parser&#x27;,&#x27;Parser đọc tên lệnh và tham số.&#x27;],[receiving?&#x27;trusted&#x27;:&#x27;access&#x27;,receiving?&#x27;Luồng nội bộ từ Primary đã kết nối; không kiểm tra lại ACL của application gốc.&#x27;:&#x27;Kiểm tra quyền / trạng thái / node sở hữu key.&#x27;],[&#x27;engine&#x27;,&#x27;Command Engine chọn hàm xử lý.&#x27;],[&#x27;keyspace&#x27;,state.operation===&#x27;read&#x27;?&#x27;Tra cứu key chưa hết hạn; ví dụ đọc được 3.&#x27;:receiving?&#x27;Áp dụng thay đổi từ Primary vào RAM, gồm metadata thời hạn.&#x27;:&#x27;Cập nhật giá trị 3 và thời hạn 60 giây trong RAM.&#x27;]];
+      if(state.operation!==&#x27;read&#x27;)prefix.push([state.strategy!==&#x27;standalone&#x27;&amp;&amp;state.operation===&#x27;write&#x27;?[&#x27;keyspace&#x27;,&#x27;aof&#x27;,&#x27;replication&#x27;]:[&#x27;keyspace&#x27;,&#x27;aof&#x27;],&#x27;Tách nhánh thay đổi sang AOF và replication nếu có cấu hình; không đợi mọi nhánh hoàn tất.&#x27;]);
+      if(receiving)prefix.push([&#x27;ack&#x27;,&#x27;Replica báo tiến độ sao chép, không phải OK cho từng request.&#x27;],[&#x27;upstreamResult&#x27;,&#x27;Primary theo dõi tiến độ; không có response từ Replica đến application gốc.&#x27;]);
+      else prefix.push([&#x27;engine&#x27;,&#x27;Giá trị / kết quả ghi trở về Command Engine.&#x27;],[&#x27;response&#x27;,&#x27;Tạo response; mặc định không chờ Replica áp dụng xong.&#x27;],[&#x27;output&#x27;,state.operation===&#x27;read&#x27;?&#x27;Application nhận 3 (hoặc nil nếu key không tồn tại). Đọc Replica có thể trễ.&#x27;:&#x27;Application nhận OK; fsync/snapshot/replication không nhất thiết đã xong.&#x27;]);
+      return prefix;
+    }
+    function stop(){if(state.timer){clearInterval(state.timer);state.timer=null;}q(&#x27;#rm-play&#x27;).innerHTML=icon(&#x27;play&#x27;)+&#x27; Chạy luồng&#x27;;refreshIcons();}
+    function clearHighlight(){state.active=&#x27;&#x27;;qa(&#x27;[data-active]&#x27;).forEach(function(n){n.removeAttribute(&#x27;data-active&#x27;);});}
+    function highlightEdges(){var ids=Array.isArray(state.active)?state.active:[state.active];qa(&#x27;.rm-wires path[data-edge-from]&#x27;).forEach(function(p){if(ids.includes(p.dataset.edgeFrom)||ids.includes(p.dataset.edgeTo))p.setAttribute(&#x27;data-active&#x27;,&#x27;true&#x27;);else p.removeAttribute(&#x27;data-active&#x27;);});}
+    function step(){var seq=steps();state.step=(state.step+1)%seq.length;var item=seq[state.step];clearHighlight();state.active=item[0];(Array.isArray(item[0])?item[0]:[item[0]]).forEach(function(id){qa(&#x27;[data-graph-node=&quot;&#x27;+id+&#x27;&quot;]&#x27;).forEach(function(n){n.setAttribute(&#x27;data-active&#x27;,&#x27;true&#x27;);});});highlightEdges();q(&#x27;#rm-step&#x27;).textContent=(state.step+1)+&#x27;/&#x27;+seq.length+&#x27; · &#x27;+item[1];info(Array.isArray(item[0])?&#x27;state&#x27;:item[0]);if(state.step===seq.length-1)stop();}
+    function chooseStrategy(k){stop();state.strategy=k;state.node=&#x27;primary-a&#x27;;controls();topology();core();}
+    function showTab(id){qa(&#x27;[role=&quot;tab&quot;]&#x27;).forEach(function(b){var on=b.getAttribute(&#x27;aria-controls&#x27;)===id;b.setAttribute(&#x27;aria-selected&#x27;,String(on));b.classList.toggle(&#x27;active&#x27;,on);});qa(&#x27;[role=&quot;tabpanel&quot;]&#x27;).forEach(function(p){p.hidden=p.id!==id;});queueDraw();}
+    var types={
+      string:[&#x27;String&#x27;,&#x27;Một key → một giá trị&#x27;,&#x27;counter:views&#x27;,&#x27;42&#x27;,&#x27;Cache nội dung, token phiên, bộ đếm.&#x27;,&#x27;SET · GET · INCR&#x27;,&#x27;Khi cần cập nhật từng thuộc tính của object, cân nhắc Hash.&#x27;],
+      hash:[&#x27;Hash&#x27;,&#x27;Một key → nhiều field/value&#x27;,&#x27;cart:42&#x27;,&#x27;sku:A → 2 | sku:B → 1&#x27;,&#x27;Hồ sơ người dùng; giỏ hàng ánh xạ mã sản phẩm → số lượng.&#x27;,&#x27;HSET · HGET · HINCRBY&#x27;,&#x27;Đây là một cách mô hình hóa giỏ hàng, không phải cách duy nhất.&#x27;],
+      list:[&#x27;List&#x27;,&#x27;Danh sách có thứ tự&#x27;,&#x27;jobs&#x27;,&#x27;job:A → job:B → job:C&#x27;,&#x27;Danh sách gần đây, hàng đợi đơn giản.&#x27;,&#x27;LPUSH · RPOP · LRANGE&#x27;,&#x27;Luồng xử lý cần xác nhận, đọc lại và nhóm worker nên xem Streams.&#x27;],
+      set:[&#x27;Set&#x27;,&#x27;Tập phần tử không trùng&#x27;,&#x27;tags:post:42&#x27;,&#x27;redis · cache · backend&#x27;,&#x27;Kiểm tra thành viên, nhãn, giao của các tập hợp.&#x27;,&#x27;SADD · SISMEMBER · SINTER&#x27;,&#x27;Không giữ thứ tự; nếu cần điểm/xếp hạng, dùng Sorted Set.&#x27;],
+      zset:[&#x27;Sorted Set&#x27;,&#x27;Phần tử duy nhất + điểm số&#x27;,&#x27;ranking&#x27;,&#x27;An:950 → Bình:820 → Chi:760&#x27;,&#x27;Bảng xếp hạng, nội dung phổ biến, sắp theo mức ưu tiên.&#x27;,&#x27;ZADD · ZRANGE · ZREVRANK&#x27;,&#x27;Một key lớn không tự chia nhỏ trên nhiều Primary của Redis Cluster.&#x27;],
+      stream:[&#x27;Stream&#x27;,&#x27;Các sự kiện có mã định danh&#x27;,&#x27;orders&#x27;,&#x27;sự kiện 1 → sự kiện 2 → sự kiện 3&#x27;,&#x27;Lưu luồng sự kiện, nhiều nhóm xử lý có tiến độ riêng.&#x27;,&#x27;XADD · XREADGROUP · XACK&#x27;,&#x27;Cần thiết kế xác nhận và thử lại; chưa mặc định xử lý đúng một lần.&#x27;],
+      bitmap:[&#x27;Bitmap&#x27;,&#x27;Thao tác bit trên String&#x27;,&#x27;attendance&#x27;,&#x27;0 · 1 · 1 · 0 · 1&#x27;,&#x27;Điểm danh, trạng thái có/không cho mã định danh dạng số.&#x27;,&#x27;SETBIT · GETBIT · BITCOUNT&#x27;,&#x27;Chỉ biểu diễn cờ bit, không lưu chi tiết của từng người.&#x27;],
+      hll:[&#x27;HyperLogLog&#x27;,&#x27;Cấu trúc đếm gần đúng&#x27;,&#x27;visitors&#x27;,&#x27;lượt truy cập → số người khác nhau ≈&#x27;,&#x27;Ước lượng số lượt truy cập duy nhất với ít bộ nhớ.&#x27;,&#x27;PFADD · PFCOUNT · PFMERGE&#x27;,&#x27;Kết quả gần đúng; không lấy được danh sách thành viên.&#x27;],
+      geo:[&#x27;Geospatial&#x27;,&#x27;Vị trí được mã hóa trong Sorted Set&#x27;,&#x27;stores&#x27;,&#x27;Cửa hàng A ↔ Cửa hàng B&#x27;,&#x27;Tìm địa điểm trong bán kính, tính khoảng cách.&#x27;,&#x27;GEOADD · GEOSEARCH · GEODIST&#x27;,&#x27;Không thay thế mọi truy vấn địa lý phức tạp.&#x27;]
+    };
+    function dataType(k){var t=types[k];q(&#x27;#rm-type-buttons&#x27;).innerHTML=Object.keys(types).map(function(id){return &#x27;&lt;button class=&quot;btn&quot; type=&quot;button&quot; data-type=&quot;&#x27;+id+&#x27;&quot; aria-pressed=&quot;&#x27;+(id===k)+&#x27;&quot;&gt;&#x27;+esc(types[id][0])+&#x27;&lt;/button&gt;&#x27;;}).join(&#x27;&#x27;);q(&#x27;#rm-type-detail&#x27;).innerHTML=&#x27;&lt;h3&gt;&#x27;+esc(t[0])+&#x27;&lt;/h3&gt;&lt;div class=&quot;text-small rm-note&quot;&gt;&#x27;+esc(t[1])+&#x27;&lt;/div&gt;&lt;div class=&quot;rm-type-demo&quot;&gt;&lt;code&gt;&#x27;+esc(t[2])+&#x27;&lt;/code&gt;&lt;span&gt;→&lt;/span&gt;&lt;div class=&quot;rm-type-value&quot;&gt;&#x27;+esc(t[3])+&#x27;&lt;/div&gt;&lt;/div&gt;&lt;dl&gt;&lt;dt&gt;Use cases&lt;/dt&gt;&lt;dd&gt;&#x27;+esc(t[4])+&#x27;&lt;/dd&gt;&lt;dt&gt;Lệnh tiêu biểu&lt;/dt&gt;&lt;dd&gt;&lt;code&gt;&#x27;+esc(t[5])+&#x27;&lt;/code&gt;&lt;/dd&gt;&lt;dt&gt;Lưu ý&lt;/dt&gt;&lt;dd&gt;&#x27;+esc(t[6])+&#x27;&lt;/dd&gt;&lt;/dl&gt;&#x27;;}
+    root.addEventListener(&#x27;click&#x27;,function(event){var b=event.target.closest(&#x27;button&#x27;);if(!b||!root.contains(b))return;
+      if(b.dataset.strategy){chooseStrategy(b.dataset.strategy);return;}
+      if(b.dataset.open){state.node=b.dataset.open;controls();core();showTab(&#x27;rm-core&#x27;);return;}
+      if(b.dataset.component){stop();clearHighlight();info(b.dataset.component);return;}
+      if(b.dataset.coreInfo){showTab(&#x27;rm-core&#x27;);info(b.dataset.coreInfo);return;}
+      if(b.dataset.type){dataType(b.dataset.type);return;}
+      if(b.getAttribute(&#x27;role&#x27;)===&#x27;tab&#x27;){stop();queueDraw();}
+    });
+    q(&#x27;#rm-host&#x27;).addEventListener(&#x27;change&#x27;,function(){state.host=this.value;topology();});
+    q(&#x27;#rm-node&#x27;).addEventListener(&#x27;change&#x27;,function(){state.node=this.value;core();});
+    q(&#x27;#rm-operation&#x27;).addEventListener(&#x27;change&#x27;,function(){state.operation=this.value;core(true);});
+    q(&#x27;#rm-next&#x27;).addEventListener(&#x27;click&#x27;,function(){stop();step();});
+    q(&#x27;#rm-play&#x27;).addEventListener(&#x27;click&#x27;,function(){if(state.timer){stop();return;}state.step=-1;step();state.timer=setInterval(step,1200);this.innerHTML=icon(&#x27;pause&#x27;)+&#x27; Tạm dừng&#x27;;refreshIcons();});
+    new ResizeObserver(queueDraw).observe(root);
+    new MutationObserver(function(){queueDraw();}).observe(q(&#x27;#rm-core&#x27;),{attributes:true,attributeFilter:[&#x27;hidden&#x27;]});
+    document.addEventListener(&#x27;visibilitychange&#x27;,function(){if(document.hidden)stop();});
+    controls();topology();core();dataType(&#x27;string&#x27;);
+  })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerdown&quot;, handlePointer);
+    document.removeEventListener(&quot;pointercancel&quot;, handlePointer);
+    document.removeEventListener(&quot;click&quot;, handleTouchClick);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerdown&quot;, handlePointer);
+  document.addEventListener(&quot;pointercancel&quot;, handlePointer);
+  document.addEventListener(&quot;click&quot;, handleTouchClick);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;script&gt;(() =&gt; { const applyTheme = (theme) =&gt; { if (theme !== "light" &amp;&amp; theme !== "dark") return; document.documentElement.dataset.theme = theme; document.documentElement.style.colorScheme = theme; }; window.addEventListener("message", (event) =&gt; { if (event.data?.type === "redis-map-theme") applyTheme(event.data.theme); }); })();&lt;/script&gt;&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+<script>(() => { const frame = document.querySelector("iframe[title=\"Redis Map\"]"); const applyTheme = (theme) => { if (theme !== "light" && theme !== "dark") return; document.documentElement.dataset.theme = theme; frame?.contentWindow?.postMessage({ type: "redis-map-theme", theme }, "*"); }; window.addEventListener("message", (event) => { if (event.data?.type === "redis-map-theme") applyTheme(event.data.theme); }); frame?.addEventListener("load", () => applyTheme(document.documentElement.dataset.theme || "dark")); })();</script></body>
+</html>

@@ -1390,8 +1390,10 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
           <span className="badge">{article.topic}</span>
         </div>
         <p className="question">Câu hỏi: {article.question}</p>
-        <h1>{article.title}</h1>
-        <p className="summary">{article.summary}</p>
+        {article.id !== 'redis-redis-map' && <>
+          <h1>{article.title}</h1>
+          <p className="summary">{article.summary}</p>
+        </>}
         <ArticleVisual article={article} />
         {article.topic !== 'Kafka' && article.topic !== 'Redis' && (
           <div className="grid2">
