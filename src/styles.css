@@ -96,6 +96,7 @@ h4 { margin-bottom: 8px; color: #a8d3ff; }
 .card { padding: 26px; margin: 20px 0; }
 .card.compact { margin: 28px 0; }
 .cardHeader, .articleFooter { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: #92a6c6; font-size: .92rem; }
+.detailArticle > .articleFooter { margin-top: 36px; }
 .badge, .status { border: 1px solid #31517c; padding: 6px 10px; border-radius: 999px; background: #0b1728; color: #bfdbfe; font-weight: 800; }
 .status.draft { color: #fde68a; } .status.review-needed { color: #fca5a5; } .status.ready { color: #86efac; }
 .question { color: #67e8f9; font-weight: 800; margin: 12px 0; }
