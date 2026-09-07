@@ -224,11 +224,11 @@ const topics: Topic[] = [
   {
     id: 'redis',
     title: 'Redis',
-    description: 'Redis từ cache request flow tới persistence, HA, sharding, multi-region, deployment và incident response.',
+    description: 'Redis phối hợp với persistent database: hot state, dirty snapshot, async batch-write và khôi phục cold data.',
     status: 'available',
     articleCount: redisChapters.length,
     icon: <Database />,
-    bullets: ['Cache & memory', 'HA & Sentinel', 'Cluster & multi-region', 'Production operations'],
+    bullets: ['Hot/working state', 'Async batch-write', 'Cold-data recovery'],
   },
   {
     id: 'kafka',
@@ -716,7 +716,7 @@ Network --> DB`,
     navLabel: chapter.navLabel,
     question: chapter.question,
     summary: chapter.summary,
-    lastVerified: '2026-07-19',
+    lastVerified: '2026-09-06',
     status: 'review-needed',
     diagram: 'Interactive RedisLearningJourney component',
     points: chapter.keyPoints,
@@ -1393,7 +1393,7 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
         <h1>{article.title}</h1>
         <p className="summary">{article.summary}</p>
         <ArticleVisual article={article} />
-        {article.topic !== 'Kafka' && (
+        {article.topic !== 'Kafka' && article.topic !== 'Redis' && (
           <div className="grid2">
             <section>
               <h4>Ý chính</h4>
@@ -1408,7 +1408,7 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
         {(lessonQAs[article.id]?.length ?? 0) > 0 && <LessonQA items={lessonQAs[article.id]} />}
         <footer className="articleFooter">
           <span>Cập nhật lần cuối: {article.lastVerified}</span>
-          {article.topic !== 'Kafka' && (
+          {article.topic !== 'Kafka' && article.topic !== 'Redis' && (
             <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
           )}
         </footer>
@@ -1475,6 +1475,9 @@ function ThemeToggle() {
 
 function App() {
   const [view, setView] = React.useState<View>(() => viewFromHash());
+  const redisLegacyArticleAliases: Record<string, string> = {
+    'redis-overview': 'redis-persistent-database', 'redis-cache': 'redis-persistent-database', 'redis-standalone': 'redis-persistent-database', 'redis-memory': 'redis-persistent-database', 'redis-persistence': 'redis-persistent-database', 'redis-primary-replica': 'redis-redis-map', 'redis-sentinel': 'redis-redis-map', 'redis-cluster': 'redis-redis-map', 'redis-enterprise': 'redis-redis-map', 'redis-replica-of-dr': 'redis-redis-map', 'redis-active-active': 'redis-redis-map', 'redis-deployment': 'redis-redis-map', 'redis-incident': 'redis-redis-map',
+  };
 
   React.useEffect(() => {
     const syncFromHash = () => {
@@ -1506,7 +1509,7 @@ function App() {
   }
 
   if (view.type === 'article') {
-    const article = articles.find((item) => item.id === view.articleId);
+    const article = articles.find((item) => item.id === (redisLegacyArticleAliases[view.articleId] ?? view.articleId));
     if (!article) return <NotFoundPage onHome={openHome} />;
     const parentTopic = topics.find((topic) => topic.title === article.topic || (article.topic === 'AI' && topic.id === 'ai')) ?? topics[0];
     return <ArticlePage article={article} parentTopicId={parentTopic.id} onBack={() => openTopic(parentTopic.id)} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;

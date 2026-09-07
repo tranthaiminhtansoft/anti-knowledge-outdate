@@ -1,265 +1,444 @@
 import React from 'react';
-import { redisChapterById, redisChapters, type RedisChapter, type RedisEdge, type RedisNode } from './redisJourneyData';
+import { redisChapterById, redisChapters, redisPersistentQuiz } from './redisJourneyData';
+import { RedisMapLesson } from './RedisMapLesson';
 import './redis-journey.css';
 
-const STORAGE_KEY = 'redis-journey:v1:completed';
+const FLUSH_INTERVAL_MS = 5_000;
 
-type PendingStep = number | 'last' | null;
+type LogTone = 'info' | 'warn' | 'error' | 'success';
+type PacketRoute = 'client-redis' | 'redis-worker' | 'worker-mongo' | 'redis-mongo' | 'mongo-redis' | 'redis-client';
+type FloatTarget = 'client' | 'redis' | 'mongo';
 
-function loadCompleted(): Set<string> {
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '[]');
-    if (!Array.isArray(parsed)) return new Set();
-    const validIds = new Set(redisChapters.map((chapter) => chapter.id));
-    return new Set(parsed.filter((id): id is string => typeof id === 'string' && validIds.has(id)));
-  } catch {
-    return new Set();
-  }
+type RuntimeState = {
+  cartItems: number;
+  mongoItems: number;
+  dirtyVersion: number;
+  persistedVersion: number;
+  flushInProgress: boolean;
+  coldPreparing: boolean;
+  coldRunning: boolean;
+  redisAvailable: boolean;
+  redisActive: boolean;
+  clientSleeping: boolean;
+  workerStatus: string;
+  nextFlushAt: number;
+  generation: number;
+};
+
+type LogEntry = { id: number; time: string; message: string; tone: LogTone };
+type Packet = { id: number; icon: string; route: PacketRoute; duration: number };
+type FloatingText = { id: number; target: FloatTarget; text: string; tone: 'plus' | 'warn' };
+
+function createRuntime(generation = 0): RuntimeState {
+  return {
+    cartItems: 0,
+    mongoItems: 0,
+    dirtyVersion: 0,
+    persistedVersion: 0,
+    flushInProgress: false,
+    coldPreparing: false,
+    coldRunning: false,
+    redisAvailable: true,
+    redisActive: false,
+    clientSleeping: false,
+    workerStatus: 'Flush sau 5s',
+    nextFlushAt: Date.now() + FLUSH_INTERVAL_MS,
+    generation,
+  };
 }
 
-function center(node: RedisNode) {
-  return { x: node.x + node.w / 2, y: node.y + node.h / 2 };
+function RedisPersistentQuiz() {
+  const [answers, setAnswers] = React.useState<Record<string, number>>({});
+  return <section className="redisPersistentQuiz" aria-labelledby="redis-persistence-checkpoint-title">
+    <h2 id="redis-persistence-checkpoint-title">Câu hỏi củng cố</h2>
+    <p>Chọn một phương án. Khi sai, phương án bạn chọn hiển thị không đúng và đáp án đúng được đánh dấu rõ ràng.</p>
+    {redisPersistentQuiz.map((question, number) => {
+      const selected = answers[question.id];
+      const answered = selected !== undefined;
+      const correct = selected === question.correctIndex;
+      return <article key={question.id}>
+        <h3>{number + 1}. {question.prompt}</h3>
+        <div className="redisQuizOptions" aria-label={question.prompt}>
+          {question.options.map((option, index) => {
+            const state = answered ? (index === question.correctIndex ? 'correct' : index === selected ? 'wrong' : '') : '';
+            return <button type="button" aria-pressed={selected === index} key={option} className={state} onClick={() => setAnswers((current) => ({ ...current, [question.id]: index }))}>{String.fromCharCode(65 + index)}. {option}{answered && index === question.correctIndex ? <span className="redisQuizMark">Đáp án đúng</span> : null}{answered && index === selected && index !== question.correctIndex ? <span className="redisQuizMark">Bạn đã chọn — chưa đúng</span> : null}</button>;
+          })}
+        </div>
+        {answered ? <div className={`redisQuizFeedback ${correct ? 'correct' : 'wrong'}`} role="status"><strong>{correct ? 'Chính xác.' : 'Chưa chính xác.'}</strong><p>{question.explanation}</p></div> : null}
+      </article>;
+    })}
+  </section>;
 }
 
-function edgePath(from: RedisNode, to: RedisNode) {
-  const a = center(from);
-  const b = center(to);
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-
-  // Intersect the centre-to-centre vector with both node boundaries so the
-  // connector and its arrowhead stay on the same straight line.
-  const fromScale = 1 / Math.max(Math.abs(dx) / (from.w / 2), Math.abs(dy) / (from.h / 2));
-  const toScale = 1 / Math.max(Math.abs(dx) / (to.w / 2), Math.abs(dy) / (to.h / 2));
-  const ax = a.x + dx * fromScale;
-  const ay = a.y + dy * fromScale;
-  const bx = b.x - dx * toScale;
-  const by = b.y - dy * toScale;
-
-  return `M ${ax} ${ay} L ${bx} ${by}`;
+function DatabaseGlyph({ className }: { className: string }) {
+  return (
+    <svg className={`redisPersistenceDbSvg ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2C6.48 2 2 4.24 2 7v10c0 2.76 4.48 5 10 5s10-2.24 10-5V7c0-2.76-4.48-5-10-5zm0 18c-4.42 0-8-1.79-8-4v-1.47c2.19 1.48 5 2.47 8 2.47s5.81-.99 8-2.47V16c0 2.21-3.58 4-8 4zm0-6c-4.42 0-8-1.79-8-4V8.53C6.19 10.01 9 11 12 11s5.81-.99 8-2.47V10c0 2.21-3.58 4-8 4zm0-6c-4.42 0-8-1.79-8-4s3.58-4 8-4 8 1.79 8 4-3.58 4-8 4z" />
+    </svg>
+  );
 }
 
-function chapterHash(chapterId: string) {
-  return `#/article/redis-${chapterId}`;
-}
+function RedisPersistentDatabaseLesson({ chapterId }: { chapterId: string }) {
+  const chapter = redisChapterById.get(chapterId) ?? redisChapters[0];
+  const runtimeRef = React.useRef<RuntimeState>(createRuntime());
+  const [runtime, setRuntime] = React.useState<RuntimeState>(runtimeRef.current);
+  const [workerEpoch, setWorkerEpoch] = React.useState(0);
+  const [logs, setLogs] = React.useState<LogEntry[]>([
+    { id: 0, time: 'SYSTEM', message: 'Worker chạy mỗi 5 giây. Hãy bấm liên tục: MongoDB vẫn được flush định kỳ.', tone: 'info' },
+  ]);
+  const [packets, setPackets] = React.useState<Packet[]>([]);
+  const [floatingTexts, setFloatingTexts] = React.useState<FloatingText[]>([]);
+  const mountedRef = React.useRef(false);
+  const sequenceRef = React.useRef(1);
+  const waitersRef = React.useRef(new Map<number, () => void>());
+  const scheduledRef = React.useRef(new Set<number>());
+  const consoleRef = React.useRef<HTMLDivElement>(null);
 
-function RedisJourneyGraph({ chapter, stepIndex, speed }: { chapter: RedisChapter; stepIndex: number; speed: number }) {
-  const reactId = React.useId().replaceAll(':', '');
-  const markerId = `redis-arrow-${reactId}`;
-  const step = chapter.steps[stepIndex];
-  const nodeById = React.useMemo(() => new Map(chapter.nodes.map((node) => [node.id, node])), [chapter]);
-  const edgeById = React.useMemo(() => new Map(chapter.edges.map((edge) => [edge.id, edge])), [chapter]);
-  const activeEdgeId = step.activeEdges?.[0];
-  const activeEdge = activeEdgeId ? edgeById.get(activeEdgeId) : undefined;
-  const pulsePath = activeEdge
-    ? edgePath(nodeById.get(activeEdge.from)!, nodeById.get(activeEdge.to)!)
-    : undefined;
+  const sync = React.useCallback(() => {
+    if (mountedRef.current) setRuntime({ ...runtimeRef.current });
+  }, []);
 
-  const pathFor = (edge: RedisEdge) => edgePath(nodeById.get(edge.from)!, nodeById.get(edge.to)!);
+  const addLog = React.useCallback((message: string, tone: LogTone = 'info') => {
+    if (!mountedRef.current) return;
+    const entry: LogEntry = {
+      id: sequenceRef.current++,
+      time: new Date().toISOString().slice(11, 19),
+      message,
+      tone,
+    };
+    setLogs((current) => [...current.slice(-79), entry]);
+  }, []);
+
+  const firePacket = React.useCallback((icon: string, route: PacketRoute, duration: number) => {
+    if (!mountedRef.current) return;
+    setPackets((current) => [...current, { id: sequenceRef.current++, icon, route, duration }]);
+  }, []);
+
+  const showFloatingText = React.useCallback((target: FloatTarget, text: string, tone: 'plus' | 'warn') => {
+    if (!mountedRef.current) return;
+    setFloatingTexts((current) => [...current, { id: sequenceRef.current++, target, text, tone }]);
+  }, []);
+
+  const wait = React.useCallback((duration: number) => new Promise<void>((resolve) => {
+    const id = window.setTimeout(() => {
+      waitersRef.current.delete(id);
+      resolve();
+    }, duration);
+    waitersRef.current.set(id, resolve);
+  }), []);
+
+  const schedule = React.useCallback((duration: number, generation: number, action: () => void) => {
+    const id = window.setTimeout(() => {
+      scheduledRef.current.delete(id);
+      if (mountedRef.current && runtimeRef.current.generation === generation) action();
+    }, duration);
+    scheduledRef.current.add(id);
+  }, []);
+
+  const cancelAsyncWork = React.useCallback(() => {
+    scheduledRef.current.forEach((id) => window.clearTimeout(id));
+    scheduledRef.current.clear();
+    waitersRef.current.forEach((resolve, id) => {
+      window.clearTimeout(id);
+      resolve();
+    });
+    waitersRef.current.clear();
+  }, []);
+
+  const flushDirty = React.useCallback(async (reason = 'periodic') => {
+    const startedGeneration = runtimeRef.current.generation;
+    while (runtimeRef.current.flushInProgress) {
+      await wait(50);
+      if (!mountedRef.current || runtimeRef.current.generation !== startedGeneration) return false;
+    }
+
+    const state = runtimeRef.current;
+    if (state.coldRunning || state.dirtyVersion <= state.persistedVersion) return false;
+
+    const snapshotItems = state.cartItems;
+    const snapshotVersion = state.dirtyVersion;
+    state.flushInProgress = true;
+    state.workerStatus = 'Đang batch flush…';
+    sync();
+    addLog(`[WORKER] Tick ${reason}: lấy snapshot Redis v${snapshotVersion} (${snapshotItems} items).`, 'warn');
+    firePacket('📨', 'redis-worker', 1_200);
+
+    await wait(1_300);
+    if (!mountedRef.current || runtimeRef.current.generation !== startedGeneration) return false;
+    firePacket('📦', 'worker-mongo', 1_600);
+
+    await wait(1_700);
+    if (!mountedRef.current || runtimeRef.current.generation !== startedGeneration) return false;
+
+    const latest = runtimeRef.current;
+    latest.mongoItems = snapshotItems;
+    latest.persistedVersion = snapshotVersion;
+    latest.flushInProgress = false;
+    showFloatingText('mongo', '💾 Durable', 'plus');
+    addLog(`[MONGODB] Batch upsert hoàn tất v${snapshotVersion}. ${latest.dirtyVersion > latest.persistedVersion ? 'Có thay đổi mới, giữ Dirty cho tick sau.' : 'Redis đã Clean.'}`, 'success');
+    sync();
+    return true;
+  }, [addLog, firePacket, showFloatingText, sync, wait]);
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      cancelAsyncWork();
+    };
+  }, [cancelAsyncWork]);
+
+  React.useEffect(() => {
+    const flushInterval = window.setInterval(() => {
+      const state = runtimeRef.current;
+      state.nextFlushAt = Date.now() + FLUSH_INTERVAL_MS;
+      if (state.coldRunning) return;
+      if (state.dirtyVersion > state.persistedVersion) void flushDirty('định kỳ 5s');
+      else addLog('[WORKER] Tick định kỳ: không có dirty state, bỏ qua MongoDB write.', 'info');
+    }, FLUSH_INTERVAL_MS);
+
+    const countdownInterval = window.setInterval(() => {
+      const state = runtimeRef.current;
+      if (state.flushInProgress) return;
+      const seconds = Math.max(0, Math.ceil((state.nextFlushAt - Date.now()) / 1_000));
+      state.workerStatus = `Flush sau ${seconds}s · ${state.dirtyVersion > state.persistedVersion ? 'Dirty' : 'Idle'}`;
+      sync();
+    }, 250);
+
+    return () => {
+      window.clearInterval(flushInterval);
+      window.clearInterval(countdownInterval);
+    };
+  }, [addLog, flushDirty, sync, workerEpoch]);
+
+  React.useEffect(() => {
+    if (consoleRef.current) consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+  }, [logs]);
+
+  const addToCart = () => {
+    const state = runtimeRef.current;
+    if (state.coldPreparing || state.coldRunning) return;
+    const generation = state.generation;
+    firePacket('👆', 'client-redis', 300);
+    state.redisActive = true;
+    sync();
+
+    schedule(300, generation, () => {
+      const current = runtimeRef.current;
+      current.cartItems += 1;
+      current.dirtyVersion += 1;
+      showFloatingText('client', '+1', 'plus');
+      if (current.cartItems % 5 === 1) {
+        addLog(`[REDIS] Ghi hot state v${current.dirtyVersion} trên RAM; đánh dấu Dirty (Items: ${current.cartItems}).`, 'success');
+      }
+      sync();
+    });
+
+    schedule(500, generation, () => {
+      runtimeRef.current.redisActive = false;
+      sync();
+    });
+  };
+
+  const runColdDataSim = async () => {
+    const state = runtimeRef.current;
+    if (state.coldPreparing || state.coldRunning) return;
+    const generation = state.generation;
+    state.coldPreparing = true;
+    if (state.cartItems === 0) {
+      state.cartItems = 15;
+      state.dirtyVersion += 1;
+    }
+    sync();
+    addLog('[SYSTEM] Chuẩn bị cold-data demo: yêu cầu worker flush dirty state trước khi Redis hết TTL.', 'warn');
+
+    await flushDirty('trước cold storage');
+    if (!mountedRef.current || runtimeRef.current.generation !== generation) return;
+
+    const current = runtimeRef.current;
+    current.coldPreparing = false;
+    current.coldRunning = true;
+    setLogs([]);
+    sync();
+
+    schedule(500, generation, () => {
+      runtimeRef.current.clientSleeping = true;
+      addLog('[CLIENT] User thoát App. 30 ngày trôi qua không đăng nhập...', 'info');
+      sync();
+    });
+    schedule(2_500, generation, () => {
+      runtimeRef.current.redisAvailable = false;
+      showFloatingText('redis', '🧹 Xóa để tiết kiệm RAM', 'warn');
+      addLog('[REDIS] Tự động dọn dẹp RAM (TTL Expired) đối với user không hoạt động.', 'warn');
+      sync();
+    });
+    schedule(5_500, generation, () => {
+      runtimeRef.current.clientSleeping = false;
+      addLog('[CLIENT] VÀI THÁNG SAU: User mở lại App!', 'info');
+      firePacket('🔍', 'client-redis', 600);
+      sync();
+    });
+    schedule(6_100, generation, () => {
+      addLog('[REDIS] Cache Miss (Không tìm thấy giỏ hàng trong RAM).', 'error');
+      showFloatingText('redis', 'Miss!', 'warn');
+    });
+    schedule(6_700, generation, () => {
+      addLog('[SYSTEM] Đọc persistent database MongoDB để lấy dữ liệu cũ.', 'warn');
+      firePacket('🔍', 'redis-mongo', 800);
+    });
+    schedule(7_500, generation, () => {
+      addLog('[MONGODB] Đã tìm thấy giỏ hàng cũ. Trả về cho Cache (Warm-up).', 'success');
+      firePacket('📦', 'mongo-redis', 800);
+    });
+    schedule(8_300, generation, () => {
+      runtimeRef.current.redisAvailable = true;
+      showFloatingText('redis', '🔥 Đã hâm nóng', 'plus');
+      addLog('[REDIS] Nạp thành công vào RAM. Trả kết quả về App.', 'success');
+      firePacket('✅', 'redis-client', 600);
+      sync();
+    });
+    schedule(8_900, generation, () => {
+      runtimeRef.current.coldRunning = false;
+      showFloatingText('client', 'Load thành công', 'plus');
+      addLog('[DEVOPS] Cold data đã phục hồi; Redis lại phục vụ hot state.', 'success');
+      sync();
+    });
+  };
+
+  const hardReset = () => {
+    const nextGeneration = runtimeRef.current.generation + 1;
+    cancelAsyncWork();
+    runtimeRef.current = createRuntime(nextGeneration);
+    setWorkerEpoch((epoch) => epoch + 1);
+    setPackets([]);
+    setFloatingTexts([]);
+    setLogs([{ id: sequenceRef.current++, time: 'SYSTEM', message: 'Đã Reset toàn bộ hệ thống. Trạng thái sạch (Clean State).', tone: 'success' }]);
+    sync();
+  };
+
+  const isDirty = runtime.dirtyVersion > runtime.persistedVersion;
+  const controlsLocked = runtime.coldPreparing || runtime.coldRunning;
 
   return (
-    <div className="redisStage" aria-label={`Sơ đồ ${chapter.title}: ${step.title}`}>
-      <svg viewBox="0 0 920 520" role="img">
-        <title>{`${chapter.title} — ${step.title}`}</title>
-        <defs>
-          <marker id={markerId} markerWidth="7" markerHeight="7" refX="6.5" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-            <path d="M0 0 L7 3.5 L0 7 Z" className="redisArrowHead" />
-          </marker>
-        </defs>
-        <g className="redisEdges">
-          {chapter.edges.map((edge) => {
-            const active = step.activeEdges?.includes(edge.id);
-            return <path key={edge.id} d={pathFor(edge)} className={`redisEdge${active ? ' active' : ''}`} markerEnd={`url(#${markerId})`} />;
-          })}
-        </g>
-        <g className="redisNodes">
-          {chapter.nodes.map((node) => {
-            const active = step.activeNodes.includes(node.id);
-            const tone = step.tones?.[node.id];
-            return (
-              <g key={node.id} className={`redisNode${active ? ' active' : ''}${tone ? ` ${tone}` : ''}`}>
-                <title>{`${node.title}: ${node.sub}`}</title>
-                <rect x={node.x} y={node.y} width={node.w} height={node.h} rx="14" />
-                <text x={node.x + node.w / 2} y={node.y + node.h / 2 - 4}>{node.title}</text>
-                <text className="redisNodeSub" x={node.x + node.w / 2} y={node.y + node.h / 2 + 19}>{node.sub}</text>
-              </g>
-            );
-          })}
-        </g>
-        {pulsePath && (
-          <circle key={`${chapter.id}-${stepIndex}`} className="redisPulse" r="8">
-            <animateMotion path={pulsePath} dur={`${Math.min(900, speed * 0.65)}ms`} fill="freeze" />
-          </circle>
-        )}
-      </svg>
-    </div>
+    <section className="redisPersistenceLesson" aria-label={`${chapter.title} lesson`}>
+      <section className="redisPersistenceIntro" aria-labelledby="redis-persistence-explanation">
+        <h2 id="redis-persistence-explanation">Redis phối hợp với persistent database</h2>
+        <div className="redisPersistenceQuestions">
+          <strong>Câu hỏi cần trả lời</strong>
+          <ul>
+            <li>Tại sao cần Redis khi đã có Persistent Database?</li>
+            <li>Làm thế nào xử lý dữ liệu được cập nhật liên tục mà không gây quá tải Persistent Database?</li>
+          </ul>
+        </div>
+        <h3>Giải thích ngắn</h3>
+        <p>Các dữ liệu “nóng” như giỏ hàng thường được đọc và cập nhật liên tục. Nếu mọi thao tác đều ghi trực tiếp xuống Persistent Database, hệ thống sẽ phát sinh nhiều lượt ghi nhỏ, làm tăng độ trễ và áp lực lên tầng lưu trữ.</p>
+        <p>Redis đóng vai trò <strong>hot/working state</strong>, giúp xử lý các thao tác với tốc độ cao. Một worker bất đồng bộ sẽ định kỳ gom những dữ liệu đã thay đổi và đồng bộ chúng xuống Persistent Database để lưu trữ bền vững.</p>
+        <p>Diagram dưới đây minh họa mô hình này với MongoDB là một ví dụ cho Persistent Database.</p>
+      </section>
+
+      <section className="redisPersistenceSimulator" aria-labelledby="redis-persistence-simulator-title">
+        <header>
+          <h2 id="redis-persistence-simulator-title">Redis Hot State → Async Worker → MongoDB Durable State</h2>
+          <p className="redisPersistenceScrollHint">↔ Chỉ cuộn ngang khi khu vực hiển thị quá hẹp</p>
+        </header>
+        <div className="redisPersistenceViewport" tabIndex={0} aria-label="Khu vực mô phỏng Redis. Chỉ cuộn ngang khi khu vực hiển thị quá hẹp để xem diagram, thao tác và activity log.">
+          <div className="redisPersistenceWorkspace">
+            <div className="redisPersistenceArchitectureFrame">
+            <div className="redisPersistenceArchitecture" role="img" aria-label="App Shopee ghi hot state vào Redis qua đường nét đứt; async worker đứng phía sau Redis và MongoDB, batch-write snapshot theo hai đường cung; cold-data miss được warm trở lại Redis">
+              <svg className="redisPersistenceConnections" viewBox="0 0 760 320" aria-hidden="true">
+                <defs>
+                  <marker id="redis-persistence-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 8 4 L 0 8 z" /></marker>
+                  <marker id="redis-persistence-recovery-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 7 3.5 L 0 7 z" /></marker>
+                </defs>
+                <path className="redisPersistenceConnection client-redis" data-connection="client-redis" d="M 210 160 C 270 160, 282 94, 350 94" markerEnd="url(#redis-persistence-arrow)" />
+                <path className="redisPersistenceConnection redis-worker" data-connection="redis-worker" d="M 530 94 C 575 94, 556 132, 600 142" markerEnd="url(#redis-persistence-arrow)" />
+                <path className="redisPersistenceConnection worker-mongo" data-connection="worker-mongo" d="M 600 178 C 556 187, 575 226, 530 226" markerEnd="url(#redis-persistence-arrow)" />
+                <path className="redisPersistenceRecoveryLine" data-connection="cache-recovery" d="M 438 145 C 462 163, 462 174, 438 190" markerEnd="url(#redis-persistence-recovery-arrow)" />
+                <text className="redisPersistenceWireLabel label-snapshot" x="548" y="112">snapshot</text>
+                <text className="redisPersistenceWireLabel label-batch" x="548" y="211">batch write</text>
+                <text className="redisPersistenceWireLabel label-recovery" x="378" y="171">read-through</text>
+              </svg>
+
+              <div className="redisPersistenceClient" data-node="client">
+                <span className="redisPersistenceClientIcon">{runtime.clientSleeping ? '💤' : '📱'}</span>
+                <strong>App Shopee</strong>
+                <span className="redisPersistenceDataBox" data-testid="cart-state">🛒 Cart: {runtime.cartItems}</span>
+              </div>
+
+              <div className={`redisPersistenceDb redisPersistenceRedis${runtime.redisActive ? ' active' : ''}`} data-node="redis">
+                <DatabaseGlyph className="redisPersistenceRedisLogo" />
+                <strong>Redis · Hot State</strong>
+                <span className={`redisPersistenceDataBox${isDirty ? ' dirty' : ''}`} data-testid="redis-state">
+                  {runtime.redisAvailable ? `Cart: ${runtime.cartItems} · ${isDirty ? 'Dirty' : 'Clean'}` : 'Cart: NULL'}
+                </span>
+              </div>
+
+              <div className={`redisPersistenceWorker${runtime.flushInProgress ? ' flushing' : ''}`} data-node="worker">
+                ⚙️ Async Worker
+                <small data-testid="worker-status">{runtime.workerStatus}</small>
+              </div>
+
+              <div className="redisPersistenceDb redisPersistenceMongo" data-node="mongo">
+                <DatabaseGlyph className="redisPersistenceMongoLogo" />
+                <strong>MongoDB · Durable</strong>
+                <span className="redisPersistenceDataBox" data-testid="persistent-state">Cart: {runtime.mongoItems} items</span>
+              </div>
+
+              {packets.map((packet) => {
+                return (
+                  <span
+                    key={packet.id}
+                    className={`redisPersistencePacket route-${packet.route}`}
+                    data-route={packet.route}
+                    style={{
+                      '--packet-duration': `${packet.duration}ms`,
+                    } as React.CSSProperties}
+                    onAnimationEnd={() => setPackets((current) => current.filter((item) => item.id !== packet.id))}
+                    aria-hidden="true"
+                  >{packet.icon}</span>
+                );
+              })}
+
+              {floatingTexts.map((item) => (
+                <span
+                  key={item.id}
+                  className={`redisPersistenceFloat redisPersistenceFloat-${item.target} ${item.tone}`}
+                  onAnimationEnd={() => setFloatingTexts((current) => current.filter((candidate) => candidate.id !== item.id))}
+                  aria-hidden="true"
+                >{item.text}</span>
+              ))}
+            </div>
+            </div>
+
+            <aside className="redisPersistenceSidePanel" aria-label="Điều khiển và activity log">
+              <div className="redisPersistenceControls" aria-label="Điều khiển mô phỏng Redis và persistent database">
+                <button type="button" className="add" onClick={addToCart} disabled={controlsLocked}>👆 Bấm Thêm Vào Giỏ</button>
+                <button type="button" className="cold" onClick={() => void runColdDataSim()} disabled={controlsLocked}>💤 Test Khôi Phục Dữ Liệu</button>
+                <button type="button" className="reset" onClick={hardReset}>🔄 Đặt lại từ đầu</button>
+              </div>
+
+              <div className="redisPersistenceLogHeader"><span>Activity log</span><small>Worker / Redis / MongoDB</small></div>
+              <div ref={consoleRef} className="redisPersistenceConsole" role="log" aria-live="polite" aria-label="Console Redis và MongoDB">
+                {logs.map((entry) => (
+                  <div key={entry.id}><span className="log-time">[{entry.time}]</span> <span className={`log-${entry.tone}`}>{entry.message}</span></div>
+                ))}
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <aside className="redisPersistenceBoundary" aria-label="Ranh giới độ bền của mô hình">
+        <strong>Ranh giới cần nhớ</strong>
+        <p>Đây là mô hình write-behind: phản hồi nhanh từ Redis không đồng nghĩa MongoDB đã ghi bền vững. Dirty state chưa tới kỳ flush có thể mất nếu Redis hoặc worker gặp sự cố. Workload cần durability chặt phải bổ sung Redis persistence hoặc durable change log/queue, retry idempotent và giám sát flush lag.</p>
+      </aside>
+
+      <RedisPersistentQuiz />
+    </section>
   );
 }
 
 export function RedisLearningJourney({ chapterId }: { chapterId: string }) {
-  const chapter = redisChapterById.get(chapterId) ?? redisChapters[0];
-  const chapterIndex = redisChapters.findIndex((candidate) => candidate.id === chapter.id);
-  const [stepIndex, setStepIndex] = React.useState(0);
-  const [playing, setPlaying] = React.useState(false);
-  const [speed, setSpeed] = React.useState(1400);
-  const [completed, setCompleted] = React.useState<Set<string>>(() => loadCompleted());
-  const pendingStep = React.useRef<PendingStep>(null);
-  const chapterRailRef = React.useRef<HTMLElement>(null);
-
-  const persistCompleted = React.useCallback((next: Set<string>) => {
-    setCompleted(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
-    } catch {
-      // Storage can be unavailable in privacy mode; the lesson remains usable in-memory.
-    }
-  }, []);
-
-  const markCompleted = React.useCallback((id: string) => {
-    const next = new Set(completed);
-    next.add(id);
-    persistCompleted(next);
-  }, [completed, persistCompleted]);
-
-  const openChapter = React.useCallback((id: string, target: PendingStep = 0, stopPlayback = true) => {
-    pendingStep.current = target;
-    if (stopPlayback) setPlaying(false);
-    window.location.hash = chapterHash(id);
-  }, []);
-
-  React.useEffect(() => {
-    const target = pendingStep.current;
-    pendingStep.current = null;
-    setStepIndex(target === 'last' ? chapter.steps.length - 1 : typeof target === 'number' ? target : 0);
-  }, [chapter]);
-
-  React.useEffect(() => {
-    chapterRailRef.current
-      ?.querySelector<HTMLElement>('[aria-current="page"]')
-      ?.scrollIntoView({ block: 'nearest', inline: 'center' });
-  }, [chapter.id]);
-
-  const nextStep = React.useCallback((automatic = false) => {
-    if (stepIndex < chapter.steps.length - 1) {
-      setStepIndex((current) => current + 1);
-      return true;
-    }
-    markCompleted(chapter.id);
-    const nextChapter = redisChapters[chapterIndex + 1];
-    if (!nextChapter) {
-      setPlaying(false);
-      return false;
-    }
-    openChapter(nextChapter.id, 0, !automatic);
-    return true;
-  }, [chapter, chapterIndex, markCompleted, openChapter, stepIndex]);
-
-  React.useEffect(() => {
-    if (!playing) return;
-    const timer = window.setTimeout(() => nextStep(true), speed);
-    return () => window.clearTimeout(timer);
-  }, [nextStep, playing, speed]);
-
-  const previousStep = () => {
-    setPlaying(false);
-    if (stepIndex > 0) {
-      setStepIndex((current) => current - 1);
-      return;
-    }
-    const previousChapter = redisChapters[chapterIndex - 1];
-    if (previousChapter) openChapter(previousChapter.id, 'last');
-  };
-
-  const resetJourney = () => {
-    setPlaying(false);
-    persistCompleted(new Set());
-    if (chapter.id === redisChapters[0].id) setStepIndex(0);
-    else openChapter(redisChapters[0].id, 0);
-  };
-
-  const renderedStepIndex = Math.min(stepIndex, chapter.steps.length - 1);
-  const currentStep = chapter.steps[renderedStepIndex];
-  const totalSteps = React.useMemo(() => redisChapters.reduce((sum, item) => sum + item.steps.length, 0), []);
-  const stepsBefore = redisChapters.slice(0, chapterIndex).reduce((sum, item) => sum + item.steps.length, 0);
-  const overallStep = stepsBefore + renderedStepIndex + 1;
-  const overallProgress = overallStep / totalSteps * 100;
-  const chapterProgress = (renderedStepIndex + 1) / chapter.steps.length * 100;
-  const previousChapter = redisChapters[chapterIndex - 1];
-  const nextChapter = redisChapters[chapterIndex + 1];
-  const isFirst = chapterIndex === 0 && renderedStepIndex === 0;
-  const isLast = chapterIndex === redisChapters.length - 1 && renderedStepIndex === chapter.steps.length - 1;
-  const currentChapterCompleted = completed.has(chapter.id);
-
-  return (
-    <section className="redisJourney" aria-label="Redis từ Newbie đến Senior DevOps">
-      <header className="redisJourneyHeader">
-        <span className="badge">Redis Senior DevOps</span>
-        <h2>ShopNow Learning Journey</h2>
-        <p>Đi từ cache đơn giản đến HA, sharding, multi-region và incident response. Mỗi bước nối requirement với data path, failure mode, metric và runbook.</p>
-      </header>
-
-      <nav ref={chapterRailRef} className="redisChapterRail" aria-label="Các chương Redis">
-        {redisChapters.map((item, index) => (
-          <button
-            type="button"
-            key={item.id}
-            className={item.id === chapter.id ? 'active' : ''}
-            aria-current={item.id === chapter.id ? 'page' : undefined}
-            onClick={() => openChapter(item.id)}
-          >
-            <span>{index}</span>{item.navLabel}{completed.has(item.id) && <b aria-label="Đã hoàn thành">✓</b>}
-          </button>
-        ))}
-      </nav>
-
-      <div className="redisJourneyGuide">
-        <div className="redisJourneyTop">
-          <div><span>{chapter.phase}</span><h3>Trang {chapterIndex} · {chapter.title}</h3></div>
-          <strong>{chapterIndex + 1}/{redisChapters.length} bài</strong>
-        </div>
-        <p className="redisJourneyStory">{chapter.story}</p>
-        <div className="redisJourneyContext">
-          <article><b>Kế thừa từ bài trước</b><span>{chapter.from}</span></article>
-          <article><b>Bài này trả lời</b><span>{chapter.goal}</span></article>
-          <article><b>Vì sao học bài kế tiếp?</b><span>{chapter.next}</span></article>
-        </div>
-        <div className="redisOverallProgress"><div style={{ width: `${overallProgress}%` }} /></div>
-        <small>Toàn lộ trình: {overallStep}/{totalSteps} bước</small>
-      </div>
-
-      <div className="redisControls" aria-label="Điều khiển hành trình Redis">
-        <button type="button" onClick={() => setPlaying((value) => !value)} aria-pressed={playing}>{playing ? '⏸ Tạm dừng' : '▶ Chạy'}</button>
-        <button type="button" onClick={previousStep} disabled={isFirst}>← Bước trước</button>
-        <button type="button" onClick={() => { setPlaying(false); nextStep(); }} disabled={isLast && currentChapterCompleted}>{renderedStepIndex === chapter.steps.length - 1 && nextChapter ? `Qua trang ${chapterIndex + 1} →` : isLast ? currentChapterCompleted ? '✓ Đã hoàn tất' : '✓ Hoàn tất' : 'Bước tiếp →'}</button>
-        <button type="button" onClick={resetJourney}>↺ Reset hành trình</button>
-        <label>Tốc độ
-          <select value={speed} onChange={(event) => setSpeed(Number(event.target.value))}>
-            <option value={2200}>Chậm</option><option value={1400}>Vừa</option><option value={800}>Nhanh</option>
-          </select>
-        </label>
-        <span>Bước {renderedStepIndex + 1}/{chapter.steps.length}</span>
-      </div>
-
-      <RedisJourneyGraph chapter={chapter} stepIndex={renderedStepIndex} speed={speed} />
-
-      <div className="redisStepCaption" aria-live="polite">
-        <strong>{currentStep.title}</strong>
-        <p>{currentStep.text}</p>
-        <div><span style={{ width: `${chapterProgress}%` }} /></div>
-      </div>
-
-      <div className="redisOpsGrid">
-        <article className="redisOutcome"><h3>Kết quả cần đạt</h3><p>{chapter.outcome}</p></article>
-        <article className="redisCheckpoint"><h3>Tự kiểm tra</h3><p>{chapter.checkpoint}</p></article>
-        <article><h3>Senior DevOps cần hỏi</h3><ul>{chapter.questions.map((question) => <li key={question}>{question}</li>)}</ul></article>
-        <article><h3>Metric / tín hiệu</h3><dl>{Object.entries(currentStep.metrics).map(([key, value]) => <div key={key}><dt>{key.replaceAll('_', ' ')}</dt><dd>{value}</dd></div>)}</dl></article>
-        <article className="redisLogCard"><h3>Log mô phỏng</h3><pre><code>{currentStep.log}</code></pre></article>
-      </div>
-
-      <div className="redisChapterNav">
-        <button type="button" disabled={!previousChapter} onClick={() => previousChapter && openChapter(previousChapter.id, 'last')}><small>Bài trước</small><span>{previousChapter ? `Trang ${chapterIndex - 1} · ${previousChapter.title}` : 'Đây là bài đầu tiên'}</span></button>
-        <button type="button" disabled={!nextChapter} onClick={() => { markCompleted(chapter.id); if (nextChapter) openChapter(nextChapter.id); }}><small>Bài tiếp theo</small><span>{nextChapter ? `Trang ${chapterIndex + 1} · ${nextChapter.title}` : 'Đã hoàn tất lộ trình'}</span></button>
-      </div>
-    </section>
-  );
+  if (chapterId === 'redis-map') return <RedisMapLesson />;
+  return <RedisPersistentDatabaseLesson chapterId={chapterId} />;
 }
