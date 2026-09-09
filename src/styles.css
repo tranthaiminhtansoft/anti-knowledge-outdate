@@ -1127,3 +1127,12 @@ th { color: #8cc7ff; }
 @media (prefers-reduced-motion: reduce) { .k8sReel *, .k8sReel *::before, .k8sReel *::after { transition: none !important; animation: none !important; } .k8sReelSpark { display: none; } }
 @media (max-width: 700px) { .k8sReel { padding: 10px; }.k8sReelClock { width: 100%; margin-left: 0; }.k8sReelCaption { grid-template-columns: 40px 1fr; }.k8sReelLegend { gap: 8px 12px; } }
 :root[data-theme='light'] .k8sReel { --reel-bg: #eef5fc; --reel-text: #10233a; --reel-muted: #40536d; border-color: #a9c0d9; }.k8sReelTopbar button, :root[data-theme='light'] .k8sReelTopbar select { color: #10233a; background: #fff; border-color: #9ab1c9; }.k8sReelViewport { background-color: #dbe8f5; }.k8sReelCaption, :root[data-theme='light'] .k8sReelNote { background: #fff; border-color: #afc3d8; }.k8sReelCaption p, :root[data-theme='light'] .k8sReelNote { color: #40536d; }
+
+/* Source-faithful standalone Database lesson. The iframe owns its layout so the
+   original simulator canvas stays legible; the host only provides a safe frame. */
+.detailArticle:has(.databaseProductionGuide) { padding: 0; overflow: hidden; background: transparent; border: 0; box-shadow: none; }
+.databaseProductionGuide { width: 100%; min-width: 0; }
+.databaseProductionGuideFrame { display: block; width: 100%; min-height: 1120px; border: 1px solid var(--border); border-radius: 20px; background: #08111f; }
+:root[data-theme='light'] .databaseProductionGuideFrame { border-color: #b7cbe4; background: #f5f9ff; }
+@media (max-width: 820px) { .databaseProductionGuideFrame { min-height: 1260px; border-radius: 14px; } }
+@media (prefers-reduced-motion: reduce) { .databaseProductionGuideFrame { scroll-behavior: auto; } }

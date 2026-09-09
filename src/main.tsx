@@ -22,6 +22,7 @@ import { RedisLearningJourney } from './components/redis/RedisLearningJourney';
 import { redisChapters } from './components/redis/redisJourneyData';
 import { KafkaLearningJourney } from './components/kafka/KafkaLearningJourney';
 import { kafkaChapters } from './components/kafka/kafkaJourneyData';
+import { DatabaseProductionGuide } from './components/database/DatabaseProductionGuide';
 import { ModelAgentSimulator } from './components/ModelAgentSimulator';
 import { RagTrafficDiagram } from './components/RagTrafficDiagram';
 import { HermesUseCases } from './HermesUseCases';
@@ -35,7 +36,7 @@ type View = { type: 'home' } | { type: 'topic'; topicId: string } | { type: 'art
 
 type Article = {
   id: string;
-  topic: 'AI' | 'Kubernetes' | 'Docker' | 'Redis' | 'Kafka' | 'DevOps';
+  topic: 'AI' | 'Kubernetes' | 'Docker' | 'Database' | 'Redis' | 'Kafka' | 'DevOps';
   title: string;
   navLabel?: string;
   question: string;
@@ -220,6 +221,15 @@ const topics: Topic[] = [
     articleCount: 6,
     icon: <Container />,
     bullets: ['Core', 'Multi-stages', 'Build Cache', 'Volume', 'Docker Compose', 'Network'],
+  },
+  {
+    id: 'database',
+    title: 'Database',
+    description: 'Database production essentials: kiến trúc, data design, correctness, observability và recovery qua các simulator SQL/NoSQL.',
+    status: 'available',
+    articleCount: 4,
+    icon: <Database />,
+    bullets: ['Architecture & Scaling', 'Design & Performance', 'Correctness & Reliability', 'Production Operations'],
   },
   {
     id: 'redis',
@@ -709,6 +719,25 @@ Network --> DB`,
     ],
     nextQuestions: ['Bridge network là gì?', 'EXPOSE khác ports?', 'host.docker.internal dùng khi nào?'],
   },
+  ...([
+    ['architecture-scaling', 'Architecture & Scaling', 'Chọn SQL/NoSQL theo invariant, topology và cách scale traffic.'],
+    ['design-performance', 'Design & Performance', 'Thiết kế data model, index và query plan từ access pattern thật.'],
+    ['correctness-reliability', 'Correctness & Reliability', 'Bảo vệ dữ liệu trước race condition, duplicate write và replica lag.'],
+    ['production-operations', 'Production Operations', 'Quan sát, mitigation incident, backup/restore và thay đổi an toàn.'],
+  ] as const).map(([id, title, summary]): Article => ({
+    id: `database-${id}`,
+    topic: 'Database',
+    title,
+    navLabel: title,
+    question: summary,
+    summary,
+    lastVerified: '2026-09-08',
+    status: 'ready',
+    diagram: 'Route-scoped Database Production Essentials interactive guide',
+    points: ['Chọn datastore theo invariant, access pattern và SLO.', 'Đo query plan, bảo vệ concurrency, diễn tập incident và restore.'],
+    misconceptions: ['SQL và NoSQL không loại trừ nhau; production thường kết hợp theo workload.'],
+    nextQuestions: ['RPO/RTO nào phù hợp?', 'Query nào cần benchmark trước?'],
+  })),
   ...redisChapters.map((chapter): Article => ({
     id: `redis-${chapter.id}`,
     topic: 'Redis',
@@ -745,7 +774,8 @@ function scrollTop() {
 
 function viewFromHash(): View {
   const hash = window.location.hash.replace(/^#\/?/, '');
-  const [kind, rawId] = hash.split('/');
+  const [kind, ...parts] = hash.split('/');
+  const rawId = parts.join('-');
   const articleAliases: Record<string, string> = { 'master-hermes-agent': 'hermes-vs-copilot-chatgpt' };
   const id = articleAliases[rawId] ?? rawId;
   if (kind === 'topic' && id) return { type: 'topic', topicId: id };
@@ -1364,6 +1394,15 @@ function ArticleVisual({ article }: { article: Article }) {
   if (article.id === 'multi-container-trong-pod') return <MultiContainerPodPatternLab />;
   if (article.id === 'k8s-workload-configuration') return <KubernetesConfigurationGuide />;
   if (article.id === 'k8s-observability-probes') return <KubernetesObservabilityGuide />;
+  if (article.topic === 'Database') {
+    const sectionByArticleId = {
+      'database-architecture-scaling': 'architecture',
+      'database-design-performance': 'design',
+      'database-correctness-reliability': 'correctness',
+      'database-production-operations': 'operations',
+    } as const;
+    return <DatabaseProductionGuide section={sectionByArticleId[article.id as keyof typeof sectionByArticleId]} />;
+  }
   if (article.topic === 'Redis') return <RedisLearningJourney chapterId={article.id.replace(/^redis-/, '')} />;
   if (article.topic === 'Kafka') return <KafkaLearningJourney chapterId={article.id.replace(/^kafka-/, '')} />;
   return <MermaidDiagram chart={article.diagram} id={article.id} />;
@@ -1386,16 +1425,16 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
       <div className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
       <article className="card articleCard detailArticle">
-        <div className="cardHeader">
+        {article.topic !== 'Database' && <div className="cardHeader">
           <span className="badge">{article.topic}</span>
-        </div>
-        <p className="question">Câu hỏi: {article.question}</p>
-        {article.id !== 'redis-redis-map' && <>
+        </div>}
+        {article.topic !== 'Database' && <p className="question">Câu hỏi: {article.question}</p>}
+        {article.id !== 'redis-redis-map' && article.topic !== 'Database' && <>
           <h1>{article.title}</h1>
           <p className="summary">{article.summary}</p>
         </>}
         <ArticleVisual article={article} />
-        {article.topic !== 'Kafka' && article.topic !== 'Redis' && (
+        {article.topic !== 'Kafka' && article.topic !== 'Redis' && article.topic !== 'Database' && (
           <div className="grid2">
             <section>
               <h4>Ý chính</h4>
@@ -1408,12 +1447,12 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
           </div>
         )}
         {(lessonQAs[article.id]?.length ?? 0) > 0 && <LessonQA items={lessonQAs[article.id]} />}
-        <footer className="articleFooter">
+        {article.topic !== 'Database' && <footer className="articleFooter">
           <span>Cập nhật lần cuối: {article.lastVerified}</span>
           {article.topic !== 'Kafka' && article.topic !== 'Redis' && (
             <span>Câu hỏi tiếp theo: {article.nextQuestions.join(' · ')}</span>
           )}
-        </footer>
+        </footer>}
       </article>
       </div>
     </LessonShell>
