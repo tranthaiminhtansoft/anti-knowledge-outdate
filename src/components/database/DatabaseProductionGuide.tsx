@@ -1,6 +1,6 @@
 import React from 'react';
 
-const REFERENCE_URL = '/database/database-production-guide.html';
+const REFERENCE_URL = `${import.meta.env.BASE_URL}database/database-production-guide.html`;
 
 const frameBridgeStyles = `
 :root[data-host-theme="dark"]{color-scheme:dark;--db-page:#08111f;--db-surface:#101d31;--db-surface-strong:#07101d;--db-text:#edf5ff;--db-muted:#b8c9df;--db-border:#31517c;--db-shadow:#0008;--db-accent:#67e8f9;--db-on-white:#15233a;--db-on-cyan:#08222a;--db-on-navy:#f8fbff;--db-arch-tab-bg:#091426;--db-arch-tab-text:#fff;--db-arch-tab-selected-bg:#67e8f9;--db-arch-tab-selected-text:#031225}

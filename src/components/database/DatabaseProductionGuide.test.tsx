@@ -1,25 +1,52 @@
 /// <reference types="node" />
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { DatabaseProductionGuide } from './DatabaseProductionGuide';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+const productionBaseUrl = '/anti-knowledge-outdate/';
+
+async function renderGuideAtProductionBase(section: 'architecture' | 'design' | 'correctness' | 'operations') {
+  vi.stubEnv('BASE_URL', productionBaseUrl);
+  const { DatabaseProductionGuide } = await import('./DatabaseProductionGuide');
+  return render(<DatabaseProductionGuide section={section} />);
+}
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllEnvs();
+  vi.resetModules();
+});
 
 describe('DatabaseProductionGuide', () => {
-  it('loads exactly one selected Database section without the source navigation', () => {
-    render(<DatabaseProductionGuide section="architecture" />);
+  it.each([
+    ['architecture', 'Architecture & Scaling'],
+    ['design', 'Design & Performance'],
+    ['correctness', 'Correctness & Reliability'],
+    ['operations', 'Production Operations'],
+  ] as const)('loads the %s iframe below the configured Vite base path', async (section, title) => {
+    await renderGuideAtProductionBase(section);
 
-    const frame = screen.getByTitle('Database Production Essentials: Architecture & Scaling');
-    expect(frame.getAttribute('src')).toBe('/database/database-production-guide.html?section=architecture');
-    expect(frame.getAttribute('data-section')).toBe('architecture');
+    const frame = screen.getByTitle(`Database Production Essentials: ${title}`);
+    expect(frame.getAttribute('src')).toBe(
+      `${productionBaseUrl}database/database-production-guide.html?section=${section}`,
+    );
+    expect(frame.getAttribute('data-section')).toBe(section);
   });
 
-  it('uses a separate iframe instance for every outer lesson route', () => {
+  it('updates the iframe source when the outer lesson route changes', async () => {
+    vi.stubEnv('BASE_URL', productionBaseUrl);
+    const { DatabaseProductionGuide } = await import('./DatabaseProductionGuide');
     const { rerender } = render(<DatabaseProductionGuide section="design" />);
-    expect(screen.getByTitle('Database Production Essentials: Design & Performance').getAttribute('src')).toBe('/database/database-production-guide.html?section=design');
+
+    expect(screen.getByTitle('Database Production Essentials: Design & Performance').getAttribute('src')).toBe(
+      `${productionBaseUrl}database/database-production-guide.html?section=design`,
+    );
 
     rerender(<DatabaseProductionGuide section="operations" />);
-    expect(screen.getByTitle('Database Production Essentials: Production Operations').getAttribute('src')).toBe('/database/database-production-guide.html?section=operations');
+    expect(screen.getByTitle('Database Production Essentials: Production Operations').getAttribute('src')).toBe(
+      `${productionBaseUrl}database/database-production-guide.html?section=operations`,
+    );
   });
 
   it('keeps the Payment History query visible and documents the composite-index states', () => {
