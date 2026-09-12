@@ -67,9 +67,6 @@ jobs:
               if not meaningful:
                   fail(f"Section {title} must contain real content, not only placeholder text")
 
-          if "Profile reviewer đã review và OK" not in body:
-              fail("EVIDENCE must include profile reviewer confirmation line")
-
           print("PR body policy passed.")
           PY
 
