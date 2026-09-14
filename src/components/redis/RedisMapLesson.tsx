@@ -1,6 +1,6 @@
 import React from 'react';
 
-const REFERENCE_URL = '/redis/redis-map-reference.html';
+const REFERENCE_URL = `${import.meta.env.BASE_URL}redis/redis-map-reference.html`;
 
 /**
  * The Redis Map is a source-faithful standalone visual artifact. Keep it in an
