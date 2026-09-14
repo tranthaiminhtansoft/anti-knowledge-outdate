@@ -12,7 +12,7 @@
 <!-- Dán bằng chứng đã kiểm tra: command output, screenshot, preview URL, hoặc lý do N/A. -->
 - [ ] `npm run lint`
 - [ ] `npm run build`
-- [ ] Profile reviewer đã review và OK
+- [ ] Independent profile review published on the final PR SHA (required before merge)
 
 ## 🛡️ Safety checklist
 - [ ] Branch đúng pattern `develop/homelab/xxx` hoặc `release/homelab/xxx`.
