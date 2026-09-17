@@ -1,155 +1,29 @@
 import React from 'react';
-
-const REFERENCE_URL = `${import.meta.env.BASE_URL}database/database-production-guide.html`;
-
-const frameBridgeStyles = `
-:root[data-host-theme="dark"]{color-scheme:dark;--db-page:#08111f;--db-surface:#101d31;--db-surface-strong:#07101d;--db-text:#edf5ff;--db-muted:#b8c9df;--db-border:#31517c;--db-shadow:#0008;--db-accent:#67e8f9;--db-on-white:#15233a;--db-on-cyan:#08222a;--db-on-navy:#f8fbff;--db-arch-tab-bg:#091426;--db-arch-tab-text:#fff;--db-arch-tab-selected-bg:#67e8f9;--db-arch-tab-selected-text:#031225}
-:root[data-host-theme="light"]{color-scheme:light;--db-page:#f4f8ff;--db-surface:#ffffff;--db-surface-strong:#edf5ff;--db-text:#15233a;--db-muted:#40536d;--db-border:#a9c1df;--db-shadow:#31517c1f;--db-accent:#0e7490;--db-on-white:#15233a;--db-on-cyan:#08222a;--db-on-navy:#f8fbff;--db-arch-tab-bg:#183555;--db-arch-tab-text:#fff;--db-arch-tab-selected-bg:#0e7490;--db-arch-tab-selected-text:#fff}
-body.database-outer-route .side{display:none!important}
-body.database-outer-route{overflow-x:hidden;background:radial-gradient(circle at 14% 0,color-mix(in srgb,var(--db-accent) 18%,transparent),transparent 32%),var(--db-page)!important;color:var(--db-text)!important}
-body.database-outer-route .layout{grid-template-columns:minmax(0,1fr)!important;max-width:1180px!important;margin:0 auto!important;padding:20px!important}
-body.database-outer-route :is(.hero,.must article,.box,.tech,.sim,.query,.mechanism,.incident-panel,.deep-stage,.deep-side,.acid-sim,.nosql-board,.query-path,.race,.code,.result,.runbook,.common article,.metric,.buyer,.health>div,.qa,.answer,.unit,.fact,.node,.shard,.tx-node,.replica-box,.mini-node){background:var(--db-surface)!important;color:var(--db-text)!important;border-color:var(--db-border)!important;box-shadow:0 12px 34px var(--db-shadow)!important}
-body.database-outer-route :is(.brand,.scenario,.nav i,.nav button:hover,.acid-console,.log,.acid-queue,.lock-queue,.mode-note,.arch-context,.read-state,.run-status,.queue-stack,.alert-box,.follow-fix,.query-path,.acid-wal,.wal,.sync,.why,.stock){background:var(--db-surface-strong)!important;color:var(--db-text)!important;border-color:var(--db-border)!important}
-body.database-outer-route :is(h1,h2,h3,h4,p,small,li,code,summary,.head p,.hero p,.answer,.flow-legend,.mechanism p,.incident-panel p,.deep-side ol){color:var(--db-text)!important}
-body.database-outer-route :is(.head p,.hero p,.answer,.flow-legend,.mechanism p,.incident-panel p,.deep-side ol,.unit small,.fact small,.tech-title small,.common ul,.sync small){color:var(--db-muted)!important}
-body.database-outer-route .index-example{background:#091426!important;color:var(--db-on-navy)!important;border-color:var(--db-border)!important}
-body.database-outer-route .index-example :is(h3,p,small,code){color:var(--db-on-navy)!important}
-body.database-outer-route .index-example pre{background:#07101d!important;border-color:var(--db-border)!important}
-body.database-outer-route .index-example .index-status.ready{background:#062015!important;color:#86efac!important}
-body.database-outer-route :is(.pill,.arr,.qa summary:after){color:var(--db-accent)!important;border-color:var(--db-border)!important}
-body.database-outer-route :is(.nav button,.arch-tab,.correct-tab){color:var(--db-text)!important}
-body.database-outer-route :is(.nav button[aria-selected=true],.correct-tab[aria-selected=true]){background:var(--db-accent)!important;color:#fff!important}
-body.database-outer-route .arch-tab{background:var(--db-arch-tab-bg)!important;color:var(--db-arch-tab-text)!important}
-body.database-outer-route .arch-tab[aria-selected=true]{background:var(--db-arch-tab-selected-bg)!important;color:var(--db-arch-tab-selected-text)!important}
-:root[data-host-theme="dark"] body.database-outer-route .acid-node small{background:#f8fbff!important;color:#111827!important}
-body.database-outer-route :is(.acid-client,.acid-api){background:transparent!important;color:var(--db-text)!important}
-body.database-outer-route .btn:not(.good):not(.bad):not(.hot){background:var(--db-surface-strong)!important;color:var(--db-text)!important;border-color:var(--db-border)!important}
-/* Surface-semantic contrast for the NoSQL simulator. */
-body.database-outer-route .nosql-board.v2 .lb,
-body.database-outer-route .nosql-board.v2 .lb :is(b,small){color:var(--db-on-cyan)!important}
-body.database-outer-route .cluster-status span{background:#091426!important;color:var(--db-on-navy)!important}
-body.database-outer-route .cluster-status span b{color:#86efac!important}
-body.database-outer-route .cluster-status span b.no-replica{color:#fde68a!important}
-:root[data-host-theme="light"] body.database-outer-route .nosql-board.v2 .users,
-:root[data-host-theme="light"] body.database-outer-route .cluster-v2 .node,
-:root[data-host-theme="light"] body.database-outer-route .cluster-v2 .node small,
-:root[data-host-theme="light"] body.database-outer-route .must article b,
-:root[data-host-theme="light"] body.database-outer-route .fact b{color:var(--db-on-white)!important}
-:root[data-host-theme="dark"] body.database-outer-route .nosql-board.v2 .users,
-:root[data-host-theme="dark"] body.database-outer-route .cluster-v2 .node,
-:root[data-host-theme="dark"] body.database-outer-route .cluster-v2 .node small{color:var(--db-on-navy)!important}
-/* Correctness tabs follow the same explicit surface contract as architecture tabs. */
-body.database-outer-route .correct-tab{background:var(--db-arch-tab-bg)!important;color:var(--db-on-navy)!important}
-:root[data-host-theme="dark"] body.database-outer-route .correct-tab[aria-selected=true]{background:var(--db-accent)!important;color:#031225!important}
-:root[data-host-theme="light"] body.database-outer-route .correct-tab[aria-selected=true]{background:var(--db-arch-tab-selected-bg)!important;color:var(--db-on-navy)!important}
-`;
+import './database-production-guide.css';
 
 export type DatabaseGuideSection = 'architecture' | 'design' | 'correctness' | 'operations';
+const pages: Array<[DatabaseGuideSection, string]> = [['architecture', '01 · Architecture'], ['design', '02 · Data design'], ['correctness', '03 · Correctness'], ['operations', '04 · Operations']];
+const Wait = ({ children }: { children: React.ReactNode }) => <p className="databaseStatus" role="status">{children}</p>;
 
-const sectionTitles: Record<DatabaseGuideSection, string> = {
-  architecture: 'Architecture & Scaling',
-  design: 'Design & Performance',
-  correctness: 'Correctness & Reliability',
-  operations: 'Production Operations',
-};
-
-/**
- * The source guide owns complex SQL/NoSQL simulators. The React shell mounts a
- * fresh, route-scoped frame so only the selected chapter is visible; the source
- * navigation is removed inside the frame and the app sidebar remains canonical.
- */
-export function DatabaseProductionGuide({ section }: { section: DatabaseGuideSection }) {
-  const frameRef = React.useRef<HTMLIFrameElement>(null);
-
-  const applyFrameBridge = React.useCallback(() => {
-    const frameDocument = frameRef.current?.contentDocument;
-    if (!frameDocument?.documentElement || !frameDocument.body || !frameDocument.head) return;
-
-    const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-    frameDocument.documentElement.dataset.hostTheme = theme;
-    frameDocument.body.classList.add('database-outer-route');
-    frameDocument.querySelectorAll('.side-toggle').forEach((toggle) => toggle.remove());
-
-    let style = frameDocument.getElementById('database-host-bridge') as HTMLStyleElement | null;
-    if (!style) {
-      style = frameDocument.createElement('style');
-      style.id = 'database-host-bridge';
-      frameDocument.body.append(style);
-    }
-    style.textContent = frameBridgeStyles;
-
-    const applyArchitectureTabColors = () => {
-      const isLight = frameDocument.documentElement.dataset.hostTheme === 'light';
-      frameDocument.querySelectorAll<HTMLButtonElement>('.arch-tab').forEach((tab) => {
-        const selected = tab.getAttribute('aria-selected') === 'true';
-        const background = selected
-          ? isLight
-            ? '#0e7490'
-            : '#67e8f9'
-          : isLight
-            ? '#183555'
-            : '#091426';
-        tab.style.setProperty('background', background, 'important');
-        tab.style.setProperty('color', selected && !isLight ? '#031225' : '#fff', 'important');
-      });
-    };
-    applyArchitectureTabColors();
-
-    if (frameDocument.body.dataset.databaseArchitectureTabsBound !== 'true') {
-      frameDocument.body.dataset.databaseArchitectureTabsBound = 'true';
-      frameDocument.addEventListener('click', (event) => {
-        if ((event.target as Element | null)?.closest('.arch-tab')) {
-          window.setTimeout(applyArchitectureTabColors, 0);
-        }
-      });
-    }
-  }, []);
-
-  const syncTheme = React.useCallback(() => {
-    applyFrameBridge();
-    const theme = document.documentElement.dataset.theme;
-    if (theme === 'light' || theme === 'dark') {
-      frameRef.current?.contentWindow?.postMessage({ type: 'database-guide-theme', theme }, '*');
-    }
-  }, [applyFrameBridge]);
-
-  React.useEffect(() => {
-    syncTheme();
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => observer.disconnect();
-  }, [syncTheme]);
-
-  React.useEffect(() => {
-    const destinationBySection: Record<DatabaseGuideSection, string> = {
-      architecture: 'architecture-scaling',
-      design: 'design-performance',
-      correctness: 'correctness-reliability',
-      operations: 'production-operations',
-    };
-    const onGuideNavigate = (event: MessageEvent) => {
-      if (event.source !== frameRef.current?.contentWindow) return;
-      const destination = event.data?.type === 'database-guide-navigate' ? event.data.section : undefined;
-      if (destination && destination in destinationBySection) {
-        window.location.hash = `#/article/database/${destinationBySection[destination as DatabaseGuideSection]}`;
-      }
-    };
-    window.addEventListener('message', onGuideNavigate);
-    return () => window.removeEventListener('message', onGuideNavigate);
-  }, []);
-
-  const title = `Database Production Essentials: ${sectionTitles[section]}`;
-  return (
-    <section className="databaseProductionGuide" aria-label={title}>
-      <iframe
-        key={section}
-        ref={frameRef}
-        className="databaseProductionGuideFrame"
-        title={title}
-        data-section={section}
-        src={`${REFERENCE_URL}?section=${section}`}
-        onLoad={syncTheme}
-      />
-    </section>
-  );
+function Architecture() {
+  const [tab, setTab] = React.useState<'sql' | 'nosql'>('sql');
+  const [acid, setAcid] = React.useState('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY');
+  const [traffic, setTraffic] = React.useState(0);
+  const [nodes, setNodes] = React.useState(1);
+  const money = (amount: number) => amount.toLocaleString('vi-VN');
+  const runAcid = (kind: string) => {
+    if (kind === 'crash') setAcid('CRASH giữa transaction → WAL rollback. A và B không đổi: all-or-nothing.');
+    else if (kind === 'concurrent') setAcid('Request A giữ row lock; Request B WAITING FOR ROW LOCK → lần lượt COMMIT, không lost update.');
+    else if (kind === 'overload') setAcid('POOL WAIT · 499.800 request xếp hàng; timeout trước transaction → tiền không thay đổi.');
+    else setAcid('BEGIN → row lock → WAL A−100K/B+100K → COMMIT → HTTP 200.');
+  };
+  const add = (count: number) => { const next = traffic + count; setTraffic(next); setNodes(Math.min(6, Math.max(1, Math.ceil(next / 500000)))); };
+  return <><header className="databaseHero"><span>PHẦN 01</span><h2>Architecture & Scaling</h2><p>Cùng một đợt Flash Sale, SQL ưu tiên transaction chính xác; NoSQL phân tán traffic theo key. Không có lựa chọn thắng mọi workload.</p></header>
+    <div className="databaseTabs" role="tablist" aria-label="So sánh kiến trúc"><button role="tab" aria-selected={tab === 'sql'} onClick={() => setTab('sql')}>SQL · Chuyển tiền ACID</button><button role="tab" aria-selected={tab === 'nosql'} onClick={() => setTab('nosql')}>NoSQL · Flash Sale Cart</button></div>
+    {tab === 'sql' ? <section className="databasePanel"><h3><b>SQL</b> · ACID · Client–Server</h3><p><strong>Tình huống SQL:</strong> Trừ 100.000đ từ A và cộng B phải cùng thành công; lỗi giữa chừng phải rollback toàn bộ.</p><div className="databaseDiagram"><div>👤 Account A<br /><b>500.000đ</b></div><div>API / Transaction<br /><small>Row lock + WAL</small></div><div>🗄️ Account B<br /><b>200.000đ</b></div></div><div className="databaseControls"><button onClick={() => runAcid('success')}>Success / COMMIT</button><button onClick={() => runAcid('crash')}>Crash / ROLLBACK</button><button onClick={() => runAcid('concurrent')}>Concurrent requests</button><button onClick={() => runAcid('overload')}>Overload</button><button onClick={() => setAcid('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY')}>Reset</button></div><Wait>{acid}</Wait><p>Primary nhận write; read replica chia tải đọc và hỗ trợ HA, <b>không</b> tăng năng lực ghi của Primary.</p></section> : <section className="databasePanel"><h3><b>NoSQL</b> · Distributed · Traffic-based</h3><p><strong>Tình huống NoSQL:</strong> Cart write cần throughput lớn. Route theo partition key, scale-out nhiều node; chấp nhận replica sync bất đồng bộ/stale read.</p><div className="databaseDiagram"><div>📱 User apps<br /><b>{money(traffic)} users</b></div><div>⚖️ Load Balancer<br /><small>partition key</small></div><div>🗄️ Cluster<br /><b>{nodes} node(s)</b></div></div><div className="databaseControls"><button onClick={() => add(500000)}>Thêm 500.000 users</button><button onClick={() => add(1500000)}>Bão 1.500.000</button><button onClick={() => { setTraffic(0); setNodes(1); }}>Reset</button></div><Wait>Primary carts: {money(traffic)} · {nodes > 1 ? `Cluster scale-out: ${nodes} nodes đang nhận write.` : 'Một node; không có replica.'}</Wait></section>}
+    <section className="databasePanel"><h3>Không phải hai thế giới tách biệt</h3><div className="databaseGrid"><article><b>Giống nhau</b><ul><li>Đều cần backup/restore, monitoring, security.</li><li>Đều có replication, failure mode và bottleneck.</li></ul></article><article><b>Quyết định</b><p>Chọn theo invariant, access pattern và SLO — production thường phối hợp nhiều datastore.</p></article></div></section></>;
 }
+function Design() { const [indexed, setIndexed] = React.useState(false); return <><header className="databaseHero"><span>PHẦN 02</span><h2>Data Design & Query Performance</h2><p>Cùng dữ liệu payment, SQL tổ chức quan hệ linh hoạt; NoSQL tối ưu document theo đường đọc đã biết.</p></header><section className="databasePanel"><h3>SQL vs NoSQL: bắt đầu từ access pattern</h3><div className="databaseGrid"><article><b>SQL</b><p>Normalize quan hệ, JOIN khi cần; index phục vụ filter/sort.</p></article><article><b>NoSQL</b><p>Denormalize document theo read path; partition key tránh hot key/fan-out.</p></article></div><pre>SELECT * FROM payment_history{`\n`}WHERE user_id = $1 AND status = 'PAID'{`\n`}ORDER BY created_at DESC LIMIT 12;</pre><div className="databaseControls"><button onClick={() => setIndexed(value => !value)}>{indexed ? 'Bỏ composite index' : 'Thêm composite index'}</button></div><Wait>{indexed ? 'Composite index sẵn sàng — planner có thể chọn index scan/seek. Demo scanned 12 · latency 8 ms · write cost cao hơn.' : 'Chưa tạo index — Full scan. Demo scanned 1.000.000 · latency 820 ms · write cost thấp.'}</Wait><pre>CREATE INDEX idx_payment_history_user_status_created_at ON payment_history (user_id, status, created_at DESC);</pre><small>Demo giả định selectivity phù hợp. Xác minh production bằng EXPLAIN (ANALYZE, BUFFERS).</small></section><section className="databasePanel"><h3>Thiết kế cần nhớ</h3><ul><li>Schema linh hoạt không có nghĩa không cần thiết kế trước.</li><li>Denormalize khi read path quan trọng cần tránh JOIN/fan-out và chấp nhận chi phí đồng bộ dữ liệu trùng.</li><li>Index tăng tốc đọc nhưng làm write đắt hơn.</li></ul></section></>; }
+function Correctness() { const [view, setView] = React.useState<'sql' | 'nosql'>('sql'); const [status, setStatus] = React.useState('Sẵn sàng.'); return <><header className="databaseHero"><span>PHẦN 03</span><h2>Data Correctness & Reliability</h2><p>SQL và NoSQL đều phải chống ghi trùng, race condition và lỗi giữa nhiều hệ thống—nhưng dùng cơ chế khác nhau.</p></header><section className="databasePanel"><h3>Cơ chế bảo vệ dữ liệu</h3><div className="databaseTabs" role="tablist"><button role="tab" aria-selected={view === 'sql'} onClick={() => setView('sql')}>SQL · Transaction + Row Lock</button><button role="tab" aria-selected={view === 'nosql'} onClick={() => setView('nosql')}>NoSQL · Conditional write + Replica</button></div>{view === 'sql' ? <><p>Hai buyer cùng mua sản phẩm cuối. Không lock: cả hai đọc stock=1 và oversell. FOR UPDATE: B chờ A commit rồi đọc giá trị mới.</p><div className="databaseControls"><button onClick={() => setStatus('Không lock: Request A và B cùng đọc stock=1 → cả hai ghi thành công → Oversell: invariant bị vi phạm.')}>Chạy không lock</button><button onClick={() => setStatus('FOR UPDATE: A giữ row lock; B WAITING FOR ROW LOCK. A commit stock=0, B bị từ chối → invariant giữ đúng.')}>Chạy FOR UPDATE</button><button onClick={() => setStatus('Sẵn sàng.')}>Reset</button></div></> : <><p>Document cart#user-8241, partition cart-P7, replication factor 3.</p><div className="databaseControls"><button onClick={() => setStatus('Eventual: leader ACK v2 trước khi follower áp dụng; read replica có thể trả v1 (stale read).')}>Eventual consistency</button><button onClick={() => setStatus('Quorum: leader chờ đủ xác nhận từ replica trước khi xác nhận write; latency cao hơn, read-after-write mạnh hơn.')}>Quorum write</button><button onClick={() => setStatus('Sẵn sàng.')}>Reset</button></div></>}<Wait>{status}</Wait></section><section className="databasePanel"><h3>Lớp bảo vệ dùng chung</h3><ul><li>Idempotency key + unique constraint để client retry POST /payment trả lại cùng kết quả.</li><li>Retry với exponential backoff; conditional write/compare-and-set khi không có transaction đa row.</li><li>Transaction không tự ngăn mọi race: phải chọn isolation/câu lệnh, lock hoặc version đúng.</li></ul></section></>; }
+function Operations() { const [sql, setSql] = React.useState(false); const [no, setNo] = React.useState(false); const [run, setRun] = React.useState('Chọn một sự cố phía trên.'); return <><header className="databaseHero"><span>PHẦN 04</span><h2>Production Operations & Observability</h2><p>Engine khác nhau nhưng trách nhiệm production giống nhau: nhìn thấy sự cố, phục hồi dữ liệu và thay đổi an toàn.</p></header><section className="databasePanel"><h3>Hai sự cố đặc trưng</h3><div className="databaseGrid"><article><h4>SQL · Pool saturation</h4><p>p95: <b>{sql ? '1.8 s' : '42 ms'}</b> · Pool: <b>{sql ? '198 / 200' : '68 / 200'}</b></p><div className="databaseControls"><button onClick={() => setSql(true)}>breakSql · Gây sự cố</button><button onClick={() => setRun('SQL runbook: ACK alert → tìm slow/blocked query → giới hạn traffic mới → cancel query gây nghẽn → verify queue và p95 phục hồi.')}>runSqlBook · Chạy runbook</button><button onClick={() => { setSql(false); setRun('SQL incident đã reset.'); }}>Reset</button></div></article><article><h4>NoSQL · Hot partition</h4><p>Shard A: <b>{no ? '92%' : '33%'}</b> · Replica lag: <b>{no ? '14 s' : '0.3 s'}</b></p><div className="databaseControls"><button onClick={() => setNo(true)}>breakNosql · Gây sự cố</button><button onClick={() => setRun('NoSQL runbook: ACK alert → xác nhận hot key/partition → throttle → chuyển traffic → verify lag. Permanent fix: dual-write partition key mới, backfill, cutover rồi xoá key cũ.')}>runNosqlBook · Chạy runbook</button><button onClick={() => { setNo(false); setRun('NoSQL incident đã reset.'); }}>Reset</button></div></article></div><Wait>{run}</Wait></section><section className="databasePanel"><h3>Operate safely</h3><ul><li>Observe latency, errors, connections, replication lag, disk and saturation.</li><li>Replication phục vụ HA; không thay backup/PITR. Restore vào môi trường cô lập, verify dữ liệu và đo RPO/RTO.</li><li>Migration tương thích, least privilege, secret rotation và rehearsal runbook trước thay đổi.</li></ul></section></>; }
+export function DatabaseProductionGuide({ section }: { section: DatabaseGuideSection }) { const [page, setPage] = React.useState(section); React.useEffect(() => setPage(section), [section]); return <section className="databaseGuide" aria-label="Database Production Essentials"><nav className="databaseNav" aria-label="Database guide sections">{pages.map(([id, label]) => <button key={id} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}>{label}</button>)}</nav>{page === 'architecture' ? <Architecture /> : page === 'design' ? <Design /> : page === 'correctness' ? <Correctness /> : <Operations />}</section>; }
