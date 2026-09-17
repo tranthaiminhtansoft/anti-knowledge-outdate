@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { KafkaLearningJourney } from './KafkaLearningJourney';
+import { kafkaChapters } from './kafkaJourneyData';
 
 afterEach(() => {
   cleanup();
@@ -10,6 +11,11 @@ afterEach(() => {
 });
 
 describe('canonical Kafka lesson native React parity', () => {
+  it.each(kafkaChapters.map((chapter) => chapter.id))('renders legacy chapter deep-link %s', (chapterId) => {
+    render(<KafkaLearningJourney chapterId={chapterId} />);
+    expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThan(0);
+  });
+
   it('renders the canonical diagrams without embedding a document or extra diagram controls', () => {
     const { container } = render(<KafkaLearningJourney chapterId="overview" />);
     for (const id of ['project', 'architecture', 'flow', 'failure', 'operations']) expect(container.querySelector(`#${id}`)).toBeTruthy();
