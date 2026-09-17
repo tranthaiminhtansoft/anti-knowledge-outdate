@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { kafkaChapters } from './kafkaJourneyData';
-import { nextKafkaStep, validateKafkaJourney } from './kafkaSimulation';
+import { initialKafkaLabState, kafkaLabStep, nextKafkaStep, validateKafkaJourney } from './kafkaSimulation';
 
 describe('Kafka learning journey contract', () => {
   it('ships ten ordered chapters with valid runtime references', () => {
@@ -69,9 +69,15 @@ describe('Kafka learning journey contract', () => {
     ]));
   });
 
-  it('advances deterministically and clamps at the terminal step', () => {
+  it('models ACK, slow lag, recovery and rebalance deterministically', () => {
     expect(nextKafkaStep(0, 4)).toBe(1);
-    expect(nextKafkaStep(3, 4)).toBe(3);
     expect(nextKafkaStep(99, 4)).toBe(3);
+    const appended = kafkaLabStep({ ...initialKafkaLabState(), queued: 1, acks: 'all' });
+    expect(appended.records).toBe(1);
+    expect(appended.moves.join(' ')).toContain('ACK all');
+    const slow = kafkaLabStep({ ...initialKafkaLabState(), records: 2, slow: true, tick: 1 });
+    expect(slow.committed).toBeLessThan(slow.records);
+    expect(kafkaLabStep({ ...initialKafkaLabState(), brokerOneUp: false, recovering: true, tick: 1 }).brokerOneUp).toBe(true);
+    expect(kafkaLabStep({ ...initialKafkaLabState(), records: 30, workers: 2, rebalancing: 1 }).rebalancing).toBe(0);
   });
 });

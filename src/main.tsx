@@ -21,7 +21,6 @@ import { KubernetesLifecycleReel } from './components/KubernetesLifecycleReel';
 import { RedisLearningJourney } from './components/redis/RedisLearningJourney';
 import { redisChapters } from './components/redis/redisJourneyData';
 import { KafkaLearningJourney } from './components/kafka/KafkaLearningJourney';
-import { kafkaChapters } from './components/kafka/kafkaJourneyData';
 import { DatabaseProductionGuide } from './components/database/DatabaseProductionGuide';
 import { ModelAgentSimulator } from './components/ModelAgentSimulator';
 import { RagTrafficDiagram } from './components/RagTrafficDiagram';
@@ -245,7 +244,7 @@ const topics: Topic[] = [
     title: 'Kafka',
     description: 'Kafka từ event flow, broker và partition tới KRaft, consumer lag, failure recovery và production operations.',
     status: 'available',
-    articleCount: kafkaChapters.length,
+    articleCount: 1,
     icon: <Network />,
     bullets: ['Broker & partition', 'KRaft vs ZooKeeper', 'Producer & consumer', 'Production pain lab'],
   },
@@ -752,20 +751,14 @@ Network --> DB`,
     misconceptions: chapter.misconceptions,
     nextQuestions: chapter.questions,
   })),
-  ...kafkaChapters.map((chapter): Article => ({
-    id: `kafka-${chapter.id}`,
-    topic: 'Kafka',
-    title: chapter.title,
-    navLabel: chapter.navLabel,
-    question: chapter.question,
-    summary: chapter.summary,
-    lastVerified: '2026-08-02',
-    status: 'draft',
-    diagram: 'Interactive KafkaLearningJourney component',
-    points: chapter.keyPoints,
-    misconceptions: chapter.misconceptions,
-    nextQuestions: [chapter.checkpoint],
-  })),
+  {
+    id: 'kafka-overview', topic: 'Kafka', title: 'Kafka: từ order đến offset', navLabel: 'Kafka lesson',
+    question: 'Kafka buffer, replicate và consumer commit offset như thế nào?',
+    summary: 'Bài học native gồm kiến trúc cluster, flow, failure/scale và DevOps metrics trong một simulator chung.',
+    lastVerified: '2026-09-14', status: 'ready', diagram: 'Native Kafka lesson simulator',
+    points: ['Partition leader, ISR và high watermark.', 'Consumer lag, commit, replay, rebalance và broker recovery.'],
+    misconceptions: ['HTTP 202 không có nghĩa thanh toán đã thành công.'], nextQuestions: ['Khi nào cần scale consumer group?'],
+  },
 ];
 
 function scrollTop() {
@@ -1425,11 +1418,11 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
       <div className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
       <article className="card articleCard detailArticle">
-        {article.topic !== 'Database' && <div className="cardHeader">
+        {article.topic !== 'Database' && article.topic !== 'Kafka' && <div className="cardHeader">
           <span className="badge">{article.topic}</span>
         </div>}
-        {article.topic !== 'Database' && <p className="question">Câu hỏi: {article.question}</p>}
-        {article.id !== 'redis-redis-map' && article.topic !== 'Database' && <>
+        {article.topic !== 'Database' && article.topic !== 'Kafka' && <p className="question">Câu hỏi: {article.question}</p>}
+        {article.id !== 'redis-redis-map' && article.topic !== 'Database' && article.topic !== 'Kafka' && <>
           <h1>{article.title}</h1>
           <p className="summary">{article.summary}</p>
         </>}
