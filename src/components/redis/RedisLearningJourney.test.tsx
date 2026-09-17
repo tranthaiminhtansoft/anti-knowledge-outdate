@@ -95,13 +95,24 @@ describe('Redis persistent database lesson', () => {
     expect(vi.getTimerCount()).toBe(baseline);
   });
 
-  it('renders the source-faithful Redis Map reference artifact', () => {
-    render(<RedisLearningJourney chapterId="redis-map" />);
+  it('renders the native Redis Map tabs and interactive command flow', () => {
+    const { container } = render(<RedisLearningJourney chapterId="redis-map" />);
 
     expect(screen.getByRole('heading', { name: 'Redis Map', level: 2 })).toBeTruthy();
-    const frame = screen.getByTitle('Redis Map interactive lesson') as HTMLIFrameElement;
-    expect(frame.getAttribute('src')).toBe(`${import.meta.env.BASE_URL}redis/redis-map-reference.html`);
-    expect(frame.className).toContain('redisMapReference');
+    expect(container.querySelector('iframe')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '▶ Chạy luồng SET' }));
+    expect(screen.getByRole('status').textContent).toContain('1/6');
+    expect(screen.getByRole('status').textContent).toContain('Network I/O');
+    fireEvent.click(screen.getByRole('button', { name: 'Từng bước' }));
+    expect(screen.getByRole('status').textContent).toContain('2/6');
+    expect(screen.getByRole('status').textContent).toContain('RESP parser');
+    fireEvent.click(screen.getByRole('button', { name: 'Dừng luồng' }));
+    expect(screen.getByRole('button', { name: '▶ Chạy luồng SET' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Data types' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Stream' }));
+    expect(screen.getByText('XADD / XREADGROUP / XACK')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Geospatial' }));
+    expect(screen.getByText('GEOADD / GEOSEARCH / GEODIST')).toBeTruthy();
   });
 
   it('gives independent MCQ feedback and marks wrong selection plus correct answer semantically', () => {
