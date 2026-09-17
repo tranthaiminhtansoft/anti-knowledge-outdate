@@ -26,7 +26,16 @@ describe('DatabaseProductionGuide', () => {
 
   it('runs all ACID scenarios and the traffic scale-out simulation', () => {
     render(<DatabaseProductionGuide section="architecture" />);
-    for (const name of ['Success / COMMIT', 'Crash / ROLLBACK', 'Concurrent requests', 'Overload']) {
+    fireEvent.click(screen.getByRole('button', { name: 'Success / COMMIT' }));
+    expect(screen.getByText('400.000đ')).toBeTruthy();
+    expect(screen.getByText('300.000đ')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Crash / ROLLBACK' }));
+    expect(screen.getByText('400.000đ')).toBeTruthy();
+    expect(screen.getByText('300.000đ')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(screen.getByText('500.000đ')).toBeTruthy();
+    expect(screen.getByText('200.000đ')).toBeTruthy();
+    for (const name of ['Concurrent requests', 'Overload']) {
       fireEvent.click(screen.getByRole('button', { name }));
       expect(screen.getByRole('status').textContent).not.toBe('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY');
     }
