@@ -108,8 +108,16 @@ describe('Redis persistent database lesson', () => {
     expect(screen.getByRole('status').textContent).toContain('RESP parser');
     fireEvent.click(screen.getByRole('button', { name: 'Dừng luồng' }));
     expect(screen.getByRole('button', { name: '▶ Chạy luồng SET' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Sentinel' }));
+    expect(screen.getAllByRole('button', { name: /Sentinel [1-3]/ })).toHaveLength(3);
+    expect(screen.getByText(/đạt quorum/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Cluster' }));
+    expect(screen.getAllByText(/^(Primary|Replica) [ABC]$/)).toHaveLength(6);
+    expect(screen.getByText(/0–5460 · WRITE/)).toBeTruthy();
+    expect(screen.getByText('COPY C')).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Data types' }));
     fireEvent.click(screen.getByRole('button', { name: 'Stream' }));
+
     expect(screen.getByText('XADD / XREADGROUP / XACK')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Geospatial' }));
     expect(screen.getByText('GEOADD / GEOSEARCH / GEODIST')).toBeTruthy();
