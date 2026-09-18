@@ -1425,11 +1425,11 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
       <div className="pageShell">
       <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
       <article className="card articleCard detailArticle">
-        {article.topic !== 'Database' && <div className="cardHeader">
+        {article.topic !== 'Database' && article.topic !== 'Kafka' && <div className="cardHeader">
           <span className="badge">{article.topic}</span>
         </div>}
-        {article.topic !== 'Database' && <p className="question">Câu hỏi: {article.question}</p>}
-        {article.id !== 'redis-redis-map' && article.topic !== 'Database' && <>
+        {article.topic !== 'Database' && article.topic !== 'Kafka' && <p className="question">Câu hỏi: {article.question}</p>}
+        {article.id !== 'redis-redis-map' && article.topic !== 'Database' && article.topic !== 'Kafka' && <>
           <h1>{article.title}</h1>
           <p className="summary">{article.summary}</p>
         </>}

@@ -1,168 +1,149 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { KafkaLearningJourney } from './KafkaLearningJourney';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
-describe('KafkaLearningJourney guided reading', () => {
-  it('exposes the production pain lab declared by the final chapter', async () => {
-    const user = userEvent.setup();
-    render(<KafkaLearningJourney chapterId="production" />);
+describe('canonical Kafka lesson native React parity', () => {
+  it.each([
+    ['overview', 'project', 'Kafka tham gia vào Project'],
+    ['api-flow', 'flow', 'How Messages Actually Flow'],
+    ['components', 'architecture', 'Kafka Cluster Architecture'],
+    ['architecture', 'architecture', 'Kafka Cluster Architecture'],
+    ['partitioning', 'architecture', 'Kafka Cluster Architecture'],
+    ['producer', 'flow', 'How Messages Actually Flow'],
+    ['consumer', 'flow', 'How Messages Actually Flow'],
+    ['rebalance', 'failure', 'Failure & Scale'],
+    ['failure', 'failure', 'Failure & Scale'],
+    ['production', 'operations', 'Kafka for DevOps'],
+  ] as const)('scrolls legacy chapter deep-link %s to %s', (chapterId, sectionId, heading) => {
+    const scrollIntoView = vi.fn();
+    const scrolledSections: HTMLElement[] = [];
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = function (options) {
+      scrolledSections.push(this);
+      scrollIntoView(options);
+    };
 
-    const openLab = screen.getByRole('button', { name: 'Mở mô phỏng luồng' });
-    await user.click(openLab);
+    try {
+      const { container, unmount } = render(<KafkaLearningJourney chapterId={chapterId} />);
 
-    expect(screen.getByRole('region', { name: 'Topology stage' })).toBeTruthy();
+      const section = container.querySelector(`#${sectionId}`)!;
+      expect(screen.getByRole('heading', { name: heading })).toBeTruthy();
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+      expect(scrolledSections).toContain(section);
+
+      unmount();
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    }
   });
 
-  it('starts with two accessible static flowcharts while keeping the optional topology closed', () => {
+  it('renders the canonical diagrams without embedding a document or extra diagram controls', () => {
     const { container } = render(<KafkaLearningJourney chapterId="overview" />);
-
-    expect(screen.queryByRole('heading', { name: 'Bắt đầu tại đây' })).toBeNull();
-    expect(screen.queryByText('1. Dự án ShopNow')).toBeNull();
-    expect(screen.getByRole('button', { name: '← Bài trước' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: 'Bài tiếp theo →' }).hasAttribute('disabled')).toBe(false);
-    expect(screen.getByRole('heading', { name: 'ShopNow · Dự án thương mại điện tử giả lập' })).toBeTruthy();
-    expect(screen.getByText('publish order.created')).toBeTruthy();
-    const withKafkaDiagram = screen.getByLabelText('Luồng ShopNow có sử dụng Kafka');
-    expect(within(withKafkaDiagram).getByText('Orders DB')).toBeTruthy();
-    expect(within(withKafkaDiagram).getByText('Outbox Relay')).toBeTruthy();
-    expect(within(withKafkaDiagram).queryByText(/trả sau Produce ACK/)).toBeNull();
-    expect(screen.getByRole('heading', { name: 'Vấn đề trong flash sale' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Quyết định dùng Kafka' })).toBeTruthy();
-    expect(screen.getByRole('figure', { name: 'Luồng ShopNow không sử dụng Kafka' })).toBeTruthy();
-    expect(screen.getByRole('figure', { name: 'Luồng ShopNow có sử dụng Kafka' })).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Không Kafka: một Notification timeout làm Checkout trả lỗi cho Client' })).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Có Kafka và Outbox: Checkout trả HTTP 201 sau khi commit Order + Outbox' })).toBeTruthy();
-    expect(container.querySelector('.kafkaFlowLogo')).toBeTruthy();
-    expect(screen.getByText(/Order Database tồn tại ở cả hai kiến trúc/)).toBeTruthy();
-    expect(screen.getByText(/Transactional Outbox như một lựa chọn chống dual-write/)).toBeTruthy();
-    expect(screen.queryByText('DB + Outbox')).toBeNull();
-    expect(screen.getByText('3 HTTP requests đồng thời')).toBeTruthy();
-    expect(screen.getByText('Checkout vẫn chờ cả ba')).toBeTruthy();
-    expect(screen.getAllByText('HTTP 500').length).toBeGreaterThan(0);
-    expect(screen.getByText('HTTP 201 Created')).toBeTruthy();
-    expect(screen.getByText('Produce ACK')).toBeTruthy();
-    expect(screen.getAllByText(/offset chưa commit/).length).toBeGreaterThan(0);
-    const failedNotification = screen.getAllByText('Notification')
-      .map((title) => title.closest('g')!)
-      .find((node) => node.querySelectorAll('.kafkaFlowNodeSubtitle tspan').length === 2)!;
-    expect([...failedNotification.querySelectorAll('.kafkaFlowNodeSubtitle tspan')].map((line) => line.textContent)).toEqual(['FAIL', 'offset chưa commit']);
-    expect(screen.getByText('seek / restart / rebalance')).toBeTruthy();
-    expect(screen.queryByText(/Checkout gọi tuần tự 3 service/)).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Topology stage' })).toBeNull();
-    expect(screen.queryByText('Xem lộ trình 10 bài')).toBeNull();
+    for (const id of ['project', 'architecture', 'flow', 'failure', 'operations']) expect(container.querySelector(`#${id}`)).toBeTruthy();
+    expect(container.querySelectorAll('iframe')).toHaveLength(0);
+    expect(container.querySelector('[srcdoc]')).toBeNull();
+    expect(container.innerHTML).not.toContain('<!DOCTYPE html>');
+    expect(screen.getByRole('heading', { name: 'Kafka tham gia vào Project' })).toBeTruthy();
+    expect(screen.queryByText('KAFKA LEARNING JOURNEY · OVERVIEW')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Kafka giúp gì trong luồng thanh toán?' })).toBeNull();
+    expect(screen.getByRole('img', { name: 'AS-IS không Kafka' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'TO-BE có Kafka' })).toBeTruthy();
+    for (const id of ['as1', 'as2', 'as3', 'as4', 'as5', 'to1', 'to2', 'to3', 'to4', 'to5a', 'to5b', 'to5c', 'to6', 'toAck']) {
+      expect(container.querySelector(`path#${id}`)).toBeTruthy();
+    }
+    expect(container.querySelector('marker#aBlue')).toBeTruthy();
+    expect(container.querySelector('marker#tGreen')).toBeTruthy();
+    expect(container.querySelector('path[d="M250 285V318Q250 330 238 330H130Q118 330 118 342V390"]')).toBeTruthy();
+    expect(screen.getByText('⑧ no commit → đọc lại')).toBeTruthy();
+    expect(screen.getAllByText('payment.succeeded').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: 'Pause diagram' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Reset diagram' })).toBeNull();
+    expect(container.querySelectorAll('iframe, [srcdoc]')).toHaveLength(0);
   });
 
-  it('loops traffic on directed connectors and fans one Kafka publish into three consumer dots without controls', () => {
+  it('ports the standalone architecture hierarchy and keeps its live controls native', () => {
     const { container } = render(<KafkaLearningJourney chapterId="overview" />);
-    const projectCase = container.querySelector('.kafkaProjectCase');
-    const fanOutDots = projectCase?.querySelectorAll(
-      '[data-traffic="consume-inventory"], [data-traffic="consume-notification"], [data-traffic="consume-analytics"]',
-    );
-
-    expect(projectCase?.querySelector('button')).toBeNull();
-    expect(projectCase?.querySelector('[data-traffic="publish"] mpath[href="#with-kafka-publish"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="produce-ack"] mpath[href="#with-kafka-ack"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="client-success"] mpath[href="#with-kafka-client-success"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="without-notification-timeout"] mpath[href="#without-kafka-notification-timeout"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="without-client-error"] mpath[href="#without-kafka-client-error"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="without-request-bundle"] mpath[href="#without-kafka-request-bundle"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="without-inventory-request"] mpath[href="#without-kafka-inventory-request"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="without-notification-request"] mpath[href="#without-kafka-notification-request"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="without-analytics-request"] mpath[href="#without-kafka-analytics-request"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="consumer-retry"] mpath[href="#with-kafka-retry"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="consume-lead"] mpath[href="#with-kafka-consume-lead"]')).toBeTruthy();
-    expect(fanOutDots).toHaveLength(3);
-    expect(projectCase?.querySelector('[data-traffic="consume-inventory"] mpath[href="#with-kafka-inventory"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="consume-notification"] mpath[href="#with-kafka-notification"]')).toBeTruthy();
-    expect(projectCase?.querySelector('[data-traffic="consume-analytics"] mpath[href="#with-kafka-analytics"]')).toBeTruthy();
-    expect(projectCase?.querySelectorAll('.kafkaFlowTrafficDot[aria-hidden="true"]')).toHaveLength(18);
+    const architecture = container.querySelector('#architecture')!;
+    expect(architecture.querySelector(':scope > .section-head > .eyebrow')?.textContent).toBe('02 / OPEN THE BLACK BOX');
+    const box = architecture.querySelector(':scope > .box')!;
+    expect(box.querySelector(':scope > .bar.spread a[href="#flow"]')?.textContent).toContain('Gửi order trong simulator');
+    expect(box.querySelector(':scope > .live-lab > div > .live-map')).toBeTruthy();
+    expect(box.querySelector(':scope > .live-lab > .live-controls h3')?.textContent).toBe('Live cluster · bộ điều khiển duy nhất');
+    expect(box.querySelector('.three.brokers')).toBeTruthy();
+    expect(box.querySelectorAll('.component-glossary > div')).toHaveLength(12);
+    expect(box.querySelectorAll('.architecture-downstream > .service')).toHaveLength(2);
   });
 
-  it('opens a deterministic diagram only when the learner asks for it', async () => {
+  it('supports canonical cluster controls, key routing, ACK, reset, slow worker and traffic spike', async () => {
     const user = userEvent.setup();
-    render(<KafkaLearningJourney chapterId="api-flow" />);
-
-    expect(screen.queryByRole('region', { name: 'Topology stage' })).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Mở mô phỏng luồng' }));
-    expect(screen.getByRole('region', { name: 'Topology stage' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Client gọi HTTP API' })).toBeTruthy();
-
-    await user.click(screen.getByRole('button', { name: 'Bước tiếp theo' }));
-    expect(screen.getByRole('heading', { name: 'Backend commit Order + Outbox' })).toBeTruthy();
+    render(<KafkaLearningJourney chapterId="overview" />);
+    const key = screen.getByLabelText('Key');
+    await user.clear(key); await user.type(key, 'customer-42');
+    await user.selectOptions(screen.getByLabelText('ACK'), '1');
+    await user.click(screen.getByRole('button', { name: '+ Send order' }));
+    await user.click(screen.getByRole('button', { name: 'Step →' }));
+    expect(screen.getAllByText(/customer-42/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/route P[0-2]/).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: 'Slow consumer: OFF' }));
+    expect(screen.getByRole('button', { name: 'Slow consumer: ON' }).getAttribute('aria-pressed')).toBe('true');
+    await user.click(screen.getByRole('button', { name: '⚡ +30 orders' }));
+    await user.click(screen.getByRole('button', { name: 'Reset lab' }));
+    expect(screen.getByDisplayValue('order-123')).toBeTruthy();
   });
 
-  it('separates bidirectional connector labels so they do not overlap', async () => {
+  it('keeps Start running after an event reaches downstream consumers', async () => {
+    vi.useFakeTimers();
+    render(<KafkaLearningJourney chapterId="overview" />);
+    const send = screen.getByRole('button', { name: '+ Send order' });
+    const start = screen.getByRole('button', { name: 'Start' });
+    fireEvent.click(send);
+    fireEvent.click(start);
+    vi.advanceTimersByTime(6000);
+    expect(screen.getByRole('heading', { name: 'Kafka Cluster Architecture' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeTruthy();
+  });
+  it('drains a distributed backlog faster with three workers than with one worker', () => {
+    vi.useFakeTimers();
+
+    const processedAfter150Steps = (workers: 1 | 3) => {
+      const view = render(<KafkaLearningJourney chapterId="overview" />);
+      if (workers === 3) {
+        fireEvent.click(screen.getByRole('button', { name: '+ Add worker' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+        fireEvent.click(screen.getByRole('button', { name: '+ Add worker' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+      }
+      fireEvent.click(screen.getByRole('button', { name: '⚡ +30 orders' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+      act(() => vi.advanceTimersByTime(150 * 750));
+      const processed = Number(screen.getByText(/In \/ processed:/).textContent?.match(/\/ (\d+) ·/)?.[1]);
+      view.unmount();
+      return processed;
+    };
+
+    expect(processedAfter150Steps(3)).toBeGreaterThan(processedAfter150Steps(1));
+  });
+
+  it('provides broker recovery, rebalance, commit/replay, and independent downstream modes', async () => {
     const user = userEvent.setup();
-    const { container } = render(<KafkaLearningJourney chapterId="api-flow" />);
-
-    await user.click(screen.getByRole('button', { name: 'Mở mô phỏng luồng' }));
-    const labels = [...container.querySelectorAll<SVGTextElement>('.kafkaEdge text')];
-    const request = labels.find((label) => label.textContent === 'HTTP request');
-    const response = labels.find((label) => label.textContent === 'HTTP 201');
-    const produce = labels.find((label) => label.textContent === 'ProduceRequest');
-    const ack = labels.find((label) => label.textContent === 'ACK');
-    const fetchRequest = labels.find((label) => label.textContent === 'FetchRequest');
-    const fetchResponse = labels.find((label) => label.textContent === 'FetchResponse');
-
-    expect(request?.getAttribute('y')).not.toBe(response?.getAttribute('y'));
-    expect(Number(request?.getAttribute('y'))).toBeLessThan(205);
-    expect(Number(response?.getAttribute('y'))).toBeGreaterThan(287);
-    expect(produce?.parentElement?.getAttribute('transform')).not.toBe(ack?.parentElement?.getAttribute('transform'));
-    expect(produce?.parentElement?.querySelector('rect')).toBeTruthy();
-    expect(ack?.parentElement?.querySelector('rect')).toBeTruthy();
-    expect(fetchRequest?.parentElement?.querySelector('rect')).toBeTruthy();
-    expect(fetchResponse?.parentElement?.querySelector('rect')).toBeTruthy();
-    expect(fetchRequest?.parentElement?.getAttribute('transform')).not.toBe(fetchResponse?.parentElement?.getAttribute('transform'));
-    const relayBrokerPaths = [...container.querySelectorAll<SVGPathElement>('.kafkaEdge--relay-broker > path')];
-    expect(relayBrokerPaths).toHaveLength(2);
-    expect(relayBrokerPaths[0].getAttribute('d')).not.toBe(relayBrokerPaths[1].getAttribute('d'));
-  });
-
-  it('keeps the checkpoint answer hidden until the learner reveals it', async () => {
-    const user = userEvent.setup();
-    render(<KafkaLearningJourney chapterId="api-flow" />);
-
-    expect(screen.queryByText(/ACK chỉ xác nhận broker/)).toBeNull();
-    const reveal = screen.getByRole('button', { name: 'Xem đáp án' });
-    expect(reveal.getAttribute('aria-expanded')).toBe('false');
-
-    await user.click(reveal);
-    expect(screen.getByText(/ACK chỉ xác nhận broker/)).toBeTruthy();
-    const hide = screen.getByRole('button', { name: 'Ẩn đáp án' });
-    expect(hide.getAttribute('aria-expanded')).toBe('true');
-
-    await user.click(hide);
-    expect(screen.queryByText(/ACK chỉ xác nhận broker/)).toBeNull();
-  });
-
-  it('renders the why, HTTP lanes, and component glossary before internals', () => {
-    const { rerender } = render(<KafkaLearningJourney chapterId="overview" />);
-    expect(screen.getByRole('heading', { name: 'Không Kafka' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Không nên dùng' })).toBeTruthy();
-
-    rerender(<KafkaLearningJourney chapterId="api-flow" />);
-    expect(screen.getByRole('heading', { name: 'Lane đồng bộ HTTP' })).toBeTruthy();
-    expect(screen.getByText('Trả HTTP 201')).toBeTruthy();
-
-    rerender(<KafkaLearningJourney chapterId="components" />);
-    expect(screen.getByRole('heading', { name: '10 thành phần cốt lõi' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'KRaft Controller' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Mở mô phỏng luồng' })).toBeNull();
-  });
-
-  it('switches architecture control-plane mode inside the optional lab', async () => {
-    const user = userEvent.setup();
-    render(<KafkaLearningJourney chapterId="architecture" />);
-
-    await user.click(screen.getByRole('button', { name: 'Mở mô phỏng luồng' }));
-    expect(screen.getByRole('button', { name: 'KRaft hiện đại' }).getAttribute('aria-pressed')).toBe('true');
-    await user.click(screen.getByRole('button', { name: 'Xem ZooKeeper legacy' }));
-
-    expect(screen.getByRole('heading', { name: 'ZooKeeper: kiến trúc legacy' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Xem ZooKeeper legacy' }).getAttribute('aria-pressed')).toBe('true');
+    render(<KafkaLearningJourney chapterId="overview" />);
+    await user.click(screen.getByRole('button', { name: 'Kill Broker 1' }));
+    expect(screen.getByText(/P0 offline → electing leader/)).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '+ Add worker' }));
+    expect(screen.getByRole('button', { name: 'Rebalancing…' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Commit now' }));
+    await user.click(screen.getByRole('button', { name: 'Restart / replay' }));
+    const selects = screen.getAllByRole('combobox');
+    await user.selectOptions(selects[2], 'failed');
+    expect(screen.getByDisplayValue('failed')).toBeTruthy();
   });
 });
