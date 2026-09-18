@@ -1,7 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./kafka-journey.css";
 
 type Props = { chapterId: string; onOpenChapter?: (chapterId: string) => void };
+const legacyChapterSections: Record<string, string> = {
+  overview: "project",
+  "api-flow": "flow",
+  components: "architecture",
+  architecture: "architecture",
+  partitioning: "architecture",
+  producer: "flow",
+  consumer: "flow",
+  rebalance: "failure",
+  failure: "failure",
+  production: "operations",
+};
 type Ack = "all" | "1" | "0";
 type Mode = "normal" | "slow" | "failed";
 type Event = {
@@ -272,9 +284,16 @@ function advance(s: State): State {
   }
   return { ...n, queue, active };
 }
-export function KafkaLearningJourney({ chapterId }: Props) {
+export function KafkaLearningJourney({ chapterId, onOpenChapter }: Props) {
+  const journeyRef = useRef<HTMLDivElement>(null);
   const [s, setS] = useState(fresh);
   const [sendFeedback, setSendFeedback] = useState("");
+  useEffect(() => {
+    const sectionId = legacyChapterSections[chapterId] ?? "project";
+    const section = journeyRef.current?.querySelector<HTMLElement>(`#${sectionId}`);
+    if (typeof section?.scrollIntoView === "function") section.scrollIntoView({ block: "start" });
+    onOpenChapter?.(chapterId);
+  }, [chapterId, onOpenChapter]);
   useEffect(() => {
     if (!s.running) return;
     const id = window.setInterval(() => setS(advance), 750);
@@ -330,7 +349,7 @@ export function KafkaLearningJourney({ chapterId }: Props) {
       return { ...x, recovery: 2 };
     });
   return (
-    <div className="kafkaCanonical" data-chapter={chapterId}>
+    <div ref={journeyRef} className="kafkaCanonical" data-chapter={chapterId}>
       <main>
         <section id="project" className="lesson">
           <Overview />

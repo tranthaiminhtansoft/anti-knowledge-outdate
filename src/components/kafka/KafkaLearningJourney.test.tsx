@@ -3,7 +3,6 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { KafkaLearningJourney } from './KafkaLearningJourney';
-import { kafkaChapters } from './kafkaJourneyData';
 
 afterEach(() => {
   cleanup();
@@ -11,9 +10,38 @@ afterEach(() => {
 });
 
 describe('canonical Kafka lesson native React parity', () => {
-  it.each(kafkaChapters.map((chapter) => chapter.id))('renders legacy chapter deep-link %s', (chapterId) => {
-    render(<KafkaLearningJourney chapterId={chapterId} />);
-    expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThan(0);
+  it.each([
+    ['overview', 'project', 'Kafka tham gia vào Project'],
+    ['api-flow', 'flow', 'How Messages Actually Flow'],
+    ['components', 'architecture', 'Kafka Cluster Architecture'],
+    ['architecture', 'architecture', 'Kafka Cluster Architecture'],
+    ['partitioning', 'architecture', 'Kafka Cluster Architecture'],
+    ['producer', 'flow', 'How Messages Actually Flow'],
+    ['consumer', 'flow', 'How Messages Actually Flow'],
+    ['rebalance', 'failure', 'Failure & Scale'],
+    ['failure', 'failure', 'Failure & Scale'],
+    ['production', 'operations', 'Kafka for DevOps'],
+  ] as const)('scrolls legacy chapter deep-link %s to %s', (chapterId, sectionId, heading) => {
+    const scrollIntoView = vi.fn();
+    const scrolledSections: HTMLElement[] = [];
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = function (options) {
+      scrolledSections.push(this);
+      scrollIntoView(options);
+    };
+
+    try {
+      const { container, unmount } = render(<KafkaLearningJourney chapterId={chapterId} />);
+
+      const section = container.querySelector(`#${sectionId}`)!;
+      expect(screen.getByRole('heading', { name: heading })).toBeTruthy();
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+      expect(scrolledSections).toContain(section);
+
+      unmount();
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    }
   });
 
   it('renders the canonical diagrams without embedding a document or extra diagram controls', () => {
