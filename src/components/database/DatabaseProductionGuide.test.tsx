@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DatabaseProductionGuide } from './DatabaseProductionGuide';
 
 afterEach(cleanup);
@@ -22,6 +22,16 @@ describe('DatabaseProductionGuide', () => {
     expect(screen.getByText('Cơ chế bảo vệ dữ liệu')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '04 · Operations' }));
     expect(screen.getByText('Hai sự cố đặc trưng')).toBeTruthy();
+  });
+
+  it('notifies the canonical article route when a guide section is selected', () => {
+    const onOpenArticle = vi.fn();
+    render(<DatabaseProductionGuide section="architecture" onOpenArticle={onOpenArticle} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '02 · Data design' }));
+
+    expect(onOpenArticle).toHaveBeenCalledWith('database-design-performance');
+    expect(screen.getByRole('heading', { name: 'Data Design & Query Performance' })).toBeTruthy();
   });
 
   it('runs all ACID scenarios and the traffic scale-out simulation', () => {

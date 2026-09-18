@@ -1383,7 +1383,7 @@ function HermesAgentLearningPage({ article }: { article: Article }) {
   );
 }
 
-function ArticleVisual({ article }: { article: Article }) {
+function ArticleVisual({ article, onOpenArticle }: { article: Article; onOpenArticle: (articleId: string) => void }) {
   if (article.id === 'ai-model-assistant-agent') return <AIApplicationDiagram />;
   if (article.id === 'model-co-thuc-su-suy-nghi-khong') return <><ModelTypesOverview /><ModelSelectionGuide /><ModelAgentSimulator /></>;
   if (article.id === 'rag-grounding-runtime') return <RagTrafficDiagram />;
@@ -1401,7 +1401,7 @@ function ArticleVisual({ article }: { article: Article }) {
       'database-correctness-reliability': 'correctness',
       'database-production-operations': 'operations',
     } as const;
-    return <DatabaseProductionGuide section={sectionByArticleId[article.id as keyof typeof sectionByArticleId]} />;
+    return <DatabaseProductionGuide section={sectionByArticleId[article.id as keyof typeof sectionByArticleId]} onOpenArticle={onOpenArticle} />;
   }
   if (article.topic === 'Redis') return <RedisLearningJourney chapterId={article.id.replace(/^redis-/, '')} />;
   if (article.topic === 'Kafka') return <KafkaLearningJourney chapterId={article.id.replace(/^kafka-/, '')} />;
@@ -1433,7 +1433,7 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
           <h1>{article.title}</h1>
           <p className="summary">{article.summary}</p>
         </>}
-        <ArticleVisual article={article} />
+        <ArticleVisual article={article} onOpenArticle={onOpenArticle} />
         {article.topic !== 'Kafka' && article.topic !== 'Redis' && article.topic !== 'Database' && (
           <div className="grid2">
             <section>
