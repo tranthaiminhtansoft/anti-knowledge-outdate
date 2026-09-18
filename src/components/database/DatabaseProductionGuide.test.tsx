@@ -1,63 +1,80 @@
-/// <reference types="node" />
 // @vitest-environment jsdom
-import { readFileSync } from 'node:fs';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DatabaseProductionGuide } from './DatabaseProductionGuide';
 
-const productionBaseUrl = '/anti-knowledge-outdate/';
-
-async function renderGuideAtProductionBase(section: 'architecture' | 'design' | 'correctness' | 'operations') {
-  vi.stubEnv('BASE_URL', productionBaseUrl);
-  const { DatabaseProductionGuide } = await import('./DatabaseProductionGuide');
-  return render(<DatabaseProductionGuide section={section} />);
-}
-
-afterEach(() => {
-  cleanup();
-  vi.unstubAllEnvs();
-  vi.resetModules();
-});
+afterEach(cleanup);
 
 describe('DatabaseProductionGuide', () => {
   it.each([
-    ['architecture', 'Architecture & Scaling'],
-    ['design', 'Design & Performance'],
-    ['correctness', 'Correctness & Reliability'],
-    ['operations', 'Production Operations'],
-  ] as const)('loads the %s iframe below the configured Vite base path', async (section, title) => {
-    await renderGuideAtProductionBase(section);
-
-    const frame = screen.getByTitle(`Database Production Essentials: ${title}`);
-    expect(frame.getAttribute('src')).toBe(
-      `${productionBaseUrl}database/database-production-guide.html?section=${section}`,
-    );
-    expect(frame.getAttribute('data-section')).toBe(section);
+    ['architecture', 'Architecture & Scaling'], ['design', 'Data Design & Query Performance'], ['correctness', 'Data Correctness & Reliability'], ['operations', 'Production Operations & Observability'],
+  ] as const)('renders the native %s lesson without an iframe', (section, title) => {
+    const { container } = render(<DatabaseProductionGuide section={section} />);
+    expect(screen.getByRole('heading', { name: title })).toBeTruthy();
+    expect(container.querySelector('iframe')).toBeNull();
   });
 
-  it('updates the iframe source when the outer lesson route changes', async () => {
-    vi.stubEnv('BASE_URL', productionBaseUrl);
-    const { DatabaseProductionGuide } = await import('./DatabaseProductionGuide');
-    const { rerender } = render(<DatabaseProductionGuide section="design" />);
+  it('navigates every original database section from the native guide navigation', () => {
+    render(<DatabaseProductionGuide section="architecture" />);
+    fireEvent.click(screen.getByRole('button', { name: '02 · Data design' }));
+    expect(screen.getByText('SQL vs NoSQL: bắt đầu từ access pattern')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '03 · Correctness' }));
+    expect(screen.getByText('Cơ chế bảo vệ dữ liệu')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '04 · Operations' }));
+    expect(screen.getByText('Hai sự cố đặc trưng')).toBeTruthy();
+  });
 
-    expect(screen.getByTitle('Database Production Essentials: Design & Performance').getAttribute('src')).toBe(
-      `${productionBaseUrl}database/database-production-guide.html?section=design`,
-    );
+  it('notifies the canonical article route when a guide section is selected', () => {
+    const onOpenArticle = vi.fn();
+    render(<DatabaseProductionGuide section="architecture" onOpenArticle={onOpenArticle} />);
 
+    fireEvent.click(screen.getByRole('button', { name: '02 · Data design' }));
+
+    expect(onOpenArticle).toHaveBeenCalledWith('database-design-performance');
+    expect(screen.getByRole('heading', { name: 'Data Design & Query Performance' })).toBeTruthy();
+  });
+
+  it('runs all ACID scenarios and the traffic scale-out simulation', () => {
+    render(<DatabaseProductionGuide section="architecture" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Success / COMMIT' }));
+    expect(screen.getByText('400.000đ')).toBeTruthy();
+    expect(screen.getByText('300.000đ')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Crash / ROLLBACK' }));
+    expect(screen.getByText('400.000đ')).toBeTruthy();
+    expect(screen.getByText('300.000đ')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(screen.getByText('500.000đ')).toBeTruthy();
+    expect(screen.getByText('200.000đ')).toBeTruthy();
+    for (const name of ['Concurrent requests', 'Overload']) {
+      fireEvent.click(screen.getByRole('button', { name }));
+      expect(screen.getByRole('status').textContent).not.toBe('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY');
+    }
+    fireEvent.click(screen.getByRole('tab', { name: 'NoSQL · Flash Sale Cart' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Bão 1.500.000' }));
+    expect(screen.getByRole('status').textContent).toContain('Cluster scale-out: 3 nodes');
+  });
+
+  it('changes the composite-index query plan without changing its query', () => {
+    render(<DatabaseProductionGuide section="design" />);
+    expect(screen.getByText(/Chưa tạo index — Full scan/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Thêm composite index' }));
+    expect(screen.getByText(/Composite index sẵn sàng/)).toBeTruthy();
+    expect(screen.getByText(/CREATE INDEX idx_payment_history_user_status_created_at/)).toBeTruthy();
+  });
+
+  it('demonstrates SQL locking, NoSQL consistency, and both runnable incident runbooks', () => {
+    const { rerender } = render(<DatabaseProductionGuide section="correctness" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Chạy không lock' }));
+    expect(screen.getByRole('status').textContent).toContain('Oversell');
+    fireEvent.click(screen.getByRole('tab', { name: 'NoSQL · Conditional write + Replica' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Quorum write' }));
+    expect(screen.getByRole('status').textContent).toContain('Quorum');
     rerender(<DatabaseProductionGuide section="operations" />);
-    expect(screen.getByTitle('Database Production Essentials: Production Operations').getAttribute('src')).toBe(
-      `${productionBaseUrl}database/database-production-guide.html?section=operations`,
-    );
-  });
-
-  it('keeps the Payment History query visible and documents the composite-index states', () => {
-    const lesson = readFileSync('public/database/database-production-guide.html', 'utf8');
-
-    expect(lesson).toContain('SELECT * FROM payment_history');
-    expect(lesson).toContain("WHERE user_id = $1 AND status = 'PAID'");
-    expect(lesson).toContain('CREATE INDEX idx_payment_history_user_status_created_at');
-    expect(lesson).toContain('Chưa tạo index — Full scan');
-    expect(lesson).toContain('Demo: planner có thể chọn index scan/seek');
-    expect(lesson).toContain('EXPLAIN (ANALYZE, BUFFERS)');
-    expect(lesson).toContain('LIMIT 12');
+    fireEvent.click(screen.getByRole('button', { name: /breakSql/ }));
+    fireEvent.click(screen.getByRole('button', { name: /runSqlBook/ }));
+    expect(screen.getByRole('status').textContent).toContain('SQL runbook');
+    fireEvent.click(screen.getByRole('button', { name: /breakNosql/ }));
+    fireEvent.click(screen.getByRole('button', { name: /runNosqlBook/ }));
+    expect(screen.getByRole('status').textContent).toContain('Permanent fix');
   });
 });
