@@ -100,7 +100,7 @@ describe('Redis persistent database lesson', () => {
 
     expect(screen.getByRole('heading', { name: 'Redis Map', level: 2 })).toBeTruthy();
     const frame = screen.getByTitle('Redis Map interactive lesson') as HTMLIFrameElement;
-    expect(frame.getAttribute('src')).toBe('/redis/redis-map-reference.html');
+    expect(frame.getAttribute('src')).toBe(`${import.meta.env.BASE_URL}redis/redis-map-reference.html`);
     expect(frame.className).toContain('redisMapReference');
   });
 
