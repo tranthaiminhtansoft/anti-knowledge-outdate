@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { KafkaLearningJourney } from './KafkaLearningJourney';
@@ -109,6 +109,30 @@ describe('canonical Kafka lesson native React parity', () => {
     expect(screen.getByRole('heading', { name: 'Kafka Cluster Architecture' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Pause' })).toBeTruthy();
   });
+  it('drains a distributed backlog faster with three workers than with one worker', () => {
+    vi.useFakeTimers();
+
+    const processedAfter150Steps = (workers: 1 | 3) => {
+      const view = render(<KafkaLearningJourney chapterId="overview" />);
+      if (workers === 3) {
+        fireEvent.click(screen.getByRole('button', { name: '+ Add worker' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+        fireEvent.click(screen.getByRole('button', { name: '+ Add worker' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Step →' }));
+      }
+      fireEvent.click(screen.getByRole('button', { name: '⚡ +30 orders' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+      act(() => vi.advanceTimersByTime(150 * 750));
+      const processed = Number(screen.getByText(/In \/ processed:/).textContent?.match(/\/ (\d+) ·/)?.[1]);
+      view.unmount();
+      return processed;
+    };
+
+    expect(processedAfter150Steps(3)).toBeGreaterThan(processedAfter150Steps(1));
+  });
+
   it('provides broker recovery, rebalance, commit/replay, and independent downstream modes', async () => {
     const user = userEvent.setup();
     render(<KafkaLearningJourney chapterId="overview" />);

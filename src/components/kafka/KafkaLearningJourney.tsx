@@ -223,10 +223,14 @@ function advance(s: State): State {
       active = null;
     }
   } else if (!n.rebalance && (!n.slow || n.tick % 6 === 0)) {
-    for (let p = 0; p < 3; p++) {
-      if (p % n.workers >= Math.min(n.workers, 3) || n.leaders[p] === null)
-        continue;
-      if (n.pending[p] !== null) {
+    for (let worker = 0; worker < Math.min(n.workers, 3); worker++) {
+      const assigned = [0, 1, 2].filter(
+        (p) => p % n.workers === worker && n.leaders[p] !== null,
+      );
+      let committed = false;
+      for (const p of assigned) {
+        if (n.pending[p] === null) continue;
+        committed = true;
         if (n.autoCommit) {
           const committedEvent = n.logs[p][n.pending[p]! - 1];
           n.commit = n.commit.map((x, i) => (i === p ? n.pending[p]! : x));
@@ -235,23 +239,22 @@ function advance(s: State): State {
           log(`Commit P${p} = ${n.pending[p]}`);
         }
         n.pending = n.pending.map((x, i) => (i === p ? null : x));
-        continue;
       }
-      if (n.pos[p] < n.hw[p]) {
-        const e = n.logs[p][n.pos[p]];
-        n.pos = n.pos.map((x, i) => (i === p ? x + 1 : x));
-        n.pending = n.pending.map((x, i) => (i === p ? n.pos[p] : x));
-        n.phase = 4;
-        addMove(`b${n.leaders[p]!}` as Move["from"], "payment", e, `read P${p} @${e.offset}`);
-        if (!n.done.has(e.id)) {
-          n.done = new Set(n.done).add(e.id);
-          const result = { ...e, resultOffset: n.success.length };
-          n.success = [...n.success, result];
-          addMove("payment", "result", result, "payment.succeeded");
-          n.outs = [...n.outs, n.tick];
-          log(`Payment DB OK evt-${e.id} → payment.succeeded`);
-        }
-        break;
+      if (committed) continue;
+      const p = assigned.find((partition) => n.pos[partition] < n.hw[partition]);
+      if (p === undefined) continue;
+      const e = n.logs[p][n.pos[p]];
+      n.pos = n.pos.map((x, i) => (i === p ? x + 1 : x));
+      n.pending = n.pending.map((x, i) => (i === p ? n.pos[p] : x));
+      n.phase = 4;
+      addMove(`b${n.leaders[p]!}` as Move["from"], "payment", e, `read P${p} @${e.offset}`);
+      if (!n.done.has(e.id)) {
+        n.done = new Set(n.done).add(e.id);
+        const result = { ...e, resultOffset: n.success.length };
+        n.success = [...n.success, result];
+        addMove("payment", "result", result, "payment.succeeded");
+        n.outs = [...n.outs, n.tick];
+        log(`Payment DB OK evt-${e.id} → payment.succeeded`);
       }
     }
   }
