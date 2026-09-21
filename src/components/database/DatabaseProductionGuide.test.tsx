@@ -45,6 +45,12 @@ describe('DatabaseProductionGuide', () => {
     expect(guideHtml).toContain("event.source === window.parent && event.data?.type === 'database-guide-theme'");
   });
 
+  it('keeps the index example readable in the standalone light theme', () => {
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example pre{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example .index-status{');
+  });
+
   it('keeps only in-lesson controls after Sections 2, 3, and 4', () => {
     const standalone = new DOMParser().parseFromString(guideHtml, 'text/html');
 
