@@ -1,38 +1,116 @@
 import React from 'react';
-import './database-production-guide.css';
 
 export type DatabaseGuideSection = 'architecture' | 'design' | 'correctness' | 'operations';
-const pages: Array<[DatabaseGuideSection, string]> = [['architecture', '01 · Architecture'], ['design', '02 · Data design'], ['correctness', '03 · Correctness'], ['operations', '04 · Operations']];
-const articleIdBySection: Record<DatabaseGuideSection, string> = { architecture: 'database-architecture-scaling', design: 'database-design-performance', correctness: 'database-correctness-reliability', operations: 'database-production-operations' };
-const Wait = ({ children }: { children: React.ReactNode }) => <p className="databaseStatus" role="status">{children}</p>;
+type DatabaseGuideDeepTarget = 'sql' | 'nosql';
 
-function Architecture() {
-  const [tab, setTab] = React.useState<'sql' | 'nosql'>('sql');
-  const [acid, setAcid] = React.useState('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY');
-  const [balances, setBalances] = React.useState({ a: 500000, b: 200000 });
-  const [traffic, setTraffic] = React.useState(0);
-  const [nodes, setNodes] = React.useState(1);
-  const money = (amount: number) => amount.toLocaleString('vi-VN');
-  const runAcid = (kind: string) => {
-    if (kind === 'crash') setAcid('CRASH giữa transaction → WAL rollback. A và B không đổi: all-or-nothing.');
-    else if (kind === 'concurrent') setAcid('Request A giữ row lock; Request B WAITING FOR ROW LOCK → lần lượt COMMIT, không lost update.');
-    else if (kind === 'overload') setAcid('POOL WAIT · 499.800 request xếp hàng; timeout trước transaction → tiền không thay đổi.');
-    else {
-      setBalances({ a: 400000, b: 300000 });
-      setAcid('BEGIN → row lock → WAL A−100K/B+100K → COMMIT → HTTP 200.');
-    }
-  };
-  const resetAcid = () => {
-    setBalances({ a: 500000, b: 200000 });
-    setAcid('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY');
-  };
-  const add = (count: number) => { const next = traffic + count; setTraffic(next); setNodes(Math.min(6, Math.max(1, Math.ceil(next / 500000)))); };
-  return <><header className="databaseHero"><span>PHẦN 01</span><h2>Architecture & Scaling</h2><p>Cùng một đợt Flash Sale, SQL ưu tiên transaction chính xác; NoSQL phân tán traffic theo key. Không có lựa chọn thắng mọi workload.</p></header>
-    <div className="databaseTabs" role="tablist" aria-label="So sánh kiến trúc"><button role="tab" aria-selected={tab === 'sql'} onClick={() => setTab('sql')}>SQL · Chuyển tiền ACID</button><button role="tab" aria-selected={tab === 'nosql'} onClick={() => setTab('nosql')}>NoSQL · Flash Sale Cart</button></div>
-    {tab === 'sql' ? <section className="databasePanel"><h3><b>SQL</b> · ACID · Client–Server</h3><p><strong>Tình huống SQL:</strong> Trừ 100.000đ từ A và cộng B phải cùng thành công; lỗi giữa chừng phải rollback toàn bộ.</p><div className="databaseDiagram"><div>👤 Account A<br /><b>{money(balances.a)}đ</b></div><div>API / Transaction<br /><small>Row lock + WAL</small></div><div>🗄️ Account B<br /><b>{money(balances.b)}đ</b></div></div><div className="databaseControls"><button onClick={() => runAcid('success')}>Success / COMMIT</button><button onClick={() => runAcid('crash')}>Crash / ROLLBACK</button><button onClick={() => runAcid('concurrent')}>Concurrent requests</button><button onClick={() => runAcid('overload')}>Overload</button><button onClick={resetAcid}>Reset</button></div><Wait>{acid}</Wait><p>Primary nhận write; read replica chia tải đọc và hỗ trợ HA, <b>không</b> tăng năng lực ghi của Primary.</p></section> : <section className="databasePanel"><h3><b>NoSQL</b> · Distributed · Traffic-based</h3><p><strong>Tình huống NoSQL:</strong> Cart write cần throughput lớn. Route theo partition key, scale-out nhiều node; chấp nhận replica sync bất đồng bộ/stale read.</p><div className="databaseDiagram"><div>📱 User apps<br /><b>{money(traffic)} users</b></div><div>⚖️ Load Balancer<br /><small>partition key</small></div><div>🗄️ Cluster<br /><b>{nodes} node(s)</b></div></div><div className="databaseControls"><button onClick={() => add(500000)}>Thêm 500.000 users</button><button onClick={() => add(1500000)}>Bão 1.500.000</button><button onClick={() => { setTraffic(0); setNodes(1); }}>Reset</button></div><Wait>Primary carts: {money(traffic)} · {nodes > 1 ? `Cluster scale-out: ${nodes} nodes đang nhận write.` : 'Một node; không có replica.'}</Wait></section>}
-    <section className="databasePanel"><h3>Không phải hai thế giới tách biệt</h3><div className="databaseGrid"><article><b>Giống nhau</b><ul><li>Đều cần backup/restore, monitoring, security.</li><li>Đều có replication, failure mode và bottleneck.</li></ul></article><article><b>Quyết định</b><p>Chọn theo invariant, access pattern và SLO — production thường phối hợp nhiều datastore.</p></article></div></section></>;
+const articleIdBySection: Record<DatabaseGuideSection, string> = {
+  architecture: 'database-architecture-scaling',
+  design: 'database-design-performance',
+  correctness: 'database-correctness-reliability',
+  operations: 'database-production-operations',
+};
+
+function isDatabaseGuideSection(value: unknown): value is DatabaseGuideSection {
+  return typeof value === 'string' && value in articleIdBySection;
 }
-function Design() { const [indexed, setIndexed] = React.useState(false); return <><header className="databaseHero"><span>PHẦN 02</span><h2>Data Design & Query Performance</h2><p>Cùng dữ liệu payment, SQL tổ chức quan hệ linh hoạt; NoSQL tối ưu document theo đường đọc đã biết.</p></header><section className="databasePanel"><h3>SQL vs NoSQL: bắt đầu từ access pattern</h3><div className="databaseGrid"><article><b>SQL</b><p>Normalize quan hệ, JOIN khi cần; index phục vụ filter/sort.</p></article><article><b>NoSQL</b><p>Denormalize document theo read path; partition key tránh hot key/fan-out.</p></article></div><pre>SELECT * FROM payment_history{`\n`}WHERE user_id = $1 AND status = 'PAID'{`\n`}ORDER BY created_at DESC LIMIT 12;</pre><div className="databaseControls"><button onClick={() => setIndexed(value => !value)}>{indexed ? 'Bỏ composite index' : 'Thêm composite index'}</button></div><Wait>{indexed ? 'Composite index sẵn sàng — planner có thể chọn index scan/seek. Demo scanned 12 · latency 8 ms · write cost cao hơn.' : 'Chưa tạo index — Full scan. Demo scanned 1.000.000 · latency 820 ms · write cost thấp.'}</Wait><pre>CREATE INDEX idx_payment_history_user_status_created_at ON payment_history (user_id, status, created_at DESC);</pre><small>Demo giả định selectivity phù hợp. Xác minh production bằng EXPLAIN (ANALYZE, BUFFERS).</small></section><section className="databasePanel"><h3>Thiết kế cần nhớ</h3><ul><li>Schema linh hoạt không có nghĩa không cần thiết kế trước.</li><li>Denormalize khi read path quan trọng cần tránh JOIN/fan-out và chấp nhận chi phí đồng bộ dữ liệu trùng.</li><li>Index tăng tốc đọc nhưng làm write đắt hơn.</li></ul></section></>; }
-function Correctness() { const [view, setView] = React.useState<'sql' | 'nosql'>('sql'); const [status, setStatus] = React.useState('Sẵn sàng.'); return <><header className="databaseHero"><span>PHẦN 03</span><h2>Data Correctness & Reliability</h2><p>SQL và NoSQL đều phải chống ghi trùng, race condition và lỗi giữa nhiều hệ thống—nhưng dùng cơ chế khác nhau.</p></header><section className="databasePanel"><h3>Cơ chế bảo vệ dữ liệu</h3><div className="databaseTabs" role="tablist"><button role="tab" aria-selected={view === 'sql'} onClick={() => setView('sql')}>SQL · Transaction + Row Lock</button><button role="tab" aria-selected={view === 'nosql'} onClick={() => setView('nosql')}>NoSQL · Conditional write + Replica</button></div>{view === 'sql' ? <><p>Hai buyer cùng mua sản phẩm cuối. Không lock: cả hai đọc stock=1 và oversell. FOR UPDATE: B chờ A commit rồi đọc giá trị mới.</p><div className="databaseControls"><button onClick={() => setStatus('Không lock: Request A và B cùng đọc stock=1 → cả hai ghi thành công → Oversell: invariant bị vi phạm.')}>Chạy không lock</button><button onClick={() => setStatus('FOR UPDATE: A giữ row lock; B WAITING FOR ROW LOCK. A commit stock=0, B bị từ chối → invariant giữ đúng.')}>Chạy FOR UPDATE</button><button onClick={() => setStatus('Sẵn sàng.')}>Reset</button></div></> : <><p>Document cart#user-8241, partition cart-P7, replication factor 3.</p><div className="databaseControls"><button onClick={() => setStatus('Eventual: leader ACK v2 trước khi follower áp dụng; read replica có thể trả v1 (stale read).')}>Eventual consistency</button><button onClick={() => setStatus('Quorum: leader chờ đủ xác nhận từ replica trước khi xác nhận write; latency cao hơn, read-after-write mạnh hơn.')}>Quorum write</button><button onClick={() => setStatus('Sẵn sàng.')}>Reset</button></div></>}<Wait>{status}</Wait></section><section className="databasePanel"><h3>Lớp bảo vệ dùng chung</h3><ul><li>Idempotency key + unique constraint để client retry POST /payment trả lại cùng kết quả.</li><li>Retry với exponential backoff; conditional write/compare-and-set khi không có transaction đa row.</li><li>Transaction không tự ngăn mọi race: phải chọn isolation/câu lệnh, lock hoặc version đúng.</li></ul></section></>; }
-function Operations() { const [sql, setSql] = React.useState(false); const [no, setNo] = React.useState(false); const [run, setRun] = React.useState('Chọn một sự cố phía trên.'); return <><header className="databaseHero"><span>PHẦN 04</span><h2>Production Operations & Observability</h2><p>Engine khác nhau nhưng trách nhiệm production giống nhau: nhìn thấy sự cố, phục hồi dữ liệu và thay đổi an toàn.</p></header><section className="databasePanel"><h3>Hai sự cố đặc trưng</h3><div className="databaseGrid"><article><h4>SQL · Pool saturation</h4><p>p95: <b>{sql ? '1.8 s' : '42 ms'}</b> · Pool: <b>{sql ? '198 / 200' : '68 / 200'}</b></p><div className="databaseControls"><button onClick={() => setSql(true)}>breakSql · Gây sự cố</button><button onClick={() => setRun('SQL runbook: ACK alert → tìm slow/blocked query → giới hạn traffic mới → cancel query gây nghẽn → verify queue và p95 phục hồi.')}>runSqlBook · Chạy runbook</button><button onClick={() => { setSql(false); setRun('SQL incident đã reset.'); }}>Reset</button></div></article><article><h4>NoSQL · Hot partition</h4><p>Shard A: <b>{no ? '92%' : '33%'}</b> · Replica lag: <b>{no ? '14 s' : '0.3 s'}</b></p><div className="databaseControls"><button onClick={() => setNo(true)}>breakNosql · Gây sự cố</button><button onClick={() => setRun('NoSQL runbook: ACK alert → xác nhận hot key/partition → throttle → chuyển traffic → verify lag. Permanent fix: dual-write partition key mới, backfill, cutover rồi xoá key cũ.')}>runNosqlBook · Chạy runbook</button><button onClick={() => { setNo(false); setRun('NoSQL incident đã reset.'); }}>Reset</button></div></article></div><Wait>{run}</Wait></section><section className="databasePanel"><h3>Operate safely</h3><ul><li>Observe latency, errors, connections, replication lag, disk and saturation.</li><li>Replication phục vụ HA; không thay backup/PITR. Restore vào môi trường cô lập, verify dữ liệu và đo RPO/RTO.</li><li>Migration tương thích, least privilege, secret rotation và rehearsal runbook trước thay đổi.</li></ul></section></>; }
-export function DatabaseProductionGuide({ section, onOpenArticle }: { section: DatabaseGuideSection; onOpenArticle?: (articleId: string) => void }) { const [page, setPage] = React.useState(section); React.useEffect(() => setPage(section), [section]); const openSection = (id: DatabaseGuideSection) => { setPage(id); onOpenArticle?.(articleIdBySection[id]); }; return <section className="databaseGuide" aria-label="Database Production Essentials"><nav className="databaseNav" aria-label="Database guide sections">{pages.map(([id, label]) => <button key={id} aria-current={page === id ? 'page' : undefined} onClick={() => openSection(id)}>{label}</button>)}</nav>{page === 'architecture' ? <Architecture /> : page === 'design' ? <Design /> : page === 'correctness' ? <Correctness /> : <Operations />}</section>; }
+
+function isDatabaseGuideDeepTarget(value: unknown): value is DatabaseGuideDeepTarget {
+  return value === 'sql' || value === 'nosql';
+}
+
+const MINIMUM_FRAME_HEIGHT = 320;
+const MAXIMUM_FRAME_HEIGHT = 1_000_000;
+
+function readDocumentHeight(document: Document): number {
+  const activePage = document.querySelector<HTMLElement>('.page.on:not([hidden])');
+  if (!activePage) return 0;
+
+  const layout = activePage.closest<HTMLElement>('.layout');
+  const bottomPadding = layout ? Number.parseFloat(getComputedStyle(layout).paddingBottom) || 0 : 0;
+  const contentHeight = activePage.offsetTop + activePage.scrollHeight + bottomPadding;
+  return Math.ceil(layout ? Math.max(contentHeight, layout.scrollHeight) : contentHeight);
+}
+
+function isUsableFrameHeight(value: unknown): value is number {
+  return typeof value === 'number'
+    && Number.isFinite(value)
+    && value >= MINIMUM_FRAME_HEIGHT
+    && value <= MAXIMUM_FRAME_HEIGHT;
+}
+
+export function getDatabaseGuideSrc(
+  baseUrl: string = import.meta.env.BASE_URL,
+  section: DatabaseGuideSection = 'correctness',
+  deepTarget?: DatabaseGuideDeepTarget,
+): string {
+  const deepQuery = section === 'correctness' && deepTarget ? `&deep=${deepTarget}` : '';
+  return `${baseUrl}database/database-production-guide.html?section=${section}${deepQuery}`;
+}
+
+export function DatabaseProductionGuide({ section, onOpenArticle }: { section: DatabaseGuideSection; onOpenArticle?: (articleId: string) => void }) {
+  const frameRef = React.useRef<HTMLIFrameElement>(null);
+  const [frameHeight, setFrameHeight] = React.useState(MINIMUM_FRAME_HEIGHT);
+  const [deepTarget, setDeepTarget] = React.useState<DatabaseGuideDeepTarget>();
+  const updateFrameHeight = React.useCallback((height: unknown) => {
+    if (isUsableFrameHeight(height)) setFrameHeight(height);
+  }, []);
+  const measureSameOriginFrame = React.useCallback(() => {
+    const frameDocument = frameRef.current?.contentDocument;
+    if (frameDocument) updateFrameHeight(readDocumentHeight(frameDocument));
+  }, [updateFrameHeight]);
+  const sendHostTheme = React.useCallback(() => {
+    const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+    frameRef.current?.contentWindow?.postMessage({ type: 'database-guide-theme', theme }, window.location.origin);
+  }, []);
+  const handleLoad = React.useCallback(() => {
+    sendHostTheme();
+    measureSameOriginFrame();
+  }, [measureSameOriginFrame, sendHostTheme]);
+
+  React.useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const data: unknown = event.data;
+      if (typeof data !== 'object' || data === null) return;
+
+      const message = data as { type?: unknown; section?: unknown; deep?: unknown; height?: unknown };
+      if (
+        event.origin !== window.location.origin
+        || event.source !== frameRef.current?.contentWindow
+      ) return;
+
+      if (message.type === 'database-guide-height') {
+        updateFrameHeight(message.height);
+        return;
+      }
+
+      if (message.type === 'database-guide-navigate' && isDatabaseGuideSection(message.section)) {
+        if (message.section === 'correctness' && isDatabaseGuideDeepTarget(message.deep)) {
+          setDeepTarget(message.deep);
+        }
+        onOpenArticle?.(articleIdBySection[message.section]);
+      }
+    };
+
+    window.addEventListener('message', onMessage);
+    window.addEventListener('knowledge-theme-change', sendHostTheme);
+    sendHostTheme();
+    return () => {
+      window.removeEventListener('message', onMessage);
+      window.removeEventListener('knowledge-theme-change', sendHostTheme);
+    };
+  }, [onOpenArticle, sendHostTheme, updateFrameHeight]);
+
+  React.useEffect(() => {
+    if (section !== 'correctness') setDeepTarget(undefined);
+  }, [section]);
+
+  return (
+    <iframe
+      ref={frameRef}
+      title="Database Production Essentials"
+      src={getDatabaseGuideSrc(import.meta.env.BASE_URL, section, deepTarget)}
+      onLoad={handleLoad}
+      style={{ border: 0, display: 'block', height: `${frameHeight}px`, minHeight: `${MINIMUM_FRAME_HEIGHT}px`, width: '100%' }}
+    />
+  );
+}
