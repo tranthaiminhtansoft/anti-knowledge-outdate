@@ -51,6 +51,13 @@ describe('DatabaseProductionGuide', () => {
     expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example .index-status{');
   });
 
+  it('uses explicit light-theme contrast for Design labels and muted supporting Load Balancer context', () => {
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .must article b{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .query-path span{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .deep-link{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .nosql-board.v2 .lb-supporting{');
+  });
+
   it('keeps only in-lesson controls after Sections 2, 3, and 4', () => {
     const standalone = new DOMParser().parseFromString(guideHtml, 'text/html');
 
