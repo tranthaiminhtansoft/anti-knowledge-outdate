@@ -58,6 +58,12 @@ describe('DatabaseProductionGuide', () => {
     expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .nosql-board.v2 .lb-supporting{');
   });
 
+  it('uses scoped light-theme contrast for inactive and active architecture tabs', () => {
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .arch-tabs{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .arch-tab{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .arch-tab[aria-selected=true]{');
+  });
+
   it('keeps only in-lesson controls after Sections 2, 3, and 4', () => {
     const standalone = new DOMParser().parseFromString(guideHtml, 'text/html');
 
