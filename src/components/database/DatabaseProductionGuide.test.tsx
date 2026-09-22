@@ -1,80 +1,162 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DatabaseProductionGuide } from './DatabaseProductionGuide';
+import guideHtml from '../../../public/database/database-production-guide.html?raw';
+import { DatabaseProductionGuide, getDatabaseGuideSrc } from './DatabaseProductionGuide';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  delete document.documentElement.dataset.theme;
+});
+
+const sections = [
+  ['architecture', 'database-architecture-scaling'],
+  ['design', 'database-design-performance'],
+  ['correctness', 'database-correctness-reliability'],
+  ['operations', 'database-production-operations'],
+] as const;
 
 describe('DatabaseProductionGuide', () => {
-  it.each([
-    ['architecture', 'Architecture & Scaling'], ['design', 'Data Design & Query Performance'], ['correctness', 'Data Correctness & Reliability'], ['operations', 'Production Operations & Observability'],
-  ] as const)('renders the native %s lesson without an iframe', (section, title) => {
-    const { container } = render(<DatabaseProductionGuide section={section} />);
-    expect(screen.getByRole('heading', { name: title })).toBeTruthy();
-    expect(container.querySelector('iframe')).toBeNull();
+  it.each(sections)('embeds the preserved standalone guide for %s using its section query contract', (section) => {
+    render(<DatabaseProductionGuide section={section} />);
+
+    expect(screen.getByTitle('Database Production Essentials').getAttribute('src')).toBe(
+      `/database/database-production-guide.html?section=${section}`,
+    );
   });
 
-  it('navigates every original database section from the native guide navigation', () => {
-    render(<DatabaseProductionGuide section="architecture" />);
-    fireEvent.click(screen.getByRole('button', { name: '02 · Data design' }));
-    expect(screen.getByText('SQL vs NoSQL: bắt đầu từ access pattern')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '03 · Correctness' }));
-    expect(screen.getByText('Cơ chế bảo vệ dữ liệu')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '04 · Operations' }));
-    expect(screen.getByText('Hai sự cố đặc trưng')).toBeTruthy();
+  it('builds the iframe source from the configured Vite base path without a root-relative asset URL', () => {
+    expect(getDatabaseGuideSrc('/anti-knowledge-outdate/')).toBe(
+      '/anti-knowledge-outdate/database/database-production-guide.html?section=correctness',
+    );
+    expect(getDatabaseGuideSrc('/')).toBe('/database/database-production-guide.html?section=correctness');
+    expect(getDatabaseGuideSrc('/anti-knowledge-outdate/', 'correctness', 'nosql')).toBe(
+      '/anti-knowledge-outdate/database/database-production-guide.html?section=correctness&deep=nosql',
+    );
   });
 
-  it('notifies the canonical article route when a guide section is selected', () => {
+  it('keeps standalone deep links and posts the database navigation contract to the same origin', () => {
+    expect(guideHtml).toContain('data-deep="sql"');
+    expect(guideHtml).toContain('data-deep="nosql"');
+    expect(guideHtml).toContain("window.parent.postMessage({ type: 'database-guide-navigate', section: 'correctness', deep: btn.dataset.deep }, window.location.origin)");
+    expect(guideHtml).toContain('deep: btn.dataset.deep');
+    expect(guideHtml).toContain("initialDeep==='sql'||initialDeep==='nosql'");
+    expect(guideHtml).toContain("show('correctness');selectCorrect(btn.dataset.deep)");
+    expect(guideHtml).toContain("event.source === window.parent && event.data?.type === 'database-guide-theme'");
+  });
+
+  it('keeps the index example readable in the standalone light theme', () => {
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example pre{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .index-example .index-status{');
+  });
+
+  it('uses explicit light-theme contrast for Design labels and muted supporting Load Balancer context', () => {
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .must article b{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .query-path span{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .deep-link{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .nosql-board.v2 .lb-supporting{');
+  });
+
+  it('uses scoped light-theme contrast for inactive and active architecture tabs', () => {
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .arch-tabs{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .arch-tab{');
+    expect(guideHtml).toContain(':root[data-host-theme="light"] body.database-outer-route .arch-tab[aria-selected=true]{');
+  });
+
+  it('keeps only in-lesson controls after Sections 2, 3, and 4', () => {
+    const standalone = new DOMParser().parseFromString(guideHtml, 'text/html');
+
+    ['design', 'correctness', 'operations'].forEach((sectionId) => {
+      const section = standalone.getElementById(sectionId);
+      expect(section?.querySelector('.next')).toBeNull();
+      expect(section?.querySelector('[data-to]')).toBeNull();
+    });
+  });
+
+  it('marks the Load Balancer as supporting context and measures only visible guide content', () => {
+    expect(guideHtml).toContain('class="lb lb-supporting"');
+    expect(guideHtml).toContain('.lb-supporting{');
+    expect(guideHtml).toContain('const activePage = document.querySelector(\'.page.on:not([hidden])\');');
+    expect(guideHtml).toContain('activePage.offsetTop + activePage.scrollHeight');
+    expect(guideHtml).not.toContain('Math.max(root.scrollHeight, root.offsetHeight, body?.scrollHeight ?? 0, body?.offsetHeight ?? 0)');
+  });
+
+  it.each(sections)('maps standalone navigation messages for %s back to its canonical article', (section, articleId) => {
+    const onOpenArticle = vi.fn();
+    render(<DatabaseProductionGuide section="architecture" onOpenArticle={onOpenArticle} />);
+    const frame = screen.getByTitle('Database Production Essentials') as HTMLIFrameElement;
+
+    window.dispatchEvent(new MessageEvent('message', {
+      data: { type: 'database-guide-navigate', section },
+      origin: window.location.origin,
+      source: frame.contentWindow,
+    }));
+
+    expect(onOpenArticle).toHaveBeenCalledWith(articleId);
+  });
+
+  it('ignores malformed, cross-origin, and non-frame navigation messages', () => {
     const onOpenArticle = vi.fn();
     render(<DatabaseProductionGuide section="architecture" onOpenArticle={onOpenArticle} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '02 · Data design' }));
+    window.dispatchEvent(new MessageEvent('message', {
+      data: { type: 'database-guide-navigate', section: 'invalid' },
+      origin: window.location.origin,
+    }));
+    window.dispatchEvent(new MessageEvent('message', {
+      data: { type: 'database-guide-navigate', section: 'design' },
+      origin: 'https://untrusted.example',
+    }));
 
-    expect(onOpenArticle).toHaveBeenCalledWith('database-design-performance');
-    expect(screen.getByRole('heading', { name: 'Data Design & Query Performance' })).toBeTruthy();
+    expect(onOpenArticle).not.toHaveBeenCalled();
   });
 
-  it('runs all ACID scenarios and the traffic scale-out simulation', () => {
+  it('sizes the frame from a validated same-origin height message', () => {
     render(<DatabaseProductionGuide section="architecture" />);
-    fireEvent.click(screen.getByRole('button', { name: 'Success / COMMIT' }));
-    expect(screen.getByText('400.000đ')).toBeTruthy();
-    expect(screen.getByText('300.000đ')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Crash / ROLLBACK' }));
-    expect(screen.getByText('400.000đ')).toBeTruthy();
-    expect(screen.getByText('300.000đ')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
-    expect(screen.getByText('500.000đ')).toBeTruthy();
-    expect(screen.getByText('200.000đ')).toBeTruthy();
-    for (const name of ['Concurrent requests', 'Overload']) {
-      fireEvent.click(screen.getByRole('button', { name }));
-      expect(screen.getByRole('status').textContent).not.toBe('Sẵn sàng: A=500.000đ · B=200.000đ · WAL READY');
-    }
-    fireEvent.click(screen.getByRole('tab', { name: 'NoSQL · Flash Sale Cart' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Bão 1.500.000' }));
-    expect(screen.getByRole('status').textContent).toContain('Cluster scale-out: 3 nodes');
+    const frame = screen.getByTitle('Database Production Essentials') as HTMLIFrameElement;
+
+    act(() => {
+      window.dispatchEvent(new MessageEvent('message', {
+        data: { type: 'database-guide-height', height: 1080 },
+        origin: window.location.origin,
+        source: frame.contentWindow,
+      }));
+    });
+
+    expect(frame.style.height).toBe('1080px');
+
+    window.dispatchEvent(new MessageEvent('message', {
+      data: { type: 'database-guide-height', height: -1 },
+      origin: window.location.origin,
+      source: frame.contentWindow,
+    }));
+    window.dispatchEvent(new MessageEvent('message', {
+      data: { type: 'database-guide-height', height: 99999999 },
+      origin: window.location.origin,
+      source: frame.contentWindow,
+    }));
+    window.dispatchEvent(new MessageEvent('message', {
+      data: { type: 'database-guide-height', height: 1440 },
+      origin: 'https://untrusted.example',
+      source: frame.contentWindow,
+    }));
+
+    expect(frame.style.height).toBe('1080px');
   });
 
-  it('changes the composite-index query plan without changing its query', () => {
-    render(<DatabaseProductionGuide section="design" />);
-    expect(screen.getByText(/Chưa tạo index — Full scan/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Thêm composite index' }));
-    expect(screen.getByText(/Composite index sẵn sàng/)).toBeTruthy();
-    expect(screen.getByText(/CREATE INDEX idx_payment_history_user_status_created_at/)).toBeTruthy();
-  });
+  it('sends the current host theme to the iframe on load and when the host theme changes', () => {
+    document.documentElement.dataset.theme = 'light';
+    render(<DatabaseProductionGuide section="architecture" />);
+    const frame = screen.getByTitle('Database Production Essentials') as HTMLIFrameElement;
+    const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
+    const message = { type: 'database-guide-theme', theme: 'light' };
 
-  it('demonstrates SQL locking, NoSQL consistency, and both runnable incident runbooks', () => {
-    const { rerender } = render(<DatabaseProductionGuide section="correctness" />);
-    fireEvent.click(screen.getByRole('button', { name: 'Chạy không lock' }));
-    expect(screen.getByRole('status').textContent).toContain('Oversell');
-    fireEvent.click(screen.getByRole('tab', { name: 'NoSQL · Conditional write + Replica' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Quorum write' }));
-    expect(screen.getByRole('status').textContent).toContain('Quorum');
-    rerender(<DatabaseProductionGuide section="operations" />);
-    fireEvent.click(screen.getByRole('button', { name: /breakSql/ }));
-    fireEvent.click(screen.getByRole('button', { name: /runSqlBook/ }));
-    expect(screen.getByRole('status').textContent).toContain('SQL runbook');
-    fireEvent.click(screen.getByRole('button', { name: /breakNosql/ }));
-    fireEvent.click(screen.getByRole('button', { name: /runNosqlBook/ }));
-    expect(screen.getByRole('status').textContent).toContain('Permanent fix');
+    fireEvent.load(frame);
+    expect(postMessage).toHaveBeenCalledWith(message, window.location.origin);
+
+    postMessage.mockClear();
+    window.dispatchEvent(new CustomEvent('knowledge-theme-change', { detail: 'light' }));
+    expect(postMessage).toHaveBeenCalledWith(message, window.location.origin);
   });
 });
