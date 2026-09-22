@@ -1231,18 +1231,20 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
       </div>
       {topics.map((topic) => {
         const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
+        const isSingleLessonTopic = topic.id === 'kafka';
+        const showsArticleList = topicArticles.length > 0 && !isSingleLessonTopic;
         const isActiveTopic = activeTopicId === topic.id;
-        const isExpanded = expandedTopicId === topic.id && topicArticles.length > 0;
+        const isExpanded = expandedTopicId === topic.id && showsArticleList;
         const articleListId = `sidebar-topic-${topic.id}`;
         return (
           <section className={`sidebarTopic ${isActiveTopic ? 'active' : ''} ${isExpanded ? 'expanded' : ''}`} key={topic.id}>
-            <div className="sidebarTopicRow">
-              <button className="sidebarTopicButton" onClick={() => onOpenTopic(topic.id)} type="button">
+            <div className={`sidebarTopicRow ${isSingleLessonTopic ? 'singleLesson' : ''}`}>
+              <button className="sidebarTopicButton" onClick={() => isSingleLessonTopic ? onOpenArticle(topicArticles[0].id) : onOpenTopic(topic.id)} type="button">
                 <span className="sidebarIcon">{topic.icon}</span>
                 <span>{topic.title}</span>
-                <small>{topic.status === 'available' ? `${topic.articleCount} bài` : 'Đang cập nhật'}</small>
+                <small>{topic.status === 'available' ? `${isSingleLessonTopic ? 1 : topic.articleCount} bài` : 'Đang cập nhật'}</small>
               </button>
-              {topicArticles.length > 0 && (
+              {showsArticleList && (
                 <button
                   className="sidebarTopicExpand"
                   type="button"
