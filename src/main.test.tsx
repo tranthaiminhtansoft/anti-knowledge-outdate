@@ -48,6 +48,19 @@ describe('sidebar lesson navigation', () => {
     expect(screen.queryByRole('heading', { name: 'Bài học Kafka' })).toBeNull();
   });
 
+  it('returns from the canonical Kafka article to the home page', async () => {
+    window.history.replaceState(null, '', '#/article/kafka-overview');
+    fireEvent(window, new HashChangeEvent('hashchange'));
+
+    const backButton = screen.getByRole('button', { name: 'Quay lại trang chính' });
+    await act(async () => {
+      fireEvent.click(backButton);
+    });
+
+    expect(window.location.hash).toBe('#/');
+    expect(screen.getByRole('heading', { name: 'Anti Knowledge Outdate' })).toBeTruthy();
+  });
+
   it('opens the canonical Kafka article from the home topic card', async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Anti Knowledge Outdate' }));
     fireEvent(window, new HashChangeEvent('hashchange'));

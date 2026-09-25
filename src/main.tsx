@@ -1418,12 +1418,12 @@ function ArticleVisual({ article, onOpenArticle }: { article: Article; onOpenArt
   return <MermaidDiagram chart={article.diagram} id={article.id} />;
 }
 
-function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOpenArticle }: { article: Article; parentTopicId: string; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void }) {
+function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOpenArticle, backLabel }: { article: Article; parentTopicId: string; onBack: () => void; onHome: () => void; onOpenTopic: (topicId: string) => void; onOpenArticle: (articleId: string) => void; backLabel: string }) {
   if (article.id === 'hermes-vs-copilot-chatgpt') {
     return (
       <LessonShell activeTopicId={parentTopicId} activeArticleId={article.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
         <div className="pageShell">
-          <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
+          <PageActions onBack={onBack} onHome={onHome} backLabel={backLabel} />
           <HermesAgentLearningPage article={article} />
         </div>
       </LessonShell>
@@ -1433,7 +1433,7 @@ function ArticlePage({ article, parentTopicId, onBack, onHome, onOpenTopic, onOp
   return (
     <LessonShell activeTopicId={parentTopicId} activeArticleId={article.id} onOpenTopic={onOpenTopic} onOpenArticle={onOpenArticle} onHome={onHome}>
       <div className="pageShell">
-      <PageActions onBack={onBack} onHome={onHome} backLabel={`Quay lại danh sách ${article.topic}`} />
+      <PageActions onBack={onBack} onHome={onHome} backLabel={backLabel} />
       <article className="card articleCard detailArticle">
         {article.topic !== 'Database' && article.topic !== 'Kafka' && <div className="cardHeader">
           <span className="badge">{article.topic}</span>
@@ -1568,7 +1568,7 @@ function App() {
     const article = articles.find((item) => item.id === (redisLegacyArticleAliases[view.articleId] ?? view.articleId));
     if (!article) return <NotFoundPage onHome={openHome} />;
     const parentTopic = topics.find((topic) => topic.title === article.topic || (article.topic === 'AI' && topic.id === 'ai')) ?? topics[0];
-    return <ArticlePage article={article} parentTopicId={parentTopic.id} onBack={() => openTopic(parentTopic.id)} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;
+    return <ArticlePage article={article} parentTopicId={parentTopic.id} onBack={() => parentTopic.id === 'kafka' ? openHome() : openTopic(parentTopic.id)} backLabel={parentTopic.id === 'kafka' ? 'Quay lại trang chính' : `Quay lại danh sách ${article.topic}`} onHome={openHome} onOpenTopic={openTopic} onOpenArticle={openArticle} />;
   }
 
   return <HomePage onOpenTopic={openTopic} />;
