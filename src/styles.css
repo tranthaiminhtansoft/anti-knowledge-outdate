@@ -34,6 +34,7 @@ main, .pageShell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; paddin
 .sidebarTopic.active { border-color: #60a5fa; background: #0b1728; box-shadow: 0 0 0 1px #60a5fa33; }
 .sidebarTopic.expanded:not(.active) { border-color: #31517c; background: #0b172877; }
 .sidebarTopicRow { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px; align-items: center; }
+.sidebarTopicRow.singleLesson { grid-template-columns: minmax(0, 1fr); }
 .sidebarTopicButton { min-width: 0; width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; cursor: pointer; text-align: left; padding: 10px; border-radius: 16px; border: 0; background: transparent; color: #d9e8ff; font-weight: 900; }
 .sidebarTopicButton small { grid-column: 2; color: #8cc7ff; font-weight: 800; }
 .sidebarTopicExpand { width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer; border-radius: 12px; border: 1px solid #28466d; color: #9ecbff; background: #081525; }
