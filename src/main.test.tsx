@@ -15,6 +15,14 @@ beforeAll(async () => {
   });
   HTMLElement.prototype.scrollIntoView = () => undefined;
   window.scrollTo = () => undefined;
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  });
   await act(async () => {
     await import('./main');
   });
@@ -40,15 +48,19 @@ describe('sidebar lesson navigation', () => {
     expect(screen.queryByRole('heading', { name: 'Bài học Kafka' })).toBeNull();
   });
 
-  it('opens the canonical Kafka article from the home topic card', () => {
+  it('opens the canonical Kafka article from the home topic card', async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Anti Knowledge Outdate' }));
     fireEvent(window, new HashChangeEvent('hashchange'));
 
     const kafkaCard = Array.from(document.querySelectorAll<HTMLButtonElement>('.topicCard'))
       .find((card) => card.textContent?.includes('Kafka'))!;
-    fireEvent.click(kafkaCard);
+    await act(async () => {
+      fireEvent.click(kafkaCard);
+    });
 
     expect(window.location.hash).toBe('#/article/kafka-overview');
+    expect(screen.getByRole('heading', { name: 'Kafka tham gia vào Project' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Bài học Kafka' })).toBeNull();
   });
 
   it('reports Kafka as one outer lesson on the home topic card', () => {
@@ -75,7 +87,7 @@ describe('sidebar lesson navigation', () => {
     expect(window.location.hash).toBe('#/article/kafka-overview');
   });
 
-  it('preserves accordion controls and nested lessons for non-Kafka topics', () => {
+  it('preserves accordion controls and nested lessons for non-Kafka topics', async () => {
     const sidebar = screen.getByLabelText('Danh sách bài học');
     const kubernetesTopic = Array.from(sidebar.querySelectorAll<HTMLElement>('.sidebarTopic'))
       .find((topic) => topic.querySelector('.sidebarTopicButton')?.textContent?.includes('Kubernetes'))!;
@@ -86,6 +98,25 @@ describe('sidebar lesson navigation', () => {
     fireEvent.click(expandButton);
 
     expect(within(kubernetesTopic).getByRole('button', { name: 'Thu gọn mục Kubernetes' })).toBeTruthy();
-    expect(kubernetesTopic.querySelector('.sidebarArticleList')).toBeTruthy();
+    const nestedLessons = within(kubernetesTopic).getAllByRole('button').filter(
+      (button): button is HTMLButtonElement => button.classList.contains('sidebarArticle'),
+    );
+    expect(nestedLessons).toHaveLength(4);
+    expect(nestedLessons.map((button) => button.textContent)).toEqual([
+      'Kubernetes cốt lõi',
+      'Multi-container Pod',
+      'Configuration',
+      'Observability',
+    ]);
+
+    await act(async () => {
+      fireEvent.click(nestedLessons[0]);
+    });
+    expect(window.location.hash).toBe('#/article/master-kubernetes');
+    expect(screen.getByRole('heading', { name: 'Kubernetes cốt lõi' })).toBeTruthy();
+
+    const collapsedTopic = screen.getByLabelText('Danh sách bài học').querySelector<HTMLElement>('.sidebarTopic.active')!;
+    fireEvent.click(within(collapsedTopic).getByRole('button', { name: 'Thu gọn mục Kubernetes' }));
+    expect(collapsedTopic.querySelector('.sidebarArticleList')).toBeNull();
   });
 });
