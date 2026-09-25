@@ -31,6 +31,26 @@ afterEach(() => {
 });
 
 describe('sidebar lesson navigation', () => {
+  it('resolves the legacy Kafka topic route to its canonical article route', () => {
+    window.history.replaceState(null, '', '#/topic/kafka');
+    fireEvent(window, new HashChangeEvent('hashchange'));
+
+    expect(window.location.hash).toBe('#/article/kafka-overview');
+    expect(screen.getByRole('heading', { name: 'Kafka tham gia vào Project' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Bài học Kafka' })).toBeNull();
+  });
+
+  it('opens the canonical Kafka article from the home topic card', () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Anti Knowledge Outdate' }));
+    fireEvent(window, new HashChangeEvent('hashchange'));
+
+    const kafkaCard = Array.from(document.querySelectorAll<HTMLButtonElement>('.topicCard'))
+      .find((card) => card.textContent?.includes('Kafka'))!;
+    fireEvent.click(kafkaCard);
+
+    expect(window.location.hash).toBe('#/article/kafka-overview');
+  });
+
   it('reports Kafka as one outer lesson on the home topic card', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Anti Knowledge Outdate' }));
     fireEvent(window, new HashChangeEvent('hashchange'));

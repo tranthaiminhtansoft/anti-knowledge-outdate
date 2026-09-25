@@ -774,13 +774,19 @@ function scrollTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function resolveCanonicalView(view: View): View {
+  if (view.type !== 'topic') return view;
+  const canonicalArticleId = topics.find((topic) => topic.id === view.topicId)?.canonicalArticleId;
+  return canonicalArticleId ? { type: 'article', articleId: canonicalArticleId } : view;
+}
+
 function viewFromHash(): View {
   const hash = window.location.hash.replace(/^#\/?/, '');
   const [kind, ...parts] = hash.split('/');
   const rawId = parts.join('-');
   const articleAliases: Record<string, string> = { 'master-hermes-agent': 'hermes-vs-copilot-chatgpt' };
   const id = articleAliases[rawId] ?? rawId;
-  if (kind === 'topic' && id) return { type: 'topic', topicId: id };
+  if (kind === 'topic' && id) return resolveCanonicalView({ type: 'topic', topicId: id });
   if (kind === 'article' && id) return { type: 'article', articleId: id };
   return { type: 'home' };
 }
@@ -1526,17 +1532,22 @@ function App() {
 
   React.useEffect(() => {
     const syncFromHash = () => {
-      setView(viewFromHash());
+      const nextView = viewFromHash();
+      const canonicalHash = hashForView(nextView);
+      setView(nextView);
+      if (window.location.hash !== canonicalHash) window.location.hash = canonicalHash;
       scrollTop();
     };
+    syncFromHash();
     window.addEventListener('hashchange', syncFromHash);
     return () => window.removeEventListener('hashchange', syncFromHash);
   }, []);
 
   const navigate = (nextView: View) => {
-    const nextHash = hashForView(nextView);
+    const resolvedView = resolveCanonicalView(nextView);
+    const nextHash = hashForView(resolvedView);
     if (window.location.hash === nextHash) {
-      setView(nextView);
+      setView(resolvedView);
       scrollTop();
       return;
     }
