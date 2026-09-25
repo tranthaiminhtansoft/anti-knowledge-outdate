@@ -55,6 +55,7 @@ type Topic = {
   description: string;
   status: TopicStatus;
   articleCount: number;
+  canonicalArticleId?: string;
   icon: React.ReactNode;
   bullets: string[];
 };
@@ -245,7 +246,8 @@ const topics: Topic[] = [
     title: 'Kafka',
     description: 'Kafka từ event flow, broker và partition tới KRaft, consumer lag, failure recovery và production operations.',
     status: 'available',
-    articleCount: kafkaChapters.length,
+    articleCount: 1,
+    canonicalArticleId: 'kafka-overview',
     icon: <Network />,
     bullets: ['Broker & partition', 'KRaft vs ZooKeeper', 'Producer & consumer', 'Production pain lab'],
   },
@@ -1231,7 +1233,7 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
       </div>
       {topics.map((topic) => {
         const topicArticles = articles.filter((article) => article.topic === topic.title || (topic.id === 'ai' && article.topic === 'AI'));
-        const isSingleLessonTopic = topic.id === 'kafka';
+        const isSingleLessonTopic = Boolean(topic.canonicalArticleId);
         const showsArticleList = topicArticles.length > 0 && !isSingleLessonTopic;
         const isActiveTopic = activeTopicId === topic.id;
         const isExpanded = expandedTopicId === topic.id && showsArticleList;
@@ -1239,10 +1241,10 @@ function LearningSidebar({ activeTopicId, activeArticleId, onOpenTopic, onOpenAr
         return (
           <section className={`sidebarTopic ${isActiveTopic ? 'active' : ''} ${isExpanded ? 'expanded' : ''}`} key={topic.id}>
             <div className={`sidebarTopicRow ${isSingleLessonTopic ? 'singleLesson' : ''}`}>
-              <button className="sidebarTopicButton" onClick={() => isSingleLessonTopic ? onOpenArticle(topicArticles[0].id) : onOpenTopic(topic.id)} type="button">
+              <button className="sidebarTopicButton" onClick={() => topic.canonicalArticleId ? onOpenArticle(topic.canonicalArticleId) : onOpenTopic(topic.id)} type="button">
                 <span className="sidebarIcon">{topic.icon}</span>
                 <span>{topic.title}</span>
-                <small>{topic.status === 'available' ? `${isSingleLessonTopic ? 1 : topic.articleCount} bài` : 'Đang cập nhật'}</small>
+                <small>{topic.status === 'available' ? `${topic.articleCount} bài` : 'Đang cập nhật'}</small>
               </button>
               {showsArticleList && (
                 <button
